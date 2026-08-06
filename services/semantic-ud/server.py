@@ -269,7 +269,18 @@ def build_pipeline(language: str, package=None):
             raise
         model_dir = RESOURCES_DIR if RESOURCES_DIR else str(Path.cwd() / "stanza_resources")
         Path(model_dir).mkdir(parents=True, exist_ok=True)
-        stanza.download(language, processors="tokenize,mwt,pos,lemma,depparse", model_dir=model_dir, verbose=False)
+        # Download what the pipeline is actually going to ask for. Passing only `processors` as a
+        # string fetches the *default* model for each, so a configured non-default package was never
+        # downloaded at all: on a warm cache this went unnoticed, on a fresh one Stanza failed with
+        # "Could not find model file .../combined_german-nlp-electra.pt, although there are other
+        # models downloaded for language de". The per-processor dict mirrors the `package` kwarg
+        # built above, so download and load can no longer disagree about which model is wanted.
+        if package:
+            stanza.download(language, model_dir=model_dir, package="default",
+                            processors={"pos": package, "depparse": package}, verbose=False)
+        else:
+            stanza.download(language, model_dir=model_dir,
+                            processors="tokenize,mwt,pos,lemma,depparse", verbose=False)
         kwargs["dir"] = model_dir
         pipe = stanza.Pipeline(**kwargs)
     return pipe

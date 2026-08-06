@@ -16,6 +16,25 @@
 # Building the pipeline once, which is what the service does at startup, gets both.
 set -eu
 
+# Optional HuggingFace token. Only affects rate limits and download speed — the encoder is public,
+# so an anonymous download works, it is just slower and can be throttled. Prompted for rather than
+# required, and never echoed or written anywhere.
+if [ -z "${HF_TOKEN:-}" ] && [ -t 0 ]; then
+    printf 'HuggingFace token (optional, press Enter to skip): '
+    stty -echo 2>/dev/null || true
+    read -r HF_TOKEN || true
+    stty echo 2>/dev/null || true
+    printf '\n'
+    export HF_TOKEN
+fi
+if [ -n "${HF_TOKEN:-}" ]; then
+    HF_ARGS="-e HF_TOKEN=${HF_TOKEN}"
+    echo "==> Using the supplied HuggingFace token."
+else
+    HF_ARGS=""
+    echo "==> No HuggingFace token; anonymous download (slower, subject to rate limits)."
+fi
+
 PROJECT="${1:-vsm-server}"
 IMAGE="${2:-localhost/${PROJECT}_semantic-ud}"
 VOLUME="${PROJECT}_semantic-ud-models"
@@ -33,10 +52,12 @@ echo "==> Warming $VOLUME from $IMAGE (1-2 GB, a few minutes) ..."
 # Runs the service with downloads enabled, waits for it to report a loaded pipeline, then exits.
 # Not `podman run ... server.py` interactively, because knowing when it is finished then means
 # reading the log and guessing.
+# shellcheck disable=SC2086  # HF_ARGS is deliberately word-split: empty must add no argument.
 podman run --rm \
     -v "${VOLUME}:/models" \
     -e SEMANTIC_UD_AUTO_DOWNLOAD=true \
     -e HF_HUB_OFFLINE=0 \
+    $HF_ARGS \
     --entrypoint sh \
     "$IMAGE" -c '
         python3 server.py &
@@ -45,6 +66,14 @@ podman run --rm \
         while [ $i -lt 60 ]; do
             sleep 10
             i=$((i + 1))
+            # The service exits non-zero when it cannot load a model. Without this the loop kept
+            # printing "still building" for another two minutes after a FATAL had already scrolled
+            # past, which buried the actual error.
+            if ! kill -0 $pid 2>/dev/null; then
+                echo "ERROR: the service exited. The real cause is in the output above -" >&2
+                echo "       look for a line starting with [semantic-ud] FATAL." >&2
+                exit 1
+            fi
             loaded=$(python3 - <<PY 2>/dev/null || true
 import json, urllib.request
 try:
