@@ -1,8 +1,23 @@
-# VSM Runtime Server — Docker Deployment
+# VSM Runtime Server — Docker Deployment (HISTORICAL — superseded)
 
-> **Not the semantic parser.** For deploying `semantic-ud` (the UD parser behind Semantic Analysis)
-> as a systemd service, see **[`services/semantic-ud/deploy/README.md`](../services/semantic-ud/deploy/README.md)**.
-> That is a separate service with its own install steps and shares nothing with this package.
+> ## ⚠️ Not the current deployment. Kept for reference only.
+>
+> This package deployed the standalone **`runtime-server`** (`RUNTIME_ONLY` mode — no project
+> editing) for one specific project, with five ports each needing its own reverse-proxy hostname.
+>
+> **It has been replaced** by the `vsm-server` deployment: the **full editor**, in rootless podman,
+> behind a single fixed host port, with plugin ports allocated dynamically by `PortPoolManager` and
+> routed per-request by an inner nginx from a shared registry file. Nothing below about ports or
+> proxy configuration still applies — in particular the five-port table, which the port-mapping
+> algorithm made obsolete.
+>
+> - Current deployment: the `vsm-server` repository (`docker-compose.yml`, `update.sh`,
+>   `vsm-stack.service`).
+> - Semantic parser: [`services/semantic-ud/deploy/README.md`](../services/semantic-ud/deploy/README.md)
+>   — §A covers adding it to that deployment.
+>
+> Read on only if you specifically need the headless runtime-only container, and expect to verify
+> every port claim yourself.
 
 Deploys VisualSceneMaker's standalone `runtime-server` (headless, `RUNTIME_ONLY`
 mode — this is not the full editor: project editing is disabled, only

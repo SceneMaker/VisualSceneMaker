@@ -1,11 +1,143 @@
-# Deploying semantic-ud on Ubuntu
+# Deploying semantic-ud
 
 > Scope: **only** the UD parser that backs Semantic Analysis. It is not the VSM editor, not
-> `runtime-server`, and unrelated to the Docker package in the repository's top-level
+> `runtime-server`, and unrelated to the (historical) Docker package in the repository's top-level
 > [`deploy/`](../../../deploy/README.md).
 
-VSM's Java server calls this parser over loopback; browsers never do. So it binds `127.0.0.1`, needs
-no TLS, no auth and no firewall rule — and **must not be exposed**, because it has none of those.
+VSM's Java server calls this parser; browsers never do. So it needs no TLS, no auth and no public
+port — and **must not be exposed**, because it has none of those.
+
+Which route you want depends on where VSM itself runs:
+
+| Your VSM | Use | Why |
+|---|---|---|
+| In a container (the `vsm-server` podman deployment) | **§A — a compose service** | `127.0.0.1` inside `vsm-server` is *its own* loopback, so a parser on the host is unreachable. Containers on the compose network reach each other by service name. |
+| Directly on a host | **§B — a systemd unit** | Loopback works, and the unit keeps it alive across reboots. |
+
+---
+
+# §A. As a compose service (the vsm-server deployment)
+
+This is the route for `vsm-server-git` + `update.sh`: rootless podman, no root, nothing published to
+the host.
+
+## 1. Add the service to `docker-compose.yml`
+
+`vsm/` in `vsm-server-git` is a copy of this repository, so the parser source is already there and
+the build context is `./vsm/services/semantic-ud`:
+
+```yaml
+  semantic-ud:
+    build:
+      context: ./vsm/services/semantic-ud
+      dockerfile: deploy/Dockerfile
+    container_name: vsm-semantic-ud
+    restart: unless-stopped
+    volumes:
+      # Models are several hundred MB and must outlive container recreation. Same reason
+      # port-registry and vsm-assignments are named volumes: update.sh removes and rebuilds
+      # containers on every deploy.
+      - semantic-ud-models:/models
+    # No ports published. The compose network is the only route, which is the point.
+```
+
+Add `vsm-server`'s dependency and its parser URL:
+
+```yaml
+  vsm-server:
+    depends_on:
+      - semantic-ud
+    environment:
+      # The default is http://127.0.0.1:4061/analyze, which inside this container means
+      # vsm-server itself. It has to be the service name.
+      JAVA_TOOL_OPTIONS: "-Dsemantic.ud.url=http://semantic-ud:4061/analyze"
+```
+
+and declare the volume:
+
+```yaml
+volumes:
+  port-registry:
+  vsm-assignments:
+  semantic-ud-models:
+```
+
+> **`-Dsemantic.ud.url` is the deployment-wide default.** A project whose `project.xml` sets
+> `SemanticServices/udUrl` overrides it, and a project carried over from a laptop very likely still
+> says `127.0.0.1`. Clear that property in the server's projects, or it will silently keep failing
+> for exactly those projects.
+
+## 2. Warm the model volume — once
+
+The image ships with downloads disabled, so the first start would fail until the volume holds the
+models. Fetch them with a one-off run, downloads enabled:
+
+```bash
+podman volume create vsm-server_semantic-ud-models   # name as compose will see it, or let step 3 create it
+podman run --rm   -v vsm-server_semantic-ud-models:/models   -e SEMANTIC_UD_AUTO_DOWNLOAD=true   -e HF_HUB_OFFLINE=0   localhost/vsm-server_semantic-ud python3 server.py
+```
+
+Two separate downloads are needed and `stanza.download()` alone does **not** get both: the Stanza
+model, and the transformer encoder from HuggingFace (`german-nlp-group/electra-base-german-uncased`).
+Building the pipeline once — which is what startup does — gets both. Expect 1–2 GB and a few minutes.
+
+When it logs `listening on http://0.0.0.0:4061`, stop it with Ctrl-C. Verify the volume now holds the
+right model rather than assuming:
+
+```bash
+podman run --rm -v vsm-server_semantic-ud-models:/models localhost/vsm-server_semantic-ud   sh -c 'python3 server.py & sleep 90; curl -s http://127.0.0.1:4061/health; kill %1'
+```
+
+`loaded` must contain `de:combined_german-nlp-electra`. **If it does not, the service falls back to
+Stanza's default parser rather than failing**, so this is the moment to catch it — afterwards it is
+only visible in each document's `provenance.package`.
+
+(If the image name differs, `podman images | grep semantic` after step 3's first build.)
+
+## 3. Deploy
+
+```bash
+./update.sh
+```
+
+`podman compose up -d --build` picks up the new service. The first build is slow — torch.
+
+## 4. Add it to the autostart unit
+
+`vsm-stack.service` starts containers **by name**, so a new container is not covered until you add
+it. Without this the parser will not come back after a reboot, and Semantic Analysis will fail in a
+way that looks like a code problem:
+
+```ini
+ExecStart=-/usr/bin/podman start vsm-semantic-ud
+ExecStart=-/usr/bin/podman start vsm-server
+ExecStart=-/usr/bin/podman start vsm-inner-nginx
+ExecStop=-/usr/bin/podman stop -t 10 vsm-inner-nginx
+ExecStop=-/usr/bin/podman stop -t 10 vsm-server
+ExecStop=-/usr/bin/podman stop -t 10 vsm-semantic-ud
+```
+
+Parser first, since `vsm-server` calls it. Then:
+
+```bash
+cp vsm-stack.service ~/.config/systemd/user/
+systemctl --user daemon-reload && systemctl --user restart vsm-stack.service
+```
+
+## 5. Verify
+
+```bash
+podman ps --format '{{.Names}}\t{{.Status}}' | grep semantic     # expect (healthy) after ~3 min
+podman exec vsm-server curl -sf http://semantic-ud:4061/health    # from VSM's own network view
+podman logs vsm-semantic-ud --tail 20
+```
+
+The `(healthy)` state is the electra check from the Dockerfile's HEALTHCHECK, so a silent fallback
+shows up as `(unhealthy)` instead of as quietly worse parses.
+
+---
+
+# §B. As a systemd unit (VSM directly on a host)
 
 ## Layout, and why
 
@@ -21,7 +153,8 @@ Anything under `/opt/vsm-server` is at the mercy of whatever the deploy script d
 
 ## Manual preparation — once, in this order
 
-Everything below is done **before** `./update.sh`, except step 6 which needs the synced repo.
+This route assumes VSM runs as a normal process on the host, reaching the parser over loopback. If
+VSM is containerised, use §A instead — these steps produce a service it cannot see.
 
 ### 1. Packages
 
