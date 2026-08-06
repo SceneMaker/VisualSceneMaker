@@ -1706,19 +1706,17 @@ a.export-link {
 .script-editor .cm-ghost-marker {
   display: inline-block;
   border: none;
-  background: transparent;
-  border-left: 2px dashed rgba(196, 120, 20, 0.95);
-  color: rgba(196, 120, 20, 0.95);
-  font-size: 0.62rem;
-  line-height: 1;
-  padding: 0 1px;
-  margin: 0 -1px;
+  padding: 0;
+  width: 7px;
+  height: 1.05em;
+  vertical-align: text-bottom;
+  border-radius: 2px;
+  background: rgba(196, 120, 20, 0.32);
   cursor: pointer;
-  vertical-align: baseline;
 }
 
 .script-editor .cm-ghost-marker:hover {
-  background: rgba(196, 120, 20, 0.18);
+  background: rgba(196, 120, 20, 0.65);
 }
 
 /* Position label in the insert dialog when it was opened from a suggestion. Amber to match the

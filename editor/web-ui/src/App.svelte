@@ -1503,6 +1503,11 @@
   // evidence for ever arrive here — the server filters out anything decided by the prior — so an
   // empty list on a new project is correct rather than a failure.
   let placementGhosts = [];
+  // The script text the ghosts were computed against. Suggested positions are raw offsets, so the
+  // moment the script changes they point at the wrong place — CodeMirror remaps surviving
+  // decorations through the edit, which is how a marker ended up inside a scene title. Tracking the
+  // source text lets them be dropped the instant they stop being true.
+  let placementGhostsSourceText = "";
   // Set while a ghost-driven insert dialog is open, so the resulting command can be recorded as an
   // accepted suggestion rather than as something the author wrote unprompted (plan 4.3).
   let pendingGhostAcceptance = null;
@@ -2685,6 +2690,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     ? buildSceneHighlights(activeScenes, activeTurns, sceneHistory)
     : [];
   $: semanticStale = semanticAnnotations.length > 0 && semanticSourceText !== scriptDraft;
+  // Drop suggested positions as soon as the script they describe has changed. They are offsets into a
+  // specific text, and a stale offset is worse than no suggestion: it points somewhere the author
+  // never meant, including outside the utterance entirely.
+  $: if (placementGhosts.length && scriptDraft !== placementGhostsSourceText) {
+    placementGhosts = [];
+  }
   $: {
     if (semanticStale || semanticMode === "off") {
       semanticEditorHighlights = { marks: [], lines: [] };
@@ -2706,7 +2717,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       // An anchor slot is a *position*, so from === to. These are widget decorations in the editor,
       // not marks — requiring a non-empty range here filtered every one of them out and rendered
       // nothing at all.
-      const ghostMarks = (placementGhosts || [])
+      const ghostMarks = (scriptDraft === placementGhostsSourceText ? (placementGhosts || []) : [])
         .filter((g) => Number.isFinite(g?.from) && g.from >= 0)
         .map((g) => ({
           from: g.from,
@@ -6721,6 +6732,7 @@ Sentence:
       const result = await apiPost(
         `/api/v1/projects/${projectId}/placement/ghosts`, { annotations, limitPerSentence: 2 });
       placementGhosts = Array.isArray(result?.ghosts) ? result.ghosts : [];
+      placementGhostsSourceText = scriptDraft || "";
     } catch (err) {
       console.warn("[placement] ghosts unavailable:", err?.message || err);
       placementGhosts = [];

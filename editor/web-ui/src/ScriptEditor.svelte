@@ -266,7 +266,9 @@
       btn.className = "cm-ghost-marker";
       btn.title = this.label;
       btn.setAttribute("aria-label", this.label);
-      btn.textContent = "\u2325"; // caret-ish glyph; the marker is the dashed rule in CSS
+      // No glyph. A character here reads as script content and shifts the text; the marker is a
+      // clickable amber patch drawn entirely in CSS.
+      btn.textContent = "";
       btn.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); });
       btn.addEventListener("click", (e) => {
         e.preventDefault();
