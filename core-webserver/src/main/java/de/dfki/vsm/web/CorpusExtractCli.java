@@ -275,7 +275,7 @@ public final class CorpusExtractCli {
      * {@link #resolveUnqualified}. An earlier version only handled them when the project had exactly one
      * classifiable plugin, which left most real commands unclassified.</p>
      */
-    private static Map<String, String> actorPluginMap(WebUiServer server, RunTimeProject project) {
+    static Map<String, String> actorPluginMap(WebUiServer server, RunTimeProject project) {
         Map<String, String> out = new LinkedHashMap<>();
         if (project == null || project.getProjectConfig() == null) {
             return out;
@@ -302,7 +302,7 @@ public final class CorpusExtractCli {
     private static final String RUNTIME_PROVIDER = "runtime";
 
     /** Plugin ids available to a project: its configured plugins, plus the runtime's own built-ins. */
-    private static List<String> projectPluginIds(WebUiServer server, RunTimeProject project) {
+    static List<String> projectPluginIds(WebUiServer server, RunTimeProject project) {
         List<String> out = new ArrayList<>();
         out.add(RUNTIME_PROVIDER);
         if (project == null || project.getProjectConfig() == null) {
@@ -325,7 +325,7 @@ public final class CorpusExtractCli {
      * Returns {@code null} when none or several do — an ambiguous attribution is worse than none,
      * because it would put a wrong NEUROGES Function on a training example.
      */
-    private static String resolveUnqualified(String name, List<String> pluginIds,
+    static String resolveUnqualified(String name, List<String> pluginIds,
                                              BehaviorTaxonomy taxonomy) {
         String found = null;
         for (String pluginId : pluginIds) {

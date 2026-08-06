@@ -19,6 +19,10 @@ import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.behavior.BehaviorDisplayGroup;
 import de.dfki.vsm.model.behavior.BehaviorTaxonomy;
 import de.dfki.vsm.model.behavior.BehaviorTag;
+import de.dfki.vsm.model.behavior.placement.AnchorSlots;
+import de.dfki.vsm.model.behavior.placement.PlacementContext;
+import de.dfki.vsm.model.behavior.placement.PlacementModel;
+import de.dfki.vsm.model.behavior.placement.PlacementSuggestion;
 import de.dfki.vsm.model.plugin.PluginCommand;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
@@ -111,6 +115,7 @@ import de.dfki.vsm.runtime.gateway.RuntimeGateway;
 import de.dfki.vsm.runtime.gateway.RuntimeGateways;
 import de.dfki.vsm.runtime.api.RuntimeCommandEndpoint;
 import de.dfki.vsm.runtime.api.RuntimeWsProtocol;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import de.dfki.vsm.util.llm.LLMSupport;
@@ -3065,6 +3070,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/syntax", this::handleSemanticSyntaxAnalyze);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze", this::handleSemanticAnalyze);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze-script", this::handleSemanticAnalyzeScript);
+        // Behavior-command placement — plan 3.1. The model itself is in core so it stays Java 17 and
+        // Android-clean; only the HTTP surface lives here, as with the taxonomy.
+        mApp.get(API_PREFIX + "/projects/{pid}/placement/model", this::handlePlacementModel);
+        mApp.post(API_PREFIX + "/projects/{pid}/placement/suggest", this::handlePlacementSuggest);
+        mApp.post(API_PREFIX + "/projects/{pid}/placement/observe", this::handlePlacementObserve);
+        mApp.post(API_PREFIX + "/projects/{pid}/placement/sync", this::handlePlacementSync);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
         mApp.get(API_PREFIX + "/projects/{pid}/export", this::handleProjectExport);
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
@@ -7398,6 +7409,398 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                         .put("themeRheme", "unknown")));
         doc.put("annotations", new JSONArray());
         return doc;
+    }
+
+    // ------------------------------------------------------------------ behavior placement (3.1/3.3)
+
+    /** One store per project, so observing does not re-read the file on every keystroke. */
+    private final Map<String, PlacementStore> mPlacementStores = new ConcurrentHashMap<>();
+
+    private Path placementModelPath(ProjectRef ref) {
+        if (ref == null || ref.path == null || ref.path.isBlank()) {
+            return null;
+        }
+        return Paths.get(ref.path, "behavior-placement.json");
+    }
+
+    private PlacementStore placementStore(ProjectRef ref) {
+        return mPlacementStores.computeIfAbsent(ref.id, id -> PlacementStore.load(placementModelPath(ref)));
+    }
+
+    private void persistPlacementStore(ProjectRef ref, PlacementStore store) {
+        final Path path = placementModelPath(ref);
+        if (path == null) {
+            return;
+        }
+        try {
+            store.save(path);
+        } catch (Exception exc) {
+            // A model that cannot be written still works for this session. Losing a suggestion model
+            // is not worth failing the author's edit over.
+            sLogger.warning("Warning: cannot save behavior-placement.json: " + exc.getMessage());
+        }
+    }
+
+    /**
+     * Resolve a command to its taxonomy context. Returns null when the command is not co-speech —
+     * a backdrop change or a control action has no utterance position to predict, and letting one
+     * into the model would teach it from behavior that never had a choice of slot.
+     */
+    private PlacementContext placementContextOf(JSONObject body, String plugin, String command) {
+        BehaviorTag tag = BehaviorTaxonomy.getDefault().tagFor(plugin, command);
+        if (tag == null || !tag.isCoSpeech()) {
+            return null;
+        }
+        int sentenceIndex = body.optInt("sentenceIndex", 0);
+        int sentenceCount = body.optInt("sentenceCount", 1);
+        return new PlacementContext(
+                tag.getFunction(),
+                tag.getAffiliate(),
+                body.optString("clauseType", null),
+                PlacementContext.TurnPosition.of(sentenceIndex, sentenceCount),
+                body.optString("dialogueAct", null));
+    }
+
+    private static List<String> offeredSlots(JSONObject body) {
+        List<String> out = new ArrayList<>();
+        JSONArray slots = body.optJSONArray("slots");
+        if (slots != null) {
+            for (int i = 0; i < slots.length(); i += 1) {
+                String slot = slots.optString(i, "");
+                if (!slot.isEmpty() && !out.contains(slot)) {
+                    out.add(slot);
+                }
+            }
+        }
+        JSONArray anchors = body.optJSONArray("anchors");
+        if (anchors != null) {
+            for (int i = 0; i < anchors.length(); i += 1) {
+                JSONObject anchor = anchors.optJSONObject(i);
+                String slot = anchor == null ? "" : anchor.optString("slot", "");
+                if (!slot.isEmpty() && !out.contains(slot)) {
+                    out.add(slot);
+                }
+            }
+        }
+        return out;
+    }
+
+    private ProjectRef placementProject(Context ctx) {
+        ProjectRef ref = projectStore.get(ctx.pathParam("pid"));
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return null;
+        }
+        return ref;
+    }
+
+    private void handlePlacementModel(Context ctx) {
+        ProjectRef ref = placementProject(ctx);
+        if (ref == null) {
+            return;
+        }
+        PlacementStore store = placementStore(ref);
+        synchronized (store) {
+            writeJson(ctx, store.toJson());
+        }
+    }
+
+    private void handlePlacementSuggest(Context ctx) {
+        ProjectRef ref = placementProject(ctx);
+        if (ref == null) {
+            return;
+        }
+        try {
+            JSONObject body = ctx.body() == null || ctx.body().isBlank()
+                    ? new JSONObject() : new JSONObject(ctx.body());
+            String plugin = body.optString("plugin", "");
+            String command = body.optString("command", "");
+            PlacementContext context = placementContextOf(body, plugin, command);
+            if (context == null) {
+                // Not an error: asking where to put a backdrop change is a reasonable question with
+                // the answer "nowhere in particular".
+                writeJson(ctx, new JSONObject()
+                        .put("suggestions", new JSONArray())
+                        .put("reason", "NOT_CO_SPEECH")
+                        .put("message", "'" + command + "' is not a speech-accompanying behavior, "
+                                + "so it has no utterance position to predict."));
+                return;
+            }
+            List<String> offered = offeredSlots(body);
+            if (offered.isEmpty()) {
+                writeJson(ctx, new JSONObject()
+                        .put("suggestions", new JSONArray())
+                        .put("reason", "NO_ANCHORS")
+                        .put("message", "No anchor slots were supplied for this sentence. Run the "
+                                + "semantic analysis first, or pass `slots`."));
+                return;
+            }
+            PlacementStore store = placementStore(ref);
+            List<PlacementSuggestion> suggestions;
+            int observations;
+            synchronized (store) {
+                suggestions = store.model().suggest(context, offered, body.optInt("limit", 3));
+                observations = store.model().getObservationCount();
+            }
+            JSONArray out = new JSONArray();
+            for (PlacementSuggestion suggestion : suggestions) {
+                out.put(suggestion.toJson());
+            }
+            writeJson(ctx, new JSONObject()
+                    .put("suggestions", out)
+                    .put("observations", observations)
+                    .put("context", new JSONObject()
+                            .put("function", context.getFunction())
+                            .put("affiliate", context.getAffiliate())
+                            .put("clauseType", context.getClauseType())
+                            .put("turnPosition", context.getTurnPosition().name())));
+        } catch (Exception exc) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("PLACEMENT_SUGGEST_FAILED", exc.getMessage()));
+        }
+    }
+
+    private void handlePlacementObserve(Context ctx) {
+        ProjectRef ref = placementProject(ctx);
+        if (ref == null) {
+            return;
+        }
+        try {
+            JSONObject body = ctx.body() == null || ctx.body().isBlank()
+                    ? new JSONObject() : new JSONObject(ctx.body());
+            String plugin = body.optString("plugin", "");
+            String command = body.optString("command", "");
+            String slot = body.optString("slot", "");
+            PlacementContext context = placementContextOf(body, plugin, command);
+            if (context == null) {
+                writeJson(ctx, new JSONObject().put("recorded", false).put("reason", "NOT_CO_SPEECH"));
+                return;
+            }
+            PlacementStore store = placementStore(ref);
+            String fingerprint = PlacementStore.fingerprint(plugin, command,
+                    body.optInt("line", 0), body.optInt("sentence", 0), body.optInt("tokenIndex", -1));
+            boolean changed;
+            int total;
+            synchronized (store) {
+                if (slot.isEmpty()) {
+                    // A command that no longer sits anywhere — deleted, or moved off every slot.
+                    changed = store.remove(fingerprint);
+                } else {
+                    changed = store.put(fingerprint, PlacementStore.observation(
+                            slot, body.optBoolean("snapped", false), context));
+                }
+                if (changed) {
+                    persistPlacementStore(ref, store);
+                }
+                total = store.model().getObservationCount();
+            }
+            writeJson(ctx, new JSONObject()
+                    .put("recorded", changed)
+                    .put("observations", total));
+        } catch (Exception exc) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("PLACEMENT_OBSERVE_FAILED", exc.getMessage()));
+        }
+    }
+
+    /**
+     * Reconcile the model with every placement currently in the script — plan 3.3.
+     *
+     * <p>Driven from the analysis rather than from individual editor events. The analysis already
+     * knows each command's anchor slot, which is the same computation the corpus extractor performs,
+     * so this cannot drift from the corpus the model is evaluated against. It is also idempotent:
+     * syncing an unchanged script reports no change, and a command the author deleted simply stops
+     * being present, which removes its evidence without any decrement that could go negative.
+     */
+    /**
+     * Turn an analysis document into placement records, resolving each command's anchor slot.
+     *
+     * <p>A command sits at a token index; an anchor slot is offered at a token index. Several slots
+     * can fall at the same token — "after-subject" and "before-verb" often coincide — so the most
+     * specific wins, by {@link AnchorSlots#PRIORITY}. This is deliberately the same rule and the same
+     * ordering the corpus extractor applies, and the constant now lives in core precisely so the two
+     * cannot drift apart.
+     */
+    private JSONArray placementsFromAnnotations(ProjectRef ref, JSONArray annotations) {
+        // The analysis reports a command by bare name ("emotion"), because that is what the script
+        // says; which plugin provides it depends on the actor and on what the project has loaded.
+        // Reuse the corpus extractor's resolution rather than writing a second one — if these two
+        // ever disagreed, the model would be trained on different labels than it is evaluated on.
+        final BehaviorTaxonomy taxonomy = BehaviorTaxonomy.getDefault();
+        final Map<String, String> actorToPlugin =
+                CorpusExtractCli.actorPluginMap(this, ref.runtimeProject);
+        final List<String> pluginIds = CorpusExtractCli.projectPluginIds(this, ref.runtimeProject);
+        // Sentences per line, so a sentence's position within its turn can be derived. One script
+        // line is one turn.
+        Map<Integer, Integer> perLine = new LinkedHashMap<>();
+        for (int i = 0; i < annotations.length(); i += 1) {
+            JSONObject ann = annotations.optJSONObject(i);
+            if (ann != null) {
+                perLine.merge(ann.optInt("line", 0), 1, Integer::sum);
+            }
+        }
+        Map<Integer, Integer> seenOnLine = new LinkedHashMap<>();
+
+        JSONArray out = new JSONArray();
+        for (int i = 0; i < annotations.length(); i += 1) {
+            JSONObject ann = annotations.optJSONObject(i);
+            if (ann == null) {
+                continue;
+            }
+            int line = ann.optInt("line", 0);
+            int indexInTurn = seenOnLine.merge(line, 1, Integer::sum) - 1;
+            int countInTurn = perLine.getOrDefault(line, 1);
+
+            JSONArray commands = ann.optJSONArray("commands");
+            if (commands == null || commands.length() == 0) {
+                continue;
+            }
+            JSONArray anchors = ann.optJSONArray("anchors");
+            for (int c = 0; c < commands.length(); c += 1) {
+                JSONObject command = commands.optJSONObject(c);
+                if (command == null) {
+                    continue;
+                }
+                int tokenIndex = command.optInt("tokenIndex", -1);
+                String slot = "";
+                String clauseType = null;
+                int bestRank = Integer.MAX_VALUE;
+                if (anchors != null) {
+                    for (int a = 0; a < anchors.length(); a += 1) {
+                        JSONObject anchor = anchors.optJSONObject(a);
+                        if (anchor == null || anchor.optInt("tokenIndex", -2) != tokenIndex) {
+                            continue;
+                        }
+                        String candidate = anchor.optString("slot", "");
+                        int rank = AnchorSlots.rankOf(candidate);
+                        if (!candidate.isEmpty() && rank < bestRank) {
+                            bestRank = rank;
+                            slot = candidate;
+                            clauseType = clauseTypeById(ann, anchor.optString("clauseId", ""));
+                        }
+                    }
+                }
+                String name = command.optString("name", "");
+                String actor = command.optString("actor", "");
+                String plugin = actor.isEmpty()
+                        ? CorpusExtractCli.resolveUnqualified(name, pluginIds, taxonomy)
+                        : actorToPlugin.get(actor);
+                JSONObject placement = new JSONObject()
+                        .put("plugin", plugin == null ? "" : plugin)
+                        .put("command", name)
+                        .put("line", line)
+                        .put("sentence", ann.optInt("sentence", 0))
+                        .put("tokenIndex", tokenIndex)
+                        .put("slot", slot)
+                        .put("sentenceIndex", indexInTurn)
+                        .put("sentenceCount", countInTurn);
+                if (clauseType != null) {
+                    placement.put("clauseType", clauseType);
+                }
+                JSONObject act = ann.optJSONObject("dialogueAct");
+                if (act != null && !act.optString("label", "").isEmpty()) {
+                    placement.put("dialogueAct", act.getString("label"));
+                }
+                out.put(placement);
+            }
+        }
+        return out;
+    }
+
+    private static String clauseTypeById(JSONObject annotation, String clauseId) {
+        if (clauseId == null || clauseId.isEmpty()) {
+            return null;
+        }
+        JSONArray clauses = annotation.optJSONArray("clauses");
+        if (clauses == null) {
+            return null;
+        }
+        for (int i = 0; i < clauses.length(); i += 1) {
+            JSONObject clause = clauses.optJSONObject(i);
+            if (clause != null && clauseId.equals(clause.optString("id", ""))) {
+                String type = clause.optString("type", "");
+                return type.isEmpty() ? null : type;
+            }
+        }
+        return null;
+    }
+
+    private void handlePlacementSync(Context ctx) {
+        ProjectRef ref = placementProject(ctx);
+        if (ref == null) {
+            return;
+        }
+        try {
+            JSONObject body = ctx.body() == null || ctx.body().isBlank()
+                    ? new JSONObject() : new JSONObject(ctx.body());
+            // Two accepted shapes. `annotations` is the analysis document straight back from
+            // analyze-script, and is preferred: the slot for each command is then resolved here, by
+            // the same rule the corpus extractor uses, so the model can never be trained on a
+            // labelling that differs from the one it is evaluated against. `placements` is the
+            // explicit form, for callers that already know the slots.
+            JSONArray placements = body.optJSONArray("placements");
+            if (placements == null && body.optJSONArray("annotations") != null) {
+                placements = placementsFromAnnotations(ref, body.getJSONArray("annotations"));
+            }
+            if (placements == null) {
+                ctx.status(400);
+                writeJson(ctx, errorResponse("PLACEMENT_SYNC_INVALID",
+                        "Expected `annotations` (an analysis document) or an explicit `placements` "
+                                + "array. Send every command in the script, since anything absent is "
+                                + "treated as deleted."));
+                return;
+            }
+            Map<String, JSONObject> current = new LinkedHashMap<>();
+            int skippedNotCoSpeech = 0;
+            int skippedNoSlot = 0;
+            for (int i = 0; i < placements.length(); i += 1) {
+                JSONObject item = placements.optJSONObject(i);
+                if (item == null) {
+                    continue;
+                }
+                String plugin = item.optString("plugin", "");
+                String command = item.optString("command", "");
+                PlacementContext context = placementContextOf(item, plugin, command);
+                if (context == null) {
+                    skippedNotCoSpeech += 1;
+                    continue;
+                }
+                String slot = item.optString("slot", "");
+                if (slot.isEmpty()) {
+                    // Mid-phrase: the command sits inside a constituent, not at a boundary. Recorded
+                    // as skipped rather than snapped, so the model never claims support it does not
+                    // have. 23% of real placements land here; see the plan's Phase 3 note.
+                    skippedNoSlot += 1;
+                    continue;
+                }
+                current.put(
+                        PlacementStore.fingerprint(plugin, command,
+                                item.optInt("line", 0), item.optInt("sentence", 0),
+                                item.optInt("tokenIndex", -1)),
+                        PlacementStore.observation(slot, item.optBoolean("snapped", false), context));
+            }
+
+            PlacementStore store = placementStore(ref);
+            PlacementStore.SyncResult result;
+            int observations;
+            synchronized (store) {
+                result = store.replaceScope("", current);
+                if (result.changed()) {
+                    persistPlacementStore(ref, store);
+                }
+                observations = store.model().getObservationCount();
+            }
+            writeJson(ctx, new JSONObject()
+                    .put("sync", result.toJson())
+                    .put("observations", observations)
+                    .put("skipped", new JSONObject()
+                            .put("notCoSpeech", skippedNotCoSpeech)
+                            .put("noAnchorSlot", skippedNoSlot)));
+        } catch (Exception exc) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("PLACEMENT_SYNC_FAILED", exc.getMessage()));
+        }
     }
 
     private Path semanticDocumentPath(ProjectRef ref) {

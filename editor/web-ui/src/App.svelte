@@ -1466,6 +1466,9 @@
   let semanticPreviewTimer = null;
   let semanticPreviewRunId = 0;
   let semanticDirty = false;
+  // Summary of the last placement-model sync, shown in the semantic panel so the author can see the
+  // model learning rather than having to trust that it does.
+  let placementModelState = null;
   let semanticAnalyzeSvo = true;
   let semanticAnalyzeDaTr = true;
   let semanticLLMIndex = 0;
@@ -6595,6 +6598,22 @@ Sentence:
   // remaps every span back to script offsets. That replaced a per-sentence loop in this file which
   // had two defects — it fed command brackets to the parser, and its regex splitter cut a command in
   // half at a parameter's decimal point ("intensity='0.8'"). See doc/semantic-analysis-current.md.
+  // Fire-and-forget: a placement model that fails to update must never break an analysis the author
+  // asked for. Failures are logged, and the model simply stays where it was.
+  async function syncPlacementModel(projectId, annotations) {
+    if (!projectId || !Array.isArray(annotations) || annotations.length === 0) return;
+    try {
+      const result = await apiPost(`/api/v1/projects/${projectId}/placement/sync`, { annotations });
+      placementModelState = {
+        observations: result?.observations ?? 0,
+        lastSync: result?.sync || null,
+        skipped: result?.skipped || null
+      };
+    } catch (err) {
+      console.warn("[placement] model sync failed:", err?.message || err);
+    }
+  }
+
   async function runSemanticAnalysis() {
     if (!selectedProjectId || semanticAnalyzeBusy) return;
     semanticAnalyzeBusy = true;
@@ -6643,6 +6662,14 @@ Sentence:
       if (semanticDebugEnabled && Array.isArray(doc?.debug?.sentences)) {
         semanticUdDebug = doc.debug.sentences;
       }
+
+      // Plan 3.3 — keep the per-project placement model in step with the script. Driven from the
+      // analysis rather than from individual edit events, because the analysis is what knows each
+      // command's anchor slot; the server resolves the slots with the same rule the corpus extractor
+      // uses, so the model cannot be trained on a labelling that differs from the one it is
+      // evaluated against. Sending the whole document each time makes it idempotent and lets a
+      // deleted command actually withdraw its evidence.
+      syncPlacementModel(selectedProjectId, annotations);
 
       const stats = doc?.stats || {};
       const warnings = Array.isArray(doc?.warnings) ? doc.warnings : [];
@@ -17957,6 +17984,11 @@ Sentence:
                 {/if}
                 {#if semanticStatus}
                   <span class="muted semantic-run-status">{semanticStatus}</span>
+                {/if}
+                {#if placementModelState}
+                  <span class="muted semantic-run-status" title="Placement suggestions learn from where you put behavior commands in this project.">
+                    Placement model: {placementModelState.observations} observation{placementModelState.observations === 1 ? "" : "s"}{#if placementModelState.skipped?.noAnchorSlot}, {placementModelState.skipped.noAnchorSlot} mid-phrase not counted{/if}
+                  </span>
                 {/if}
                 <div class="semantic-legend">
                   <div class="semantic-legend-row">

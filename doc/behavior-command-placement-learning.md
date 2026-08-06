@@ -275,6 +275,30 @@ Built for several annotators × several scenarios from the start.
 
 ## Phase 3 — Placement service (per-project adaptive)
 
+**Status (2026-08-06): 3.1, 3.2, 3.3 and 3.5 implemented; 3.4 not started.** Two deviations from
+what is written below, both deliberate:
+
+- **Not a `services/` module.** The text asks for a standalone Javalin service that also "runs
+  in-process with VSM"; those are contradictory, and a separate process would need its own copies of
+  `BehaviorTaxonomy` and the corpus plumbing. The model is plain Java in
+  `core/model/behavior/placement/` (Java 17, Android-clean, no Javalin) and the endpoints are in
+  `core-webserver`, exactly as the taxonomy already is.
+- **The prior keys on `affiliate`, not on the names below.** `emotion-intrinsic`,
+  `pointing-deictic` and `emphasis-baton` match no field in the taxonomy. `affiliate` —
+  `referent | rheme | accented-word | clause | whole-utterance | none` — is described in
+  `vsmFields` as "the bridge to the anchor slots of the placement service" and is present on 58 of
+  66 tagged commands against Function's 24. Function remains the empirical conditioning variable
+  and the axis the back-off runs along.
+
+Endpoints (all under `/api/v1/projects/{pid}/placement/`): `GET model`, `POST suggest`,
+`POST observe`, `POST sync`. State is `behavior-placement.json` in the project root.
+
+3.3 is driven from the analysis rather than from individual editor events: the analysis is what
+knows each command's anchor slot, and `sync` resolves slots through the *same* code the corpus
+extractor uses, so the model cannot be trained on a labelling that differs from the one it is
+evaluated against. Sending the whole document makes it idempotent and lets a deleted command
+withdraw its evidence.
+
 - **3.1 New module `services/behavior-placement`.** Java + Javalin, mirroring
   `services/semantic-analysis` so it can run in-process with VSM and stay Java 17-clean for
   Android; heavy NLP stays in `semantic-ud`. Endpoints: `POST /suggest` (structure + categories →
