@@ -16,3 +16,10 @@ editor/web-ui/node_modules/
 
 # Python bytecode from the semantic-ud service
 services/semantic-ud/__pycache__/
+
+# Generated mirror of the web UI bundle. core-webserver/build.gradle syncs it from
+# editor/src/main/resources/web-ui (which IS tracked) before processResources, so it is rebuilt on
+# every build and never needs to be committed. Tracking it duplicated 38 files and guaranteed a dirty
+# tree after any `gradlew run`. The sync is gated only on the editor directory existing, not on node,
+# so a machine without npm still gets the bundle into core-webserver's jar.
+core-webserver/src/main/resources/web-ui/
