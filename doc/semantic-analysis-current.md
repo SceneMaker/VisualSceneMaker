@@ -100,6 +100,7 @@ Editor visualization:
 ## 4. Storage and Persistence
 
 - Semantic output file: `semantic-annotations.json` in project root.
+- Behavior-placement model: `behavior-placement.json` in project root (see §11).
 - Semantic results are marked as unsaved in UI until Save/Autosave.
 - Save/Autosave writes semantic data through backend semantic put path.
 - Project configuration persistence in `project.xml` includes:
@@ -143,7 +144,15 @@ When semantic debug is enabled:
 
 - UD quality still depends on model behavior for informal, insulting, fragmented, or highly idiomatic utterances.
 - Imperatives and ellipses can still require heuristic fallback.
-- Modifier extraction currently focuses on direct dependency relations (`amod`, selected `advmod`) tied to chosen role heads.
+- Modifier extraction covers `amod` and `advmod`/`dep` for ADJ/ADV children of a role head, including
+  the nested degree adverb of "sehr gut", and now runs for the **verb** as well as subject, object,
+  address and predicate. Modifiers are labelled by word class with a separate `usage` field, so the
+  adverbially-used adjective of "Super gemacht" reads as an adjective used adverbially.
+- Roles and modifiers are taken per **clause**, not from the flat `basic` block. `basic` is still
+  emitted for compatibility but holds one role set per sentence filled from whichever clause matched
+  first, so on a two-clause sentence it can pair a subject from one clause with a verb from another.
+- Fronted-object order is an upstream weakness: in `Das hast Du sehr gut gemacht.` Stanza assigns
+  `Das`=`nsubj` and `Du`=`obj`, which is semantically reversed. Tracked as an expected-fail eval case.
 - DA/TR quality depends on selected LLM model and prompt.
 
 ## 9. Extension Hooks
@@ -164,3 +173,42 @@ When extending the feature, update this file with:
 2. Any new project.xml fields and defaults.
 3. UI legend changes and rendering rules.
 4. API request/response examples for new layers.
+
+## 11. Behavior-Command Placement (Phase 3-4)
+
+Built on the analysis rather than beside it: the placement service consumes clauses, anchors and
+taxonomy-classified commands from the same document the editor renders.
+
+- **Model** — `core/model/behavior/placement/` (Java 17, Android-clean, no Javalin). A count model
+  with hierarchical back-off: function+affiliate+clause+turn-position, down to affiliate, then to
+  neighbouring Function values on the **NEUROGES polar axis**, then to a hand-written prior keyed on
+  the taxonomy's `affiliate` field, then uniform. Interpolation is Witten-Bell, with each level
+  subtracting its nested child so one observation is not counted once per level.
+- **Endpoints** — `/api/v1/projects/{pid}/placement/`: `GET model`, `POST suggest`, `POST observe`,
+  `POST sync`, `POST ghosts`. State in `behavior-placement.json`, which stores the individual
+  observations and rebuilds the model from them, making sync idempotent and deletion exact.
+- **Online update** — driven from the analysis, not from editor events: the analysis is what knows
+  each command's anchor slot, and slot resolution is shared with the corpus extractor so the model
+  cannot be trained on labels that differ from those it is evaluated on.
+- **Feedback-loop guard** — observations carry `origin`; an accepted suggestion weighs 0.35 against
+  1.0 for an authored placement, and `sync` carries a recorded origin forward so re-analysis cannot
+  relabel accepted suggestions as authored. Dismissals are recorded but deliberately not scored.
+- **LLM second opinion** — opt-in per request, consulted only where the frequency model has no
+  evidence, constrained to return one of the offered slot names, and returned in a separate
+  `secondOpinion` field so counts and guesses never blend. Latency measured at 3-27s against a local
+  Qwen3-30B, which is why it is off the interactive path.
+- **UI** — faint dashed amber ghost markers plus a per-turn list in the Semantic Analysis panel;
+  Ctrl+Shift+I suggests a position in the turn at the cursor. Accepting always opens the ordinary
+  insert dialog, so command choice and parameters remain the author's.
+
+Measured, leave-one-out over a four-project corpus of 31 evaluable placements: top-1 45.2%, top-3
+83.9%, against 22.6% for the prior alone, 11.5% uniform-random and 6.5% always-utterance-initial.
+Per Function: emblem/social convention 10/11, emotion/attitude 3/17. At this n it is a smoke test,
+not a measurement.
+
+Open, and unchanged by the implementation: **23% of real placements are mid-phrase**, sitting inside
+a constituent rather than at a boundary. They are excluded rather than snapped, so the decision — snap
+to nearest slot, extend the inventory, or model prosodic prominence — is still open. A second
+annotator is still needed before the agreement report means anything.
+
+See `doc/behavior-command-placement-learning.md` and `doc/behavior-taxonomy-neuroges.md`.

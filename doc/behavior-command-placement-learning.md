@@ -332,6 +332,18 @@ withdraw its evidence.
 
 ## Phase 4 — Authoring UX
 
+**Status (2026-08-06): complete — 4.1 through 4.4.** One deviation: 4.3 says a dismissal should feed
+`observe`, and it is recorded but **deliberately not scored**. A dismissal is negative evidence, and a
+count model over positive observations has nowhere honest to put it — subtracting from a slot's tally
+can drive it below zero and distort a distribution built from real placements, while treating it as
+evidence for the other slots asserts something the author never said. The signal is persisted so it is
+not lost; using it needs a discriminative model, which is future work rather than a v1 hack.
+
+Ghost markers only appear where the model has evidence, never from the prior, so a new project shows
+none. In-editor markers are visual; accept and dismiss are actions in the Semantic Analysis panel, and
+Ctrl+Shift+I suggests a position in the turn at the cursor. Accepting always routes through
+`InsertActionDialog`, so command choice stays with the author.
+
 - **4.1 Ghost markers** in `ScriptEditor` at suggested anchors; accept inserts via the normal
   action path, dismiss is also signal — both feed `observe`.
 - **4.2 "Suggest behaviors for this turn"** reusing `InsertActionDialog`/`ActionForm` so

@@ -1701,6 +1701,12 @@ a.export-link {
   gap: 0.2rem;
 }
 
+.placement-ghost-turn {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
 .placement-ghost-row {
   display: flex;
   align-items: center;

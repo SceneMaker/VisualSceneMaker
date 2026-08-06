@@ -1506,6 +1506,14 @@
   // Set while a ghost-driven insert dialog is open, so the resulting command can be recorded as an
   // accepted suggestion rather than as something the author wrote unprompted (plan 4.3).
   let pendingGhostAcceptance = null;
+  // Grouped by turn, because that is the unit an author works in — one turn is one line of script.
+  $: placementGhostsByTurn = Object.values(
+    (placementGhosts || []).reduce((acc, ghost) => {
+      const line = ghost?.line ?? 0;
+      (acc[line] ||= { line, ghosts: [] }).ghosts.push(ghost);
+      return acc;
+    }, {})
+  ).sort((a, b) => a.line - b.line);
   let semanticAnalyzeSvo = true;
   let semanticAnalyzeDaTr = true;
   let semanticLLMIndex = 0;
@@ -6658,6 +6666,32 @@ Sentence:
     } catch (err) {
       console.warn("[placement] model sync failed:", err?.message || err);
     }
+  }
+
+  /**
+   * "Suggest behaviors for this turn" (plan 4.2) — Ctrl+Shift+I.
+   *
+   * Finds the turn under the cursor, takes the best-supported suggested position within it, and opens
+   * the normal insert dialog there. The model contributes the position; the command and its
+   * parameters stay with the author, which is the whole point of routing this through
+   * InsertActionDialog rather than inserting anything directly.
+   */
+  function suggestForTurnAtCursor(offset) {
+    const turn = turnAtOffset(scriptTurns, offset);
+    if (!turn) return;
+    const inTurn = (placementGhosts || []).filter(
+      (g) => Number.isFinite(g?.from) && g.from >= turn.offsetStart && g.from <= turn.offsetEnd);
+    if (!inTurn.length) {
+      // Silence would be indistinguishable from a broken shortcut, so say which of the two
+      // reasons applies — there is nothing learned yet, or nothing learned for *this* turn.
+      semanticStatus = placementGhosts.length
+        ? "No suggested position in this turn yet — the model has none for these sentences."
+        : "No suggested positions yet. Analyze the script; suggestions appear once this project has "
+          + "placements the model can learn from.";
+      return;
+    }
+    const best = inTurn.reduce((a, b) => ((b.score ?? 0) > (a.score ?? 0) ? b : a));
+    acceptPlacementGhost(best);
   }
 
   async function loadPlacementGhosts(projectId, annotations) {
@@ -18128,10 +18162,12 @@ Sentence:
                       insert dialog, so the command stays your choice
                     </span>
                   </div>
-                  {#each placementGhosts as ghost (ghost.line + ":" + ghost.slot + ":" + ghost.from)}
+                  <span class="semantic-legend-note">Ctrl+Shift+I suggests a position in the turn at the cursor.</span>
+                  {#each placementGhostsByTurn as group (group.line)}
+                    <div class="placement-ghost-turn">line {group.line}</div>
+                    {#each group.ghosts as ghost (ghost.slot + ":" + ghost.from)}
                     <div class="placement-ghost-row">
                       <span class="placement-ghost-slot">{ghost.slot}</span>
-                      <span class="muted">line {ghost.line}</span>
                       {#if ghost.function}<span class="muted">{ghost.function}</span>{/if}
                       <span class="muted" title="Weighted evidence behind this suggestion">
                         support {ghost.support}
@@ -18143,6 +18179,7 @@ Sentence:
                         Dismiss
                       </button>
                     </div>
+                    {/each}
                   {/each}
                 </div>
               {/if}
@@ -18165,6 +18202,7 @@ Sentence:
                 onPlayTurn={handlePlayTurn}
                 onCommandMenu={handleScriptCommandMenu}
                 onInsertShortcut={handleInsertShortcut}
+                onSuggestShortcut={suggestForTurnAtCursor}
                 actionSpans={actionSpans}
                 markdownSpans={markdownSpans}
                 compactCommands={scriptCommandsCompact}

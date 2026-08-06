@@ -21,6 +21,7 @@
   export let onCommandMenu = null; // (charOffset, clientX, clientY) => boolean — double-click on an existing
                                     // action span jumps straight into editing it (no right-click anywhere else
                                     // in the app); true = handled. Insertion moved to Ctrl+I (onInsertShortcut).
+  export let onSuggestShortcut = null; // (charOffset) => void — Ctrl+Shift+I suggests a position in this turn
   export let onInsertShortcut = null; // (charOffset) => void — Ctrl+I opens the extended insert dialog at the
                                        // cursor's position (replaces the old double-click-on-plain-text popup)
   export let actionSpans = [];      // [{offsetStart, offsetEnd, actionActor, actionName, features, raw}] — M13b
@@ -688,6 +689,18 @@
           run: (cmView) => {
             if (!onInsertShortcut) return false;
             onInsertShortcut(cmView.state.selection.main.from);
+            return true;
+          },
+          preventDefault: true
+        },
+        // Mod-Shift-i asks where a behavior belongs in the turn under the cursor, instead of
+        // inserting at the cursor itself. Bound next to Mod-i deliberately: it is the same act with
+        // the position chosen by the project's model rather than by where you happen to be.
+        {
+          key: "Mod-Shift-i",
+          run: (cmView) => {
+            if (!onSuggestShortcut) return false;
+            onSuggestShortcut(cmView.state.selection.main.from);
             return true;
           },
           preventDefault: true

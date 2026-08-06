@@ -188,13 +188,14 @@
   <div class="nav-group">Editing</div>
   <a href="#view-modes">Compact / plain view</a>
   <a href="#editing-commands">Editing inline commands</a>
+  <a href="#suggested-positions">Suggested positions</a>
   <a href="#preview">SIA preview panel</a>
 </nav>
 
 <main>
   <div class="title-row">
     <img src="/images/vsm_logo.svg" alt="Visual SceneMaker">
-    <h1>SceneScript Guide<span class="version-pill">v1.1 · 2026-07-22</span></h1>
+    <h1>SceneScript Guide<span class="version-pill">v1.2 · 2026-08-06</span></h1>
   </div>
   <p class="subtitle">How to write and edit dialogue scripts in Visual SceneMaker</p>
 
@@ -336,7 +337,39 @@ Bob: Let's begin.</pre>
     <li><strong>Click</strong> a chip to select it, then press <strong>Backspace</strong>/<strong>Delete</strong> to remove it.</li>
     <li><strong>Drag</strong> a selected chip to move it elsewhere within the same turn.</li>
     <li><strong>Ctrl/Cmd+C</strong> copies the selected chip's exact command text; <strong>Ctrl/Cmd+V</strong> pastes it back in at the cursor.</li>
+    <li><strong>Ctrl+Shift+I</strong> asks where a behavior belongs in the turn under the cursor, and
+      opens the insert dialog at that position &mdash; see <a href="#suggested-positions">Suggested positions</a>.</li>
   </ul>
+
+  <h2 id="suggested-positions">Suggested positions</h2>
+  <p>
+    Once you run the semantic analysis, the editor can suggest <em>where</em> in an utterance a
+    behavior command belongs, based on where you have put comparable commands in this project before.
+    Suggestions appear as faint dashed amber markers in the script and as rows under
+    <strong>Suggested positions</strong> in the Semantic Analysis panel, grouped by turn.
+  </p>
+  <p>
+    Three things are worth knowing about what these are and are not:
+  </p>
+  <ul>
+    <li><strong>They suggest a position, never a command.</strong> Accepting one opens the ordinary
+      insert dialog at that position, so which behavior you use and how you configure it stays your
+      decision. The suggestion has no opinion about that.</li>
+    <li><strong>They only appear where the project has taught the model something.</strong> A new
+      project shows none, and that is correct rather than a failure &mdash; there is nothing to learn
+      from yet. They accumulate as you author, per project, and each row shows the
+      <em>support</em> behind it so you can weigh a suggestion backed by one placement differently
+      from one backed by a dozen.</li>
+    <li><strong>Accepting counts for less than writing.</strong> A position you accepted from a
+      suggestion is recorded as weaker evidence than one you chose unprompted, so the model cannot
+      talk itself into confidence by agreeing with its own past output. <strong>Dismiss</strong>
+      removes a suggestion and is recorded too.</li>
+  </ul>
+  <p>
+    Suggestions are recomputed from the analysis, so re-running the analysis after an edit refreshes
+    them. Behaviors that do not accompany speech &mdash; a backdrop change, for instance &mdash; never
+    get a suggested position, because they have no relationship to a position in the utterance.
+  </p>
 
   <h2 id="preview">SIA preview panel</h2>
   <p>
