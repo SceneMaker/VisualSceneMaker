@@ -18243,6 +18243,15 @@ Sentence:
                 {#if semanticStatus}
                   <span class="muted semantic-run-status">{semanticStatus}</span>
                 {/if}
+                {#if semanticMode === "off" && semanticAnnotations.length}
+                  <!-- The analysis succeeded but nothing is drawn, because the per-project display
+                       mode is off and defaults to off. Saying so beats letting the reader conclude
+                       the analysis failed. -->
+                  <span class="muted semantic-run-status">
+                    Display is <strong>off</strong> — results exist but no marks are shown. Pick
+                    Full or Compact in the selector next to the Semantic Analysis button.
+                  </span>
+                {/if}
                 {#if placementModelState}
                   <span class="muted semantic-run-status" title="Placement suggestions learn from where you put behavior commands in this project.">
                     Placement model: {placementModelState.observations} observation{placementModelState.observations === 1 ? "" : "s"}{#if placementModelState.skipped?.noAnchorSlot}, {placementModelState.skipped.noAnchorSlot} mid-phrase not counted{/if}
