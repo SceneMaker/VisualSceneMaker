@@ -192,6 +192,47 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private static final Map<String, ExportablePropertyEntry> EXPORTABLE_PROPERTY_PROVIDERS = new HashMap<>();
     private static final Set<String> RESERVED_META_VARIABLES = Set.of("__vsm_mode");
 
+    /**
+     * Annotate one command object with its behavior-taxonomy classification, in place.
+     *
+     * <p>Shared by the plugin-interface API, which describes the commands a plugin *offers*, and the
+     * script semantic analysis, which reports the commands an author actually *used*. Both need the
+     * same fields under the same names — a command must not read as one category in the plugin
+     * dashboard and another in the script editor.
+     *
+     * @return whether a tag was found; the caller keeps the unannotated original when false.
+     */
+    private static boolean applyTaxonomyFields(
+            BehaviorTaxonomy taxonomy, String pluginId, String commandName, JSONObject target) {
+        BehaviorTag tag = taxonomy == null ? null : taxonomy.tagFor(pluginId, commandName);
+        if (tag == null) {
+            return false;
+        }
+        if (tag.getFunction() != null) {
+            target.put("neurogesFunction", tag.getFunction());
+        }
+        if (tag.getType() != null) {
+            target.put("neurogesType", tag.getType());
+        }
+        target.put("cospeech", tag.isCoSpeech());
+        if (tag.getAffiliate() != null) {
+            // What the behavior attaches to semantically. Not shown in the plugin dashboard today,
+            // but it is what the placement prior keys on, so it travels with the command.
+            target.put("affiliate", tag.getAffiliate());
+        }
+        if (tag.getChannel() != null) {
+            target.put("channel", tag.getChannel());
+        }
+        BehaviorDisplayGroup group = taxonomy.displayGroupOf(tag);
+        if (group != null) {
+            target.put("uiCategory", group.getId());
+            target.put("uiCategoryLabel", group.getLabel());
+            target.put("uiCategoryOrder", taxonomy.displayOrderOf(group.getId()));
+            target.put("uiCategorySiaVisible", group.isSiaVisible());
+        }
+        return true;
+    }
+
     private static final class ExportablePropertyEntry {
         private final String providerClass;
         private final JSONObject pluginSpec;      // config.required, config.optional, config.pluginSpecific, templates
@@ -342,27 +383,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                     out.put(source.opt(i));
                     continue;
                 }
-                BehaviorTag tag = taxonomy.tagFor(pluginId, entry.optString("name", ""));
-                if (tag == null) {
-                    out.put(entry);
-                    continue;
-                }
                 JSONObject copy = new JSONObject(entry.toString());
-                if (tag.getFunction() != null) {
-                    copy.put("neurogesFunction", tag.getFunction());
-                }
-                if (tag.getType() != null) {
-                    copy.put("neurogesType", tag.getType());
-                }
-                copy.put("cospeech", tag.isCoSpeech());
-                BehaviorDisplayGroup group = taxonomy.displayGroupOf(tag);
-                if (group != null) {
-                    copy.put("uiCategory", group.getId());
-                    copy.put("uiCategoryLabel", group.getLabel());
-                    copy.put("uiCategoryOrder", taxonomy.displayOrderOf(group.getId()));
-                    copy.put("uiCategorySiaVisible", group.isSiaVisible());
-                }
-                out.put(copy);
+                out.put(applyTaxonomyFields(taxonomy, pluginId, entry.optString("name", ""), copy)
+                        ? copy : entry);
             }
             return out;
         }
@@ -7130,6 +7153,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             JSONArray warnings = new JSONArray();
             int sentenceCount = 0;
             int commandCount = 0;
+            // Resolved once per analysis, not per command: both lookups walk the project's plugin
+            // list. Same resolution the corpus extractor uses, so a command is attributed to the
+            // same provider in the analysis, the corpus and the placement model.
+            final BehaviorTaxonomy analysisTaxonomy = BehaviorTaxonomy.getDefault();
+            final Map<String, String> analysisActorPlugins =
+                    CorpusExtractCli.actorPluginMap(this, ref.runtimeProject);
+            final List<String> analysisPluginIds =
+                    CorpusExtractCli.projectPluginIds(this, ref.runtimeProject);
 
             for (SceneObject scene : script.getSceneList()) {
                 String language = (scene.getLanguage() == null || scene.getLanguage().isBlank())
@@ -7251,14 +7282,33 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                                             }
                                         }
                                     }
-                                    commands.put(new JSONObject()
-                                            .put("name", command.getName() == null ? "" : command.getName())
+                                    String commandName =
+                                            command.getName() == null ? "" : command.getName();
+                                    JSONObject commandJson = new JSONObject()
+                                            .put("name", commandName)
                                             .put("actor", command.getActor())
                                             .put("tokenIndex", command.getTokenIndex())
                                             .put("cleanOffset", command.getCleanOffset())
                                             .put("scriptFrom", command.getScriptFrom())
                                             .put("scriptTo", command.getScriptTo())
-                                            .put("params", params));
+                                            .put("params", params);
+                                    // Which plugin provides this command, and what the taxonomy says
+                                    // it is. The script writes a bare name ("emotion"); the provider
+                                    // depends on the actor and on what the project has loaded. Doing
+                                    // it here means the Web UI can show a command's NEUROGES category
+                                    // in the script editor, and the placement sync no longer has to
+                                    // re-derive what the analysis already knew.
+                                    String commandPlugin = command.getActor() == null
+                                            || command.getActor().isEmpty()
+                                            ? CorpusExtractCli.resolveUnqualified(
+                                                    commandName, analysisPluginIds, analysisTaxonomy)
+                                            : analysisActorPlugins.get(command.getActor());
+                                    if (commandPlugin != null && !commandPlugin.isEmpty()) {
+                                        commandJson.put("plugin", commandPlugin);
+                                        applyTaxonomyFields(analysisTaxonomy, commandPlugin,
+                                                commandName, commandJson);
+                                    }
+                                    commands.put(commandJson);
                                     commandCount += 1;
                                 }
                                 ann.put("commands", commands);
@@ -7683,9 +7733,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 }
                 String name = command.optString("name", "");
                 String actor = command.optString("actor", "");
-                String plugin = actor.isEmpty()
-                        ? CorpusExtractCli.resolveUnqualified(name, pluginIds, taxonomy)
-                        : actorToPlugin.get(actor);
+                // The analysis now resolves the provider and puts it on the command, so take it.
+                // The fallback covers a document produced before that change, or one hand-assembled
+                // by a caller; it is the same resolution, so either path gives the same answer.
+                String plugin = command.optString("plugin", "");
+                if (plugin.isEmpty()) {
+                    plugin = actor.isEmpty()
+                            ? CorpusExtractCli.resolveUnqualified(name, pluginIds, taxonomy)
+                            : actorToPlugin.get(actor);
+                }
                 JSONObject placement = new JSONObject()
                         .put("plugin", plugin == null ? "" : plugin)
                         .put("command", name)
