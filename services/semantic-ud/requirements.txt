@@ -1,1 +1,7 @@
 stanza>=1.8.0
+# Required, not optional: the product requests a transformer treebank package
+# (combined_german-nlp-electra) for all script analysis, and Stanza loads the encoder through
+# transformers. Stanza itself lists it as an extra, so without this line a clean install fails at
+# pipeline build with "Please install transformers library for BERT support!" — which is invisible on
+# any machine that happens to have transformers from other work.
+transformers>=4.40

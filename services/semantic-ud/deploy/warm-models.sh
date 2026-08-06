@@ -88,10 +88,14 @@ print(f"    model present: {want} ({want.stat().st_size // 1_000_000} MB)", flus
 
 # Building the pipeline is what pulls the transformer encoder from HuggingFace — a separate
 # download from the Stanza model, and the one people miss.
+# Deliberately WITHOUT download_method=None. That kwarg is right for serving — it is what makes a
+# missing model fail loudly instead of downloading mid-analysis — but Stanza turns it into
+# local_files_only=True for transformers, so during warming it caused
+# "We couldn't connect to huggingface.co ... and couldn't find them in the cached files" even with
+# HuggingFace perfectly reachable. Warming is the one moment downloading is the point.
 print("    building the pipeline once, to fetch the encoder ...", flush=True)
 stanza.Pipeline(lang=lang, dir=model_dir, processors="tokenize,mwt,pos,lemma,depparse",
-                package={"pos": pkg, "depparse": pkg}, use_gpu=False, verbose=False,
-                download_method=None)
+                package={"pos": pkg, "depparse": pkg}, use_gpu=False, verbose=False)
 print("    encoder cached.", flush=True)
 '
 
