@@ -78,9 +78,16 @@ downloads *off* — the same way the deployed container starts — so an incompl
 rather than after the next deploy:
 
 ```bash
+./update.sh                                          # first, so the image matches the synced source
 ./vsm/services/semantic-ud/deploy/warm-models.sh
 podman restart vsm-semantic-ud
 ```
+
+> **Order matters after a source change.** `server.py` is baked into the image at build time, so a
+> fix synced into `vsm/` does not reach a container until the image is rebuilt. The script downloads
+> independently of the image, but its final verification runs the image's own code — so if that step
+> fails while the download succeeded, the image is stale and needs `./update.sh` (or
+> `podman compose build semantic-ud`).
 
 <details>
 <summary>Or by hand</summary>

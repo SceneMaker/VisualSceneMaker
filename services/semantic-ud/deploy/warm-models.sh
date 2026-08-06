@@ -49,55 +49,53 @@ fi
 podman volume exists "$VOLUME" || podman volume create "$VOLUME" >/dev/null
 echo "==> Warming $VOLUME from $IMAGE (1-2 GB, a few minutes) ..."
 
-# Runs the service with downloads enabled, waits for it to report a loaded pipeline, then exits.
-# Not `podman run ... server.py` interactively, because knowing when it is finished then means
-# reading the log and guessing.
+# Downloads directly rather than by starting the service, deliberately. The service's own
+# auto-download lives in the *image*, so warming through it silently depends on how old the image
+# is: run against an image built before a download fix and it fails exactly as it did before, with
+# no download attempted. Owning the download here makes warming a property of this script and the
+# volume, not of the image, and the verification step below still exercises the image's code — which
+# is the right place for that.
+PKG="${SEMANTIC_UD_PACKAGE_NAME:-combined_german-nlp-electra}"
+LANG_CODE="${SEMANTIC_UD_LANG_CODE:-de}"
+
 # shellcheck disable=SC2086  # HF_ARGS is deliberately word-split: empty must add no argument.
 podman run --rm \
     -v "${VOLUME}:/models" \
-    -e SEMANTIC_UD_AUTO_DOWNLOAD=true \
     -e HF_HUB_OFFLINE=0 \
+    -e "PKG=${PKG}" \
+    -e "LANG_CODE=${LANG_CODE}" \
     $HF_ARGS \
-    --entrypoint sh \
+    --entrypoint python3 \
     "$IMAGE" -c '
-        python3 server.py &
-        pid=$!
-        i=0
-        while [ $i -lt 60 ]; do
-            sleep 10
-            i=$((i + 1))
-            # The service exits non-zero when it cannot load a model. Without this the loop kept
-            # printing "still building" for another two minutes after a FATAL had already scrolled
-            # past, which buried the actual error.
-            if ! kill -0 $pid 2>/dev/null; then
-                echo "ERROR: the service exited. The real cause is in the output above -" >&2
-                echo "       look for a line starting with [semantic-ud] FATAL." >&2
-                exit 1
-            fi
-            loaded=$(python3 - <<PY 2>/dev/null || true
-import json, urllib.request
-try:
-    d = json.load(urllib.request.urlopen("http://127.0.0.1:4061/health", timeout=4))
-    print(",".join(d.get("loaded") or []))
-except Exception:
-    print("")
-PY
-)
-            case "$loaded" in
-                *electra*)
-                    echo "    loaded: $loaded"
-                    kill $pid 2>/dev/null || true
-                    exit 0
-                    ;;
-            esac
-            echo "    still building (${i}0s) ..."
-        done
-        echo "ERROR: gave up after 10 minutes. Check the log above for a download failure." >&2
-        kill $pid 2>/dev/null || true
-        exit 1
-    '
+import os, pathlib, sys
+import stanza
 
-echo "==> Done. Verifying the volume is usable with downloads OFF (what the container will do) ..."
+pkg = os.environ["PKG"]
+lang = os.environ["LANG_CODE"]
+model_dir = "/models/stanza_resources"
+pathlib.Path(model_dir).mkdir(parents=True, exist_ok=True)
+
+print(f"    stanza {stanza.__version__}: downloading {lang}/{pkg} ...", flush=True)
+# package= for the processors that do not vary by treebank, per-processor dict for the two that do.
+stanza.download(lang, model_dir=model_dir, package="default",
+                processors={"pos": pkg, "depparse": pkg}, verbose=False)
+
+want = pathlib.Path(model_dir) / lang / "pos" / f"{pkg}.pt"
+if not want.exists():
+    print(f"    FAILED: {want} still missing after download", file=sys.stderr)
+    sys.exit(1)
+print(f"    model present: {want} ({want.stat().st_size // 1_000_000} MB)", flush=True)
+
+# Building the pipeline is what pulls the transformer encoder from HuggingFace — a separate
+# download from the Stanza model, and the one people miss.
+print("    building the pipeline once, to fetch the encoder ...", flush=True)
+stanza.Pipeline(lang=lang, dir=model_dir, processors="tokenize,mwt,pos,lemma,depparse",
+                package={"pos": pkg, "depparse": pkg}, use_gpu=False, verbose=False,
+                download_method=None)
+print("    encoder cached.", flush=True)
+'
+
+echo "==> Verifying with downloads OFF, using the IMAGE's own code (what the container will do) ..."
 # The real test: start exactly as the deployed container does. If this fails, the volume is
 # incomplete and the parser would crash-loop after the next deploy.
 podman run --rm -v "${VOLUME}:/models" --entrypoint sh "$IMAGE" -c '
@@ -116,6 +114,17 @@ PY
     rc=$?
     kill $pid 2>/dev/null || true
     exit $rc
-'
+' || {
+    echo "" >&2
+    echo "ERROR: the volume is warm, but the image cannot use it." >&2
+    echo "" >&2
+    echo "Most likely the image is older than the source: server.py is baked in at build time, so a" >&2
+    echo "fix synced into vsm/ does not reach a container until the image is rebuilt. Rebuild, then" >&2
+    echo "re-run this script's verification:" >&2
+    echo "    ./update.sh                 # rebuilds everything, or just this service:" >&2
+    echo "    podman compose build semantic-ud && podman restart vsm-semantic-ud" >&2
+    exit 1
+}
 
-echo "==> Volume is ready. Restart the parser:  podman restart vsm-semantic-ud"
+echo "==> Volume is ready and the image can load it."
+echo "    Restart the parser:  podman restart vsm-semantic-ud"
