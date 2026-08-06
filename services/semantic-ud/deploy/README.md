@@ -69,8 +69,23 @@ volumes:
 
 ## 2. Warm the model volume — once
 
-The image ships with downloads disabled, so the first start would fail until the volume holds the
-models. Fetch them with a one-off run, downloads enabled:
+**Do not skip this.** The image refuses to reach the network on purpose, so until the volume holds
+the models the container starts and immediately dies, restarting forever (`restart: unless-stopped`).
+Semantic Analysis then fails in a way that looks like a code fault.
+
+Easiest is the script, run from `vsm-server-git` after a build. It downloads, then re-runs with
+downloads *off* — the same way the deployed container starts — so an incomplete volume is caught now
+rather than after the next deploy:
+
+```bash
+./vsm/services/semantic-ud/deploy/warm-models.sh
+podman restart vsm-semantic-ud
+```
+
+<details>
+<summary>Or by hand</summary>
+
+Fetch with a one-off run, downloads enabled:
 
 ```bash
 podman volume create vsm-server_semantic-ud-models   # name as compose will see it, or let step 3 create it
@@ -92,7 +107,10 @@ podman run --rm -v vsm-server_semantic-ud-models:/models localhost/vsm-server_se
 Stanza's default parser rather than failing**, so this is the moment to catch it — afterwards it is
 only visible in each document's `provenance.package`.
 
-(If the image name differs, `podman images | grep semantic` after step 3's first build.)
+(If compose derived different names, check `podman images | grep semantic` and `podman volume ls`,
+then pass them: `warm-models.sh <project> <image>`.)
+
+</details>
 
 ## 3. Deploy
 
@@ -127,13 +145,19 @@ systemctl --user daemon-reload && systemctl --user restart vsm-stack.service
 ## 5. Verify
 
 ```bash
-podman ps --format '{{.Names}}\t{{.Status}}' | grep semantic     # expect (healthy) after ~3 min
-podman exec vsm-server curl -sf http://semantic-ud:4061/health    # from VSM's own network view
+podman ps --format '{{.Names}}\t{{.Status}}' | grep semantic     # must NOT be restarting
+podman exec vsm-semantic-ud curl -sf http://127.0.0.1:4061/health  # `loaded` must contain electra
+podman exec vsm-server      curl -sf http://semantic-ud:4061/health  # ... and from VSM's network view
 podman logs vsm-semantic-ud --tail 20
 ```
 
-The `(healthy)` state is the electra check from the Dockerfile's HEALTHCHECK, so a silent fallback
-shows up as `(unhealthy)` instead of as quietly worse parses.
+Both `/health` calls matter and they check different things: the first that the parser loaded the
+right model, the second that `vsm-server` can actually resolve and reach it.
+
+> The image carries a `HEALTHCHECK`, but **podman ignores it** with its default OCI image format
+> (`HEALTHCHECK is not supported for OCI image format and will be ignored`), and podman-compose
+> offers no way to request docker format. So there is no `(healthy)` column to rely on here — check
+> `/health` explicitly, as above.
 
 ---
 

@@ -8,9 +8,14 @@
 # In the vsm-server deployment the compose file does that for you — see deploy/README.md §A.
 FROM python:3.12-slim
 
-# Stanza pulls torch, which is the bulk of the image and of the build time.
+# CPU-only torch, installed first so that stanza's dependency resolution finds it already
+# satisfied. Without this pip takes torch from PyPI, which drags in the whole CUDA stack —
+# measured on this deployment: cublas 423 MB, cudnn 366 MB, cufft 214 MB, nccl 206 MB,
+# cusolver 201 MB, triton 198 MB, cusparselt 170 MB and a dozen more, roughly 2.5 GB of wheels
+# for a parser that never touches a GPU. The image and every deploy pay for it.
 COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch \
+ && pip install --no-cache-dir -r /app/requirements.txt
 
 COPY server.py /app/server.py
 WORKDIR /app
@@ -38,8 +43,15 @@ ENV STANZA_RESOURCES_DIR=/models/stanza_resources \
 # since nothing publishes it to the host. VSM reaches it as http://semantic-ud:4061/analyze.
 EXPOSE 4061
 
-# Reports the effective config and which pipelines are really loaded, so a fallback to
-# Stanza's default parser surfaces as unhealthy rather than as quietly worse output.
+# Asserts an electra pipeline is really loaded, so a fallback to Stanza's default parser surfaces
+# as unhealthy rather than as quietly worse output.
+#
+# NOTE: podman ignores this unless the image is built with --format docker; with the default OCI
+# format it warns "HEALTHCHECK is not supported for OCI image format and will be ignored", and
+# podman-compose gives no way to pass the format. So under the vsm-server deployment there is no
+# (healthy) state to read — check it explicitly instead:
+#   podman exec vsm-semantic-ud curl -sf http://127.0.0.1:4061/health
+# Kept for anyone building with docker/BuildKit, where it does apply.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=180s --retries=3 \
     CMD python3 -c "import urllib.request,json,sys; \
 d=json.load(urllib.request.urlopen('http://127.0.0.1:4061/health', timeout=4)); \
