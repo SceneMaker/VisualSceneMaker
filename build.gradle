@@ -1020,6 +1020,25 @@ task extractCorpus(type: JavaExec) {
     }
 }
 
+// Leave-one-out evaluation of the placement model over a corpus — plan 3.5.
+// Pure JSONL analysis, so no services need to be running.
+//
+//   ./gradlew placementEval -Pcorpus=build/corpus.jsonl
+task placementEval(type: JavaExec) {
+    group = 'verification'
+    description = 'Leave-one-out evaluation of the behavior placement model. -Pcorpus=<corpus.jsonl>'
+    mainClass = 'de.dfki.vsm.web.PlacementEvalCli'
+    classpath = sourceSets.main.runtimeClasspath
+    doFirst {
+        if (!project.hasProperty('corpus')) {
+            throw new GradleException(
+                    'Missing -Pcorpus=<corpus.jsonl>. Example:\n' +
+                    '  ./gradlew placementEval -Pcorpus=build/corpus.jsonl')
+        }
+        args = ["--corpus=${project.property('corpus')}"]
+    }
+}
+
 // Reports over the extracted placement corpus — plan 2.4 (stats) and 2.3 (agreement).
 // Pure JSONL analysis, so no services need to be running.
 //
