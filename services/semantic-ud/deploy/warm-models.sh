@@ -91,12 +91,32 @@ print(f"    model present: {want} ({want.stat().st_size // 1_000_000} MB)", flus
 # Deliberately WITHOUT download_method=None. That kwarg is right for serving — it is what makes a
 # missing model fail loudly instead of downloading mid-analysis — but Stanza turns it into
 # local_files_only=True for transformers, so during warming it caused
-# "We couldn't connect to huggingface.co ... and couldn't find them in the cached files" even with
+# a "could not connect to huggingface.co / not found in the cached files" error even with
 # HuggingFace perfectly reachable. Warming is the one moment downloading is the point.
 print("    building the pipeline once, to fetch the encoder ...", flush=True)
 stanza.Pipeline(lang=lang, dir=model_dir, processors="tokenize,mwt,pos,lemma,depparse",
                 package={"pos": pkg, "depparse": pkg}, use_gpu=False, verbose=False)
-print("    encoder cached.", flush=True)
+
+# Assert the encoder really landed in the mounted volume, rather than trusting that the build
+# above implies it. Two failure modes this catches, both of which previously left the volume
+# half-warm while this step appeared to pass: transformers missing from the image (Stanza raises
+# for BERT support), and HF_HOME pointing outside /models so the cache is written into the
+# the container filesystem and lost when it exits.
+hf_home = pathlib.Path(os.environ.get("HF_HOME", "/models/huggingface"))
+blobs = list(hf_home.rglob("*electra*")) if hf_home.exists() else []
+if not blobs:
+    sys.stderr.write(
+        "    FAILED: no encoder found under %s after building the pipeline.\n"
+        "            Two causes leave the volume half-warm while this step looks fine:\n"
+        "              1. transformers is missing from the image\n"
+        "              2. HF_HOME points outside the mounted volume, so the cache is written\n"
+        "                 into the container filesystem and lost when it exits\n"
+        "            Check both with:  podman run --rm --entrypoint python3 IMAGE -c\n"
+        "              \"import transformers, os; print(transformers.__version__, os.environ[EnvKey])\"\n"
+        "            (EnvKey being the HF_HOME lookup)\n" % hf_home)
+    sys.exit(1)
+cached = sum(f.stat().st_size for f in hf_home.rglob("*") if f.is_file())
+print(f"    encoder cached under {hf_home} ({cached // 1_000_000} MB).", flush=True)
 '
 
 echo "==> Verifying with downloads OFF, using the IMAGE's own code (what the container will do) ..."
