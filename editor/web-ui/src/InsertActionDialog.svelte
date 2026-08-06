@@ -12,6 +12,8 @@
                                         // (turn's own speaker for insert, the span's actor for edit)
   export let initialTarget = "";       // agentName to preselect
   export let initialCommandName = null; // command name to preselect (edit mode) — null for insert
+  export let suggestedSlot = null;      // anchor slot this dialog was opened at, when it came from a
+                                        // placement suggestion — labels the *position*, never the command
   export let initialValues = null;     // {[paramName]: value} — only meaningful while the selected
                                         // command still equals initialCommandName
   export let useRawFallback = false;   // true when editing a span whose action name matched no
@@ -116,7 +118,16 @@
       on:pointerdown|stopPropagation={handleHeaderPointerDown}
       on:mousedown|stopPropagation={handleHeaderPointerDown}
     >
-      <h3 class="eim-title">{title}</h3>
+      <h3 class="eim-title">
+        {title}
+        {#if suggestedSlot}
+          <!-- The suggestion is the position, not the command. Naming it here stops the command
+               dropdown's own default from reading as a recommendation. -->
+          <span class="eim-suggested-slot" title="The position was suggested by this project's placement model. The command is yours to choose.">
+            suggested position: {suggestedSlot}
+          </span>
+        {/if}
+      </h3>
       <button
         type="button"
         class="ghost icon-button eim-close"

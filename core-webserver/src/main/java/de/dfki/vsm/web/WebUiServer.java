@@ -7776,7 +7776,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                                     .put("from", anchor == null ? -1 : anchor.optInt("from", -1))
                                     .put("to", anchor == null ? -1 : anchor.optInt("to", -1))
                                     .put("sentenceIndex", indexInTurn)
-                                    .put("sentenceCount", perLine.getOrDefault(line, 1));
+                                    .put("sentenceCount", perLine.getOrDefault(line, 1))
+                                    // Bounds of the sentence this suggestion belongs to, so the
+                                    // editor can prefer the sentence the cursor is actually in. A
+                                    // turn can hold several sentences, and jumping the author to a
+                                    // different one is a surprise, not a suggestion.
+                                    .put("sentenceFrom", ann.optInt("scriptFrom", -1))
+                                    .put("sentenceTo", ann.optInt("scriptTo", -1));
                             if (category.getFunction() != null) {
                                 ghost.put("function", category.getFunction());
                             }

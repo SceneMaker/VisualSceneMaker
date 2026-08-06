@@ -2703,9 +2703,20 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       // Ghost markers ride along with the analysis marks so they clear together: a suggestion is only
       // meaningful against the analysis it was computed from, and leaving one behind after the script
       // changed would point at an offset that has moved.
+      // An anchor slot is a *position*, so from === to. These are widget decorations in the editor,
+      // not marks — requiring a non-empty range here filtered every one of them out and rendered
+      // nothing at all.
       const ghostMarks = (placementGhosts || [])
-        .filter((g) => Number.isFinite(g?.from) && Number.isFinite(g?.to) && g.to > g.from)
-        .map((g) => ({ from: g.from, to: g.to, kind: "ghost" }));
+        .filter((g) => Number.isFinite(g?.from) && g.from >= 0)
+        .map((g) => ({
+          from: g.from,
+          to: g.from,
+          kind: "ghost",
+          slot: g.slot,
+          label: `Suggested position: ${g.slot}`
+            + (g.function ? ` — for ${g.function}` : "")
+            + ` (support ${g.support ?? 0}). Click to insert here.`
+        }));
       semanticEditorHighlights = ghostMarks.length
         ? { ...semanticComputed.highlights,
             marks: [...(semanticComputed.highlights?.marks || []), ...ghostMarks] }
@@ -6681,7 +6692,14 @@ Sentence:
     if (!turn) return;
     const inTurn = (placementGhosts || []).filter(
       (g) => Number.isFinite(g?.from) && g.from >= turn.offsetStart && g.from <= turn.offsetEnd);
-    if (!inTurn.length) {
+    // Prefer a suggestion in the sentence the cursor is actually in. A turn can hold several
+    // sentences, and taking the turn's best-scoring position moved the author to a different
+    // sentence than the one they were working in — a surprise rather than a suggestion.
+    const inSentence = inTurn.filter((g) =>
+      Number.isFinite(g?.sentenceFrom) && Number.isFinite(g?.sentenceTo)
+      && offset >= g.sentenceFrom && offset <= g.sentenceTo);
+    const candidates = inSentence.length ? inSentence : inTurn;
+    if (!candidates.length) {
       // Silence would be indistinguishable from a broken shortcut, so say which of the two
       // reasons applies — there is nothing learned yet, or nothing learned for *this* turn.
       semanticStatus = placementGhosts.length
@@ -6690,7 +6708,7 @@ Sentence:
           + "placements the model can learn from.";
       return;
     }
-    const best = inTurn.reduce((a, b) => ((b.score ?? 0) > (a.score ?? 0) ? b : a));
+    const best = candidates.reduce((a, b) => ((b.score ?? 0) > (a.score ?? 0) ? b : a));
     acceptPlacementGhost(best);
   }
 
@@ -6717,6 +6735,19 @@ Sentence:
     if (!ghost || !Number.isFinite(ghost.from)) return;
     pendingGhostAcceptance = ghost;
     handleInsertShortcut(ghost.from);
+    // Name the position in the dialog. Without this the dialog opened on its own default command
+    // (Pause) with no indication of what had been suggested, so the default read as the
+    // recommendation — which is exactly the opposite of the design: the position is suggested, the
+    // command never is.
+    if (insertActionDialogState) {
+      insertActionDialogState = { ...insertActionDialogState, suggestedSlot: ghost.slot };
+    }
+  }
+
+  // Clicking a ghost marker in the script is the same acceptance as the panel's "Insert here".
+  function handleGhostMarkerClick(offset, slot) {
+    const ghost = (placementGhosts || []).find((g) => g.from === offset && g.slot === slot);
+    if (ghost) acceptPlacementGhost(ghost);
   }
 
   async function dismissPlacementGhost(ghost) {
@@ -18203,6 +18234,7 @@ Sentence:
                 onCommandMenu={handleScriptCommandMenu}
                 onInsertShortcut={handleInsertShortcut}
                 onSuggestShortcut={suggestForTurnAtCursor}
+                onGhostClick={handleGhostMarkerClick}
                 actionSpans={actionSpans}
                 markdownSpans={markdownSpans}
                 compactCommands={scriptCommandsCompact}
@@ -20736,6 +20768,7 @@ Sentence:
       agents={insertActionDialogState.agents}
       initialTarget={insertActionDialogState.initialTarget}
       initialCommandName={insertActionDialogState.initialCommandName}
+      suggestedSlot={insertActionDialogState.suggestedSlot}
       initialValues={insertActionDialogState.initialValues}
       useRawFallback={insertActionDialogState.useRawFallback}
       initialRawBody={insertActionDialogState.initialRawBody}

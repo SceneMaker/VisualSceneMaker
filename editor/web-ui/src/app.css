@@ -1701,6 +1701,38 @@ a.export-link {
   gap: 0.2rem;
 }
 
+/* Ghost marker in the editor: a clickable caret at a suggested position. Amber and dashed so it
+   never reads as one of the analysis marks, which describe what the sentence actually contains. */
+.script-editor .cm-ghost-marker {
+  display: inline-block;
+  border: none;
+  background: transparent;
+  border-left: 2px dashed rgba(196, 120, 20, 0.95);
+  color: rgba(196, 120, 20, 0.95);
+  font-size: 0.62rem;
+  line-height: 1;
+  padding: 0 1px;
+  margin: 0 -1px;
+  cursor: pointer;
+  vertical-align: baseline;
+}
+
+.script-editor .cm-ghost-marker:hover {
+  background: rgba(196, 120, 20, 0.18);
+}
+
+/* Position label in the insert dialog when it was opened from a suggestion. Amber to match the
+   ghost marker, so the two read as the same thing. */
+.eim-suggested-slot {
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 400;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: rgba(150, 92, 15, 0.95);
+  border-bottom: 2px dashed rgba(196, 120, 20, 0.85);
+  padding-bottom: 1px;
+}
+
 .placement-ghost-turn {
   font-size: 0.72rem;
   color: var(--muted);

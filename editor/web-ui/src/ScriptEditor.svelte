@@ -21,6 +21,7 @@
   export let onCommandMenu = null; // (charOffset, clientX, clientY) => boolean — double-click on an existing
                                     // action span jumps straight into editing it (no right-click anywhere else
                                     // in the app); true = handled. Insertion moved to Ctrl+I (onInsertShortcut).
+  export let onGhostClick = null;      // (charOffset, slot) => void — a suggested-position marker was clicked
   export let onSuggestShortcut = null; // (charOffset) => void — Ctrl+Shift+I suggests a position in this turn
   export let onInsertShortcut = null; // (charOffset) => void — Ctrl+I opens the extended insert dialog at the
                                        // cursor's position (replaces the old double-click-on-plain-text popup)
@@ -81,15 +82,6 @@
     class: "cm-semantic-address-head",
     attributes: {
       style: "background: rgba(132,98,42,0.16); border-bottom: 3px solid rgba(132,98,42,0.95); border-radius: 2px;"
-    }
-  });
-  // Ghost marker (plan 4.1): a position this project's own model has evidence for. Deliberately
-  // faint and dashed — it marks an opportunity, not a fact, and must never be mistaken for one of
-  // the analysis marks that describe what the sentence actually contains.
-  const semanticGhostMark = Decoration.mark({
-    class: "cm-semantic-ghost",
-    attributes: {
-      style: "border-left: 2px dashed rgba(196,120,20,0.85); margin-left: -1px; background: rgba(196,120,20,0.07);"
     }
   });
   // Clause linker ("wie", "dass", "weil"): teal, deliberately outside every role colour, because it
@@ -249,6 +241,42 @@
   // Per-turn Play button decoration machinery (M10) — mirrors the scene/semantic highlight
   // fields above: a StateEffect carries a fresh Decoration.set, a StateField holds/remaps it.
   const setPlayButtonsEffect = StateEffect.define();
+
+  /**
+   * Ghost marker for a suggested placement position (plan 4.1).
+   *
+   * <p>A widget, not a mark: an anchor slot is a *position*, so from === to, and CodeMirror mark
+   * decorations require a non-empty range — the first version filtered every one of them out and
+   * rendered nothing at all. A widget is the only decoration that can sit at a caret position.
+   */
+  class GhostWidget extends WidgetType {
+    constructor(slot, label, offset, onClick) {
+      super();
+      this.slot = slot;
+      this.label = label;
+      this.offset = offset;
+      this.onClick = onClick;
+    }
+    eq(other) {
+      return other.slot === this.slot && other.offset === this.offset && other.label === this.label;
+    }
+    toDOM() {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cm-ghost-marker";
+      btn.title = this.label;
+      btn.setAttribute("aria-label", this.label);
+      btn.textContent = "\u2325"; // caret-ish glyph; the marker is the dashed rule in CSS
+      btn.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); });
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.onClick?.(this.offset, this.slot);
+      });
+      return btn;
+    }
+    ignoreEvent() { return true; }
+  }
 
   class PlayButtonWidget extends WidgetType {
     constructor(turn, enabled, onPlay) {
@@ -1001,15 +1029,24 @@
     for (const mark of marks) {
       const from = Number.isFinite(mark?.from) ? Math.max(0, Math.min(docLen, mark.from)) : -1;
       const to = Number.isFinite(mark?.to) ? Math.max(0, Math.min(docLen, mark.to)) : -1;
-      if (from < 0 || to <= from) continue;
       const kind = String(mark?.kind || "").toLowerCase();
+      // Ghost markers are positions, so they are widgets and are handled before the non-empty-range
+      // check that every other mark has to pass.
+      if (kind === "ghost") {
+        if (from < 0) continue;
+        ranges.push(Decoration.widget({
+          widget: new GhostWidget(mark.slot || "", mark.label || "Suggested position", from, onGhostClick),
+          side: -1
+        }).range(from));
+        continue;
+      }
+      if (from < 0 || to <= from) continue;
       let deco = semanticSubjectMark;
       if (kind === "verb") deco = semanticVerbMark;
       else if (kind === "object") deco = semanticObjectMark;
       else if (kind === "predicate") deco = semanticPredicateMark;
       else if (kind === "address") deco = semanticAddressMark;
       else if (kind === "address-head") deco = semanticAddressHeadMark;
-      else if (kind === "ghost") deco = semanticGhostMark;
       else if (kind === "linker") deco = semanticLinkerMark;
       else if (kind === "verb-adjective") deco = semanticVerbAdjMark;
       else if (kind === "verb-adverb") deco = semanticVerbAdvMark;
