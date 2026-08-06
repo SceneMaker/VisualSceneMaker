@@ -911,6 +911,36 @@
       scriptEditorRef?.insertText(padBracketTextForInsertion(`[${actorPrefix}${commandBody}]`, offset), offset);
     }
     insertActionDialogState = null;
+    // Only now is a suggestion actually accepted — opening the dialog and cancelling is not
+    // acceptance, and recording it there would have credited the model for insertions the author
+    // never made.
+    if (pendingGhostAcceptance) {
+      recordGhostAcceptance(pendingGhostAcceptance, targetActor, commandName);
+      pendingGhostAcceptance = null;
+    }
+  }
+
+  async function recordGhostAcceptance(ghost, targetActor, commandName) {
+    if (!selectedProjectId || !ghost?.slot || !commandName) return;
+    try {
+      await apiPost(`/api/v1/projects/${selectedProjectId}/placement/observe`, {
+        // No plugin id: the server resolves the provider from the actor, the same way sync does.
+        actor: commandName === "pause" ? "" : (targetActor || ""),
+        command: commandName,
+        slot: ghost.slot,
+        line: ghost.line ?? 0,
+        sentence: ghost.sentence ?? 0,
+        tokenIndex: ghost.tokenIndex ?? -1,
+        clauseType: ghost.clauseType || null,
+        sentenceIndex: ghost.sentenceIndex ?? 0,
+        sentenceCount: ghost.sentenceCount ?? 1,
+        // Discounted against an unprompted placement, so the model cannot confirm itself.
+        origin: "accepted-suggestion"
+      });
+      placementGhosts = placementGhosts.filter((g) => g !== ghost);
+    } catch (err) {
+      console.warn("[placement] acceptance not recorded:", err?.message || err);
+    }
   }
 
   // SIA panel's per-column "Insert at cursor" button (M13i) — turn-agnostic equivalent of
@@ -1469,6 +1499,13 @@
   // Summary of the last placement-model sync, shown in the semantic panel so the author can see the
   // model learning rather than having to trust that it does.
   let placementModelState = null;
+  // Suggested positions from this project's own model (plan 4.1). Only positions the model has
+  // evidence for ever arrive here — the server filters out anything decided by the prior — so an
+  // empty list on a new project is correct rather than a failure.
+  let placementGhosts = [];
+  // Set while a ghost-driven insert dialog is open, so the resulting command can be recorded as an
+  // accepted suggestion rather than as something the author wrote unprompted (plan 4.3).
+  let pendingGhostAcceptance = null;
   let semanticAnalyzeSvo = true;
   let semanticAnalyzeDaTr = true;
   let semanticLLMIndex = 0;
@@ -2655,7 +2692,16 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       };
     } else {
       const semanticComputed = buildSemanticEditorHighlights(semanticAnnotations, semanticMode, scriptDraft);
-      semanticEditorHighlights = semanticComputed.highlights;
+      // Ghost markers ride along with the analysis marks so they clear together: a suggestion is only
+      // meaningful against the analysis it was computed from, and leaving one behind after the script
+      // changed would point at an offset that has moved.
+      const ghostMarks = (placementGhosts || [])
+        .filter((g) => Number.isFinite(g?.from) && Number.isFinite(g?.to) && g.to > g.from)
+        .map((g) => ({ from: g.from, to: g.to, kind: "ghost" }));
+      semanticEditorHighlights = ghostMarks.length
+        ? { ...semanticComputed.highlights,
+            marks: [...(semanticComputed.highlights?.marks || []), ...ghostMarks] }
+        : semanticComputed.highlights;
       semanticDebug = {
         ...semanticComputed.debug,
         ud: semanticUdDebug
@@ -6614,6 +6660,48 @@ Sentence:
     }
   }
 
+  async function loadPlacementGhosts(projectId, annotations) {
+    if (!projectId || !Array.isArray(annotations) || annotations.length === 0) {
+      placementGhosts = [];
+      return;
+    }
+    try {
+      const result = await apiPost(
+        `/api/v1/projects/${projectId}/placement/ghosts`, { annotations, limitPerSentence: 2 });
+      placementGhosts = Array.isArray(result?.ghosts) ? result.ghosts : [];
+    } catch (err) {
+      console.warn("[placement] ghosts unavailable:", err?.message || err);
+      placementGhosts = [];
+    }
+  }
+
+  // Accepting opens the ordinary insert dialog at the suggested position, so which command and which
+  // parameters stay the author's decision — the model proposes a position, never a behavior. The
+  // acceptance is recorded once the insert actually saves, not here, because an author who opens the
+  // dialog and cancels has not accepted anything.
+  function acceptPlacementGhost(ghost) {
+    if (!ghost || !Number.isFinite(ghost.from)) return;
+    pendingGhostAcceptance = ghost;
+    handleInsertShortcut(ghost.from);
+  }
+
+  async function dismissPlacementGhost(ghost) {
+    placementGhosts = placementGhosts.filter((g) => g !== ghost);
+    if (!selectedProjectId || !ghost?.slot) return;
+    try {
+      // Recorded as a dismissal, which creates no placement: the author said "not there", which is
+      // not a statement about where it should go instead.
+      await apiPost(`/api/v1/projects/${selectedProjectId}/placement/observe`, {
+        command: "", actor: "", slot: ghost.slot, dismissed: true,
+        clauseType: ghost.clauseType || null,
+        sentenceIndex: ghost.sentenceIndex ?? 0,
+        sentenceCount: ghost.sentenceCount ?? 1
+      });
+    } catch (err) {
+      console.warn("[placement] dismissal not recorded:", err?.message || err);
+    }
+  }
+
   async function runSemanticAnalysis() {
     if (!selectedProjectId || semanticAnalyzeBusy) return;
     semanticAnalyzeBusy = true;
@@ -6670,6 +6758,7 @@ Sentence:
       // evaluated against. Sending the whole document each time makes it idempotent and lets a
       // deleted command actually withdraw its evidence.
       syncPlacementModel(selectedProjectId, annotations);
+      loadPlacementGhosts(selectedProjectId, annotations);
 
       const stats = doc?.stats || {};
       const warnings = Array.isArray(doc?.warnings) ? doc.warnings : [];
@@ -18029,6 +18118,33 @@ Sentence:
               </div>
               {#if semanticError}
                 <p class="error semantic-run-error">{semanticError}</p>
+              {/if}
+              {#if placementGhosts.length}
+                <div class="placement-ghosts">
+                  <div class="semantic-config-heading">
+                    Suggested positions
+                    <span class="semantic-legend-note">
+                      only positions this project has used before &mdash; accepting opens the normal
+                      insert dialog, so the command stays your choice
+                    </span>
+                  </div>
+                  {#each placementGhosts as ghost (ghost.line + ":" + ghost.slot + ":" + ghost.from)}
+                    <div class="placement-ghost-row">
+                      <span class="placement-ghost-slot">{ghost.slot}</span>
+                      <span class="muted">line {ghost.line}</span>
+                      {#if ghost.function}<span class="muted">{ghost.function}</span>{/if}
+                      <span class="muted" title="Weighted evidence behind this suggestion">
+                        support {ghost.support}
+                      </span>
+                      <button type="button" class="ghost" on:click={() => acceptPlacementGhost(ghost)}>
+                        Insert here
+                      </button>
+                      <button type="button" class="ghost" on:click={() => dismissPlacementGhost(ghost)}>
+                        Dismiss
+                      </button>
+                    </div>
+                  {/each}
+                </div>
               {/if}
             </div>
           </div>

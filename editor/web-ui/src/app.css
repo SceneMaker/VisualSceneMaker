@@ -1694,6 +1694,28 @@ a.export-link {
   font-size: 0.75rem;
 }
 
+.placement-ghosts {
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.placement-ghost-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+}
+
+/* Same dashed amber as the editor's ghost marker, so a row and its marker read as one thing. */
+.placement-ghost-slot {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  border-bottom: 2px dashed rgba(196, 120, 20, 0.85);
+  padding-bottom: 1px;
+}
+
 .semantic-run-error {
   white-space: pre-line; /* the UD-unavailable message is multi-line and names the command to run */
   font-size: 0.78rem;

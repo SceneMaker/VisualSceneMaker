@@ -3099,6 +3099,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.post(API_PREFIX + "/projects/{pid}/placement/suggest", this::handlePlacementSuggest);
         mApp.post(API_PREFIX + "/projects/{pid}/placement/observe", this::handlePlacementObserve);
         mApp.post(API_PREFIX + "/projects/{pid}/placement/sync", this::handlePlacementSync);
+        mApp.post(API_PREFIX + "/projects/{pid}/placement/ghosts", this::handlePlacementGhosts);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
         mApp.get(API_PREFIX + "/projects/{pid}/export", this::handleProjectExport);
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
@@ -7666,6 +7667,177 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return out;
     }
 
+    /**
+     * Suggested positions across a whole script — the data behind the ghost markers of plan 4.1.
+     *
+     * <p>Takes the analysis document and returns, per sentence, the slots this project's own model has
+     * <em>evidence</em> for. The evidence requirement is the whole design: a ghost is only drawn where
+     * the author has actually placed something comparable before. Emitting the hand-written prior here
+     * would litter every sentence of a brand-new project with generic guesses, teaching authors to
+     * ignore the markers before the model ever had anything to say.
+     *
+     * <p>It does not choose a command. For each behavior category the project has used it reports
+     * where that category tends to go; accepting opens the normal insert dialog at that position, so
+     * which command and which parameters remain the author's. Keeping "which command" out is an
+     * explicit constraint in the plan's risk list.
+     */
+    private void handlePlacementGhosts(Context ctx) {
+        ProjectRef ref = placementProject(ctx);
+        if (ref == null) {
+            return;
+        }
+        try {
+            JSONObject body = ctx.body() == null || ctx.body().isBlank()
+                    ? new JSONObject() : new JSONObject(ctx.body());
+            JSONArray annotations = body.optJSONArray("annotations");
+            if (annotations == null) {
+                ctx.status(400);
+                writeJson(ctx, errorResponse("PLACEMENT_GHOSTS_INVALID",
+                        "Expected an `annotations` array from the semantic analysis."));
+                return;
+            }
+            int limitPerSentence = Math.max(1, body.optInt("limitPerSentence", 2));
+
+            PlacementStore store = placementStore(ref);
+            PlacementModel model;
+            int observations;
+            synchronized (store) {
+                model = store.model();
+                observations = model.getObservationCount();
+            }
+
+            JSONArray ghosts = new JSONArray();
+            if (observations > 0) {
+                // The categories this project has actually used. Asking about a category the author
+                // has never used could only ever return the prior, which is filtered out below anyway.
+                List<PlacementContext> categories = observedCategories(ref);
+                Map<Integer, Integer> perLine = new LinkedHashMap<>();
+                for (int i = 0; i < annotations.length(); i += 1) {
+                    JSONObject ann = annotations.optJSONObject(i);
+                    if (ann != null) {
+                        perLine.merge(ann.optInt("line", 0), 1, Integer::sum);
+                    }
+                }
+                Map<Integer, Integer> seenOnLine = new LinkedHashMap<>();
+
+                for (int i = 0; i < annotations.length(); i += 1) {
+                    JSONObject ann = annotations.optJSONObject(i);
+                    if (ann == null) {
+                        continue;
+                    }
+                    int line = ann.optInt("line", 0);
+                    int indexInTurn = seenOnLine.merge(line, 1, Integer::sum) - 1;
+                    PlacementContext.TurnPosition position = PlacementContext.TurnPosition.of(
+                            indexInTurn, perLine.getOrDefault(line, 1));
+
+                    JSONArray anchors = ann.optJSONArray("anchors");
+                    if (anchors == null || anchors.length() == 0) {
+                        continue;
+                    }
+                    // Slot -> the anchor that realises it, so a suggestion can carry a script offset.
+                    Map<String, JSONObject> anchorBySlot = new LinkedHashMap<>();
+                    for (int a = 0; a < anchors.length(); a += 1) {
+                        JSONObject anchor = anchors.optJSONObject(a);
+                        String slot = anchor == null ? "" : anchor.optString("slot", "");
+                        if (!slot.isEmpty()) {
+                            anchorBySlot.putIfAbsent(slot, anchor);
+                        }
+                    }
+                    if (anchorBySlot.isEmpty()) {
+                        continue;
+                    }
+                    List<String> offered = new ArrayList<>(anchorBySlot.keySet());
+
+                    // Best-scoring suggestion per slot, across the categories, keeping only those the
+                    // model has evidence for.
+                    Map<String, JSONObject> bestPerSlot = new LinkedHashMap<>();
+                    for (PlacementContext category : categories) {
+                        PlacementContext contextForSentence = new PlacementContext(
+                                category.getFunction(), category.getAffiliate(),
+                                clauseTypeById(ann, ""), position, null);
+                        // Rank everything, then keep the evidence-backed ones. Truncating first was
+                        // wrong: the prior can outscore a single real observation, so the slots the
+                        // author has actually used were being cut before the filter ever saw them —
+                        // which is why this returned nothing at all on a project with observations.
+                        for (PlacementSuggestion suggestion
+                                : model.suggest(contextForSentence, offered, 0)) {
+                            if (suggestion.isPriorOnly()) {
+                                continue;
+                            }
+                            JSONObject existing = bestPerSlot.get(suggestion.getSlot());
+                            if (existing != null && existing.optDouble("score", 0.0) >= suggestion.getScore()) {
+                                continue;
+                            }
+                            JSONObject anchor = anchorBySlot.get(suggestion.getSlot());
+                            JSONObject ghost = suggestion.toJson()
+                                    .put("line", line)
+                                    .put("sentence", ann.optInt("sentence", 0))
+                                    .put("tokenIndex", anchor == null ? -1 : anchor.optInt("tokenIndex", -1))
+                                    .put("from", anchor == null ? -1 : anchor.optInt("from", -1))
+                                    .put("to", anchor == null ? -1 : anchor.optInt("to", -1))
+                                    .put("sentenceIndex", indexInTurn)
+                                    .put("sentenceCount", perLine.getOrDefault(line, 1));
+                            if (category.getFunction() != null) {
+                                ghost.put("function", category.getFunction());
+                            }
+                            if (category.getAffiliate() != null) {
+                                ghost.put("affiliate", category.getAffiliate());
+                            }
+                            bestPerSlot.put(suggestion.getSlot(), ghost);
+                        }
+                    }
+                    // Highest-scoring first, then capped — so the cap drops the weakest evidence
+                    // rather than whatever the category loop happened to visit last.
+                    List<JSONObject> forSentence = new ArrayList<>();
+                    for (JSONObject ghost : bestPerSlot.values()) {
+                        if (ghost.optInt("from", -1) >= 0) {
+                            forSentence.add(ghost);
+                        }
+                    }
+                    forSentence.sort((a, b) -> Double.compare(
+                            b.optDouble("score", 0.0), a.optDouble("score", 0.0)));
+                    for (int k = 0; k < Math.min(limitPerSentence, forSentence.size()); k += 1) {
+                        ghosts.put(forSentence.get(k));
+                    }
+                }
+            }
+            writeJson(ctx, new JSONObject()
+                    .put("ghosts", ghosts)
+                    .put("observations", observations));
+        } catch (Exception exc) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("PLACEMENT_GHOSTS_FAILED", exc.getMessage()));
+        }
+    }
+
+    /** The distinct (function, affiliate) pairs this project has recorded placements for. */
+    private List<PlacementContext> observedCategories(ProjectRef ref) {
+        PlacementStore store = placementStore(ref);
+        List<PlacementContext> out = new ArrayList<>();
+        JSONObject json;
+        synchronized (store) {
+            json = store.toJson();
+        }
+        JSONObject observations = json.optJSONObject("observations");
+        if (observations == null) {
+            return out;
+        }
+        java.util.Set<String> seen = new java.util.LinkedHashSet<>();
+        for (String key : observations.keySet()) {
+            JSONObject entry = observations.optJSONObject(key);
+            if (entry == null) {
+                continue;
+            }
+            String function = entry.optString("function", null);
+            String affiliate = entry.optString("affiliate", null);
+            if (seen.add(function + "|" + affiliate)) {
+                out.add(new PlacementContext(function, affiliate, null,
+                        PlacementContext.TurnPosition.UNKNOWN, null));
+            }
+        }
+        return out;
+    }
+
     private void handlePlacementModel(Context ctx) {
         ProjectRef ref = placementProject(ctx);
         if (ref == null) {
@@ -7753,9 +7925,21 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         try {
             JSONObject body = ctx.body() == null || ctx.body().isBlank()
                     ? new JSONObject() : new JSONObject(ctx.body());
-            String plugin = body.optString("plugin", "");
             String command = body.optString("command", "");
             String slot = body.optString("slot", "");
+            // The editor knows the actor it inserted for, not which plugin provides the command, so
+            // resolve it here with the same rule sync uses rather than making the client duplicate a
+            // project-plugin lookup it has no business doing.
+            String plugin = body.optString("plugin", "");
+            if (plugin.isEmpty()) {
+                String actor = body.optString("actor", "");
+                plugin = actor.isEmpty()
+                        ? CorpusExtractCli.resolveUnqualified(command,
+                                CorpusExtractCli.projectPluginIds(this, ref.runtimeProject),
+                                BehaviorTaxonomy.getDefault())
+                        : CorpusExtractCli.actorPluginMap(this, ref.runtimeProject).get(actor);
+                plugin = plugin == null ? "" : plugin;
+            }
             PlacementContext context = placementContextOf(body, plugin, command);
             if (context == null) {
                 writeJson(ctx, new JSONObject().put("recorded", false).put("reason", "NOT_CO_SPEECH"));

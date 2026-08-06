@@ -82,6 +82,15 @@
       style: "background: rgba(132,98,42,0.16); border-bottom: 3px solid rgba(132,98,42,0.95); border-radius: 2px;"
     }
   });
+  // Ghost marker (plan 4.1): a position this project's own model has evidence for. Deliberately
+  // faint and dashed — it marks an opportunity, not a fact, and must never be mistaken for one of
+  // the analysis marks that describe what the sentence actually contains.
+  const semanticGhostMark = Decoration.mark({
+    class: "cm-semantic-ghost",
+    attributes: {
+      style: "border-left: 2px dashed rgba(196,120,20,0.85); margin-left: -1px; background: rgba(196,120,20,0.07);"
+    }
+  });
   // Clause linker ("wie", "dass", "weil"): teal, deliberately outside every role colour, because it
   // belongs to no role — it marks the seam between two clauses.
   const semanticLinkerMark = Decoration.mark({
@@ -987,6 +996,7 @@
       else if (kind === "predicate") deco = semanticPredicateMark;
       else if (kind === "address") deco = semanticAddressMark;
       else if (kind === "address-head") deco = semanticAddressHeadMark;
+      else if (kind === "ghost") deco = semanticGhostMark;
       else if (kind === "linker") deco = semanticLinkerMark;
       else if (kind === "verb-adjective") deco = semanticVerbAdjMark;
       else if (kind === "verb-adverb") deco = semanticVerbAdvMark;
