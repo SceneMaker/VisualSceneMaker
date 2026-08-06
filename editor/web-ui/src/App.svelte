@@ -39,6 +39,13 @@
     sessionStorage.setItem("vsm_client_id", generated);
     return generated;
   })();
+  const isMacPlatform = /Mac|iPhone|iPad|iPod/i.test(
+    navigator.platform || navigator.userAgent || ""
+  );
+  const projectShortcutLabel = isMacPlatform ? "Cmd" : "Ctrl";
+  const saveKeyShortcut = isMacPlatform ? "Meta+S" : "Control+S";
+  const saveAsKeyShortcut = isMacPlatform ? "Meta+Shift+S" : "Control+Shift+S";
+  const exportKeyShortcut = isMacPlatform ? "Meta+E" : "Control+E";
 
   let token = localStorage.getItem("vsm_token") || "";
   // Non-null once ensureKeycloakAuth() has initialized it (info.oidcEnabled === true).
@@ -1362,6 +1369,10 @@
   let saveButtonHovered = false;
   let remoteSaveHovered = false;
   let shiftDown = false;
+  let projectExporting = false;
+  let projectActionConfirmation = "";
+  let projectActionConfirmationId = 0;
+  let projectActionConfirmationTimer = null;
 
   let openPathInput;
   let openPathPickerInput;
@@ -4232,6 +4243,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   onDestroy(() => {
     clearAutoSaveTimer();
+    if (projectActionConfirmationTimer) {
+      clearTimeout(projectActionConfirmationTimer);
+      projectActionConfirmationTimer = null;
+    }
     stopSemanticPreview();
     stopWsHeartbeat();
     stopRuntimeGuiWindowPoll();
@@ -4715,6 +4730,27 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       }
     } finally {
       projectSaving = false;
+    }
+    return ok;
+  }
+
+  function showProjectActionConfirmation(message) {
+    if (projectActionConfirmationTimer) {
+      clearTimeout(projectActionConfirmationTimer);
+    }
+    projectActionConfirmation = message;
+    projectActionConfirmationId += 1;
+    projectActionConfirmationTimer = setTimeout(() => {
+      projectActionConfirmation = "";
+      projectActionConfirmationTimer = null;
+    }, 1250);
+  }
+
+  async function saveProjectWithConfirmation(message) {
+    if (!selectedProjectId || projectExporting) return false;
+    const ok = await saveProject(selectedProjectId);
+    if (ok) {
+      showProjectActionConfirmation(message);
     }
     return ok;
   }
@@ -9122,6 +9158,7 @@ Sentence:
     const ok = await saveAsProject(selectedProjectId, target, name);
     if (ok) {
       saveAsDialogOpen = false;
+      showProjectActionConfirmation("Project Saved");
       restoreFocus();
     } else {
       await tick();
@@ -9130,12 +9167,12 @@ Sentence:
   }
 
   function handlePrimarySaveClick() {
-    if (!selectedProjectId || projectSaving) return;
+    if (!selectedProjectId || projectSaving || projectExporting) return;
     if (saveButtonActsAsSaveAs) {
       openDuplicateSaveAsDialog();
       return;
     }
-    saveProject(selectedProjectId);
+    void saveProjectWithConfirmation("Project Saved");
   }
 
   // Non-owner (co-editor / remote) primary action: save the project back to the
@@ -9143,12 +9180,12 @@ Sentence:
   // is held ("Export"). The save endpoint writes to the server's own project path,
   // which is exactly what collaborative editing of a server-hosted project needs.
   function handleRemoteSaveClick() {
-    if (!selectedProjectId || projectSaving) return;
+    if (!selectedProjectId || projectSaving || projectExporting) return;
     if (remoteSaveActsAsExport) {
-      exportLocalCopy();
+      void exportLocalCopy();
       return;
     }
-    saveProject(selectedProjectId);
+    void saveProjectWithConfirmation("Project Saved to Server");
   }
 
   // Downloads a server-backed file with the app's Bearer token attached, since a plain
@@ -9184,11 +9221,17 @@ Sentence:
   }
 
   async function exportLocalCopy() {
-    if (!selectedProjectId) return;
+    if (!selectedProjectId || projectSaving || projectExporting) return false;
+    projectExporting = true;
     try {
       await downloadAuthenticated(`/api/v1/projects/${selectedProjectId}/export`, "project.zip");
+      showProjectActionConfirmation("Project Exported");
+      return true;
     } catch (err) {
       error = `Export failed: ${err.message}`;
+      return false;
+    } finally {
+      projectExporting = false;
     }
   }
 
@@ -15258,8 +15301,44 @@ Sentence:
       event.preventDefault();
       return;
     }
-    if (isEditableTarget(event.target)) return;
     const isMod = event.metaKey || event.ctrlKey;
+    const isProjectShortcutMod = isMacPlatform ? event.metaKey : event.ctrlKey;
+    const normalizedKey = typeof key === "string" ? key.toLowerCase() : "";
+    const modalOpen =
+      typeof document !== "undefined" && document.querySelector('[aria-modal="true"]');
+    if (showEditor && selectedProjectId && isProjectShortcutMod && !event.altKey && !modalOpen) {
+      if (normalizedKey === "s") {
+        event.preventDefault();
+        if (event.repeat) return;
+        if (event.shiftKey) {
+          // Save As changes a server-side project path and therefore remains owner-only.
+          if (isSessionOwner) {
+            if (projectRequiresSaveAs) {
+              openSaveAsDialog();
+            } else {
+              openDuplicateSaveAsDialog();
+            }
+          }
+          return;
+        }
+        if (isSessionOwner && projectRequiresSaveAs) {
+          openSaveAsDialog();
+        } else {
+          void saveProjectWithConfirmation(
+            isSessionOwner ? "Project Saved" : "Project Saved to Server"
+          );
+        }
+        return;
+      }
+      if (normalizedKey === "e" && !event.shiftKey) {
+        event.preventDefault();
+        if (!event.repeat) {
+          void exportLocalCopy();
+        }
+        return;
+      }
+    }
+    if (isEditableTarget(event.target)) return;
     if (isMod && key.toLowerCase() === "z") {
       event.preventDefault();
       if (event.shiftKey) {
@@ -15305,6 +15384,14 @@ Sentence:
 </script>
 
 <svelte:window on:keydown={handleGlobalKeydown} on:keyup={handleGlobalKeyup} on:blur={handleWindowBlur} />
+
+{#if projectActionConfirmation}
+  {#key projectActionConfirmationId}
+    <div class="project-action-confirmation" role="status" aria-live="polite" aria-atomic="true">
+      {projectActionConfirmation}
+    </div>
+  {/key}
+{/if}
 
 <main class:editor-view={showEditor}>
   {#if showSecureSetup}
@@ -15751,7 +15838,9 @@ Sentence:
                   type="button"
                   class="ghost panel-save"
                   on:click={openSaveAsDialog}
-                  disabled={!selectedProject || projectSaving}
+                  disabled={!selectedProject || projectSaving || projectExporting}
+                  title={`Save As (${projectShortcutLabel}+Shift+S)`}
+                  aria-keyshortcuts={saveAsKeyShortcut}
                 >
                   Save As
                 </button>
@@ -15761,7 +15850,7 @@ Sentence:
                   class="ghost panel-save autosave-toggle"
                   class:active={autoSaveEnabled}
                   on:click={toggleAutoSave}
-                  disabled={!selectedProject || projectSaving || autoSaving}
+                  disabled={!selectedProject || projectSaving || projectExporting || autoSaving}
                   title={autoSaveEnabled ? "Disable autosave" : "Enable autosave"}
                 >
                   Autosave
@@ -15772,8 +15861,9 @@ Sentence:
                   on:click={handlePrimarySaveClick}
                   on:mouseenter={() => (saveButtonHovered = true)}
                   on:mouseleave={() => (saveButtonHovered = false)}
-                  disabled={!selectedProject || projectSaving}
-                  title={saveButtonActsAsSaveAs ? "Save As (Shift)" : "Save"}
+                  disabled={!selectedProject || projectSaving || projectExporting}
+                  title={saveButtonActsAsSaveAs ? `Save As (${projectShortcutLabel}+Shift+S)` : `Save (${projectShortcutLabel}+S)`}
+                  aria-keyshortcuts={saveKeyShortcut}
                 >
                   {saveButtonActsAsSaveAs ? "Save As" : "Save"}
                 </button>
@@ -15782,8 +15872,9 @@ Sentence:
                 type="button"
                 class="ghost panel-save"
                 on:click={exportLocalCopy}
-                disabled={!selectedProject || projectSaving}
-                title="Download the whole project as a zip"
+                disabled={!selectedProject || projectSaving || projectExporting}
+                title={`Export the whole project as a zip (${projectShortcutLabel}+E)`}
+                aria-keyshortcuts={exportKeyShortcut}
               >
                 Export
               </button>
@@ -15794,8 +15885,9 @@ Sentence:
                 on:click={handleRemoteSaveClick}
                 on:mouseenter={() => (remoteSaveHovered = true)}
                 on:mouseleave={() => (remoteSaveHovered = false)}
-                disabled={!selectedProject || projectSaving}
-                title={remoteSaveActsAsExport ? "Export a local copy (Shift)" : "Save changes back to the server"}
+                disabled={!selectedProject || projectSaving || projectExporting}
+                title={remoteSaveActsAsExport ? `Export a local copy (${projectShortcutLabel}+E)` : `Save changes back to the server (${projectShortcutLabel}+S)`}
+                aria-keyshortcuts={remoteSaveActsAsExport ? exportKeyShortcut : saveKeyShortcut}
               >
                 {remoteSaveActsAsExport ? "Export" : "Save Remote"}
               </button>

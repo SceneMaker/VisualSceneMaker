@@ -3540,6 +3540,43 @@ button.ghost.start-toggle:disabled {
   cursor: pointer;
 }
 
+.project-action-confirmation {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  pointer-events: none;
+  color: rgba(31, 35, 40, 0.56);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  text-align: center;
+  text-shadow: 0 2px 14px rgba(255, 255, 255, 0.75);
+  animation: project-action-confirmation 1.2s ease-out both;
+}
+
+@keyframes project-action-confirmation {
+  0% {
+    opacity: 0;
+  }
+  8%,
+  42% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-action-confirmation {
+    animation: none;
+  }
+}
+
 .modal-backdrop.cmd-modal-backdrop {
   background: rgba(15, 15, 15, 0.45);
   cursor: default;
