@@ -7764,15 +7764,22 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             PlacementStore store = placementStore(ref);
             String fingerprint = PlacementStore.fingerprint(plugin, command,
                     body.optInt("line", 0), body.optInt("sentence", 0), body.optInt("tokenIndex", -1));
+            boolean dismissed = body.optBoolean("dismissed", false);
             boolean changed;
             int total;
             synchronized (store) {
-                if (slot.isEmpty()) {
+                if (dismissed) {
+                    // A suggestion shown and turned down. Recorded, but it creates no placement: the
+                    // author said "not there", which is not the same as saying where it should go.
+                    store.recordDismissal(context, slot);
+                    changed = true;
+                } else if (slot.isEmpty()) {
                     // A command that no longer sits anywhere — deleted, or moved off every slot.
                     changed = store.remove(fingerprint);
                 } else {
                     changed = store.put(fingerprint, PlacementStore.observation(
-                            slot, body.optBoolean("snapped", false), context));
+                            slot, body.optBoolean("snapped", false), context,
+                            body.optString("origin", PlacementStore.ORIGIN_AUTHORED)));
                 }
                 if (changed) {
                     persistPlacementStore(ref, store);
@@ -7781,6 +7788,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
             writeJson(ctx, new JSONObject()
                     .put("recorded", changed)
+                    .put("dismissed", dismissed)
                     .put("observations", total));
         } catch (Exception exc) {
             ctx.status(400);

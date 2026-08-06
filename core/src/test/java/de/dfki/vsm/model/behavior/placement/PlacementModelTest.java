@@ -239,6 +239,75 @@ class PlacementModelTest {
                 "conditioning on function is the point; the two must not collapse together");
     }
 
+    // ---------------------------------------------------------------- feedback-loop guard (4.3)
+
+    @Test
+    void anAcceptedSuggestionCountsForLessThanAnAuthoredPlacement() {
+        final PlacementContext ctx = context("emotion/attitude", "rheme");
+
+        final PlacementModel authored = PlacementModel.empty();
+        authored.observe(ctx, "utterance-final", 1.0);
+
+        final PlacementModel accepted = PlacementModel.empty();
+        accepted.observe(ctx, "utterance-final", 0.35);
+
+        final double authoredScore = scoreOf(authored.suggest(ctx, FULL_INVENTORY, 0), "utterance-final");
+        final double acceptedScore = scoreOf(accepted.suggest(ctx, FULL_INVENTORY, 0), "utterance-final");
+
+        assertTrue(acceptedScore < authoredScore,
+                "accepting a default is weaker evidence than choosing a position; got "
+                        + acceptedScore + " vs " + authoredScore);
+        assertTrue(acceptedScore > 0.0, "but it must still count for something");
+    }
+
+    @Test
+    void acceptedSuggestionsCannotBootstrapConfidenceOnTheirOwn() {
+        // The failure this guard exists to prevent: the model suggests a slot, the author accepts,
+        // the count rises, it suggests it harder — until it is measuring its own output.
+        final PlacementContext ctx = context("emotion/attitude", "rheme");
+        final PlacementModel model = PlacementModel.empty();
+        for (int i = 0; i < 3; i += 1) {
+            model.observe(ctx, "utterance-final", 0.35);
+        }
+
+        final PlacementModel oneAuthored = PlacementModel.empty();
+        oneAuthored.observe(ctx, "utterance-final", 1.0);
+
+        assertTrue(scoreOf(model.suggest(ctx, FULL_INVENTORY, 0), "utterance-final")
+                        > scoreOf(oneAuthored.suggest(ctx, FULL_INVENTORY, 0), "utterance-final"),
+                "three accepted should still outweigh one authored — the discount must not silence them");
+        assertEquals(3, model.getObservationCount());
+        assertEquals(1.05, model.getWeightTotal(), 1.0e-9,
+                "weight, not count, is what the distribution is built from");
+    }
+
+    @Test
+    void aNonPositiveWeightIsIgnoredEntirely() {
+        final PlacementModel model = PlacementModel.empty();
+        final PlacementContext ctx = context("emotion/attitude", "rheme");
+        model.observe(ctx, "after-subject", 0.0);
+        model.observe(ctx, "after-subject", -1.0);
+
+        assertEquals(0, model.getObservationCount(),
+                "a zero-weight observation would inflate the count while contributing nothing");
+        assertTrue(model.isEmpty());
+    }
+
+    @Test
+    void weightsSurviveAJsonRoundTrip() {
+        final PlacementModel model = PlacementModel.empty();
+        final PlacementContext ctx = context("emblem/social convention", "rheme");
+        model.observe(ctx, "after-subject", 1.0);
+        model.observe(ctx, "after-subject", 0.35);
+
+        final PlacementModel restored = PlacementModel.fromJson(model.toJson());
+        assertEquals(model.getWeightTotal(), restored.getWeightTotal(), 1.0e-6);
+        assertEquals(
+                scoreOf(model.suggest(ctx, FULL_INVENTORY, 0), "after-subject"),
+                scoreOf(restored.suggest(ctx, FULL_INVENTORY, 0), "after-subject"),
+                1.0e-6);
+    }
+
     private static double scoreOf(final List<PlacementSuggestion> out, final String slot) {
         return out.stream()
                 .filter(s -> slot.equals(s.getSlot()))

@@ -35,9 +35,9 @@ public final class PlacementSuggestion {
     private final String mSlot;
     private final double mScore;
     private final Basis mBasis;
-    private final int mSupport;
+    private final double mSupport;
 
-    public PlacementSuggestion(final String slot, final double score, final Basis basis, final int support) {
+    public PlacementSuggestion(final String slot, final double score, final Basis basis, final double support) {
         mSlot = slot;
         mScore = score;
         mBasis = basis;
@@ -57,8 +57,14 @@ public final class PlacementSuggestion {
         return mBasis;
     }
 
-    /** Observations behind the dominant level; 0 when the basis is the prior. */
-    public int getSupport() {
+    /**
+     * Weighted evidence behind the dominant level; 0 when the basis is the prior.
+     *
+     * <p>A weight rather than a count, because an accepted suggestion contributes less than a
+     * placement the author wrote unprompted (plan 4.3). Two accepted suggestions therefore show as
+     * less support than two authored ones, which is the honest reading.
+     */
+    public double getSupport() {
         return mSupport;
     }
 
@@ -72,7 +78,7 @@ public final class PlacementSuggestion {
                 .put("slot", mSlot)
                 .put("score", Math.round(mScore * 10000.0) / 10000.0)
                 .put("basis", mBasis.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-'))
-                .put("support", mSupport)
+                .put("support", Math.round(mSupport * 1000.0) / 1000.0)
                 .put("priorOnly", isPriorOnly());
     }
 

@@ -30,8 +30,38 @@ final class PlacementStore {
 
     static final int STORE_VERSION = 1;
 
+    /** A placement the author wrote themselves. Full evidence about their preference. */
+    static final String ORIGIN_AUTHORED = "authored";
+
+    /** A placement the author accepted from a suggestion. Discounted — see {@link #WEIGHT_ACCEPTED}. */
+    static final String ORIGIN_ACCEPTED = "accepted-suggestion";
+
+    /**
+     * Weight of an accepted suggestion, against 1.0 for an authored placement — the feedback-loop
+     * guard of plan 4.3.
+     *
+     * <p>Accepting a plausible default is a weaker signal than choosing a position unprompted, and if
+     * the two counted alike the model would end up measuring its own past output: it suggests a slot,
+     * the author accepts, the count rises, it suggests it harder. 0.35 keeps accepted placements
+     * informative — three of them still outweigh one authored — without letting them bootstrap
+     * confidence on their own.
+     */
+    static final double WEIGHT_ACCEPTED = 0.35;
+
     /** fingerprint → observation. Sorted so the persisted file has a stable diff. */
     private final Map<String, JSONObject> mObservations = new TreeMap<>();
+
+    /**
+     * "context|slot" → how often a suggestion there was dismissed.
+     *
+     * <p>Recorded but deliberately not scored. A dismissal is negative evidence, and a count model
+     * over positive observations has nowhere honest to put it: subtracting from a slot's tally can
+     * drive it below zero and distort a distribution built from real placements, and treating it as
+     * evidence for the *other* slots asserts something the author never said. Kept because the signal
+     * is genuinely informative and throwing it away would lose it for good — using it properly needs a
+     * discriminative model, which is future work, not a v1 hack.
+     */
+    private final Map<String, Integer> mDismissals = new TreeMap<>();
     private PlacementModel mModel;
 
     private PlacementStore() {
@@ -54,6 +84,15 @@ final class PlacementStore {
                     final JSONObject entry = observations.optJSONObject(key);
                     if (entry != null) {
                         store.mObservations.put(key, entry);
+                    }
+                }
+            }
+            final JSONObject dismissals = json.optJSONObject("dismissals");
+            if (dismissals != null) {
+                for (final String key : dismissals.keySet()) {
+                    final int value = dismissals.optInt(key, 0);
+                    if (value > 0) {
+                        store.mDismissals.put(key, value);
                     }
                 }
             }
@@ -87,8 +126,15 @@ final class PlacementStore {
 
     static JSONObject observation(
             final String slot, final boolean snapped, final PlacementContext context) {
+        return observation(slot, snapped, context, ORIGIN_AUTHORED);
+    }
+
+    static JSONObject observation(
+            final String slot, final boolean snapped, final PlacementContext context,
+            final String origin) {
         final JSONObject out = new JSONObject();
         out.put("slot", slot);
+        out.put("origin", ORIGIN_ACCEPTED.equals(origin) ? ORIGIN_ACCEPTED : ORIGIN_AUTHORED);
         if (snapped) {
             out.put("snapped", true);
         }
@@ -154,7 +200,18 @@ final class PlacementStore {
             final JSONObject previous = mObservations.get(entry.getKey());
             if (previous == null) {
                 added += 1;
-            } else if (!previous.similar(entry.getValue())) {
+                continue;
+            }
+            // Carry a recorded origin forward. Sync reads the script, where an accepted suggestion is
+            // indistinguishable from an authored placement — both are simply commands in the text. If
+            // sync overwrote the origin it would launder every accepted suggestion into full evidence
+            // on the next analysis, quietly undoing the discount that makes 4.3 work.
+            final String previousOrigin = previous.optString("origin", ORIGIN_AUTHORED);
+            if (ORIGIN_ACCEPTED.equals(previousOrigin)
+                    && ORIGIN_AUTHORED.equals(entry.getValue().optString("origin", ORIGIN_AUTHORED))) {
+                entry.getValue().put("origin", ORIGIN_ACCEPTED);
+            }
+            if (!previous.similar(entry.getValue())) {
                 updated += 1;
             }
         }
@@ -180,10 +237,12 @@ final class PlacementStore {
                         entry.optString("clauseType", null),
                         turnPositionOf(entry.optString("turnPosition", "")),
                         entry.optString("dialogueAct", null));
+                final double weight = ORIGIN_ACCEPTED.equals(entry.optString("origin", ORIGIN_AUTHORED))
+                        ? WEIGHT_ACCEPTED : 1.0;
                 if (entry.optBoolean("snapped", false)) {
-                    rebuilt.observeSnapped(context, slot);
+                    rebuilt.observeSnapped(context, slot, weight);
                 } else {
-                    rebuilt.observe(context, slot);
+                    rebuilt.observe(context, slot, weight);
                 }
             }
             mModel = rebuilt;
@@ -199,6 +258,22 @@ final class PlacementStore {
         }
     }
 
+    /** Record that a suggestion at this slot was shown and dismissed. */
+    void recordDismissal(final PlacementContext context, final String slot) {
+        if (context == null || slot == null || slot.isEmpty()) {
+            return;
+        }
+        mDismissals.merge(context.keyFunctionAffiliate() + "|" + slot, 1, Integer::sum);
+    }
+
+    int dismissalCount() {
+        int total = 0;
+        for (final int value : mDismissals.values()) {
+            total += value;
+        }
+        return total;
+    }
+
     int size() {
         return mObservations.size();
     }
@@ -208,10 +283,15 @@ final class PlacementStore {
         for (final Map.Entry<String, JSONObject> entry : mObservations.entrySet()) {
             observations.put(entry.getKey(), entry.getValue());
         }
+        final JSONObject dismissals = new JSONObject();
+        for (final Map.Entry<String, Integer> entry : mDismissals.entrySet()) {
+            dismissals.put(entry.getKey(), entry.getValue());
+        }
         return new JSONObject()
                 .put("version", STORE_VERSION)
                 .put("updatedAt", java.time.Instant.now().toString())
                 .put("observations", observations)
+                .put("dismissals", dismissals)
                 .put("model", model().toJson());
     }
 

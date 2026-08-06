@@ -58,9 +58,15 @@ public final class PlacementModel {
      */
     private static final double K = 5.0;
 
-    private final Map<String, Map<String, Integer>> mCounts = new TreeMap<>();
+    /**
+     * Weighted counts. Doubles rather than integers because an accepted suggestion counts for less
+     * than something the author wrote unprompted — see {@link #observe(PlacementContext, String,
+     * double)}. The weights, not the raw tallies, are what the distribution is built from.
+     */
+    private final Map<String, Map<String, Double>> mCounts = new TreeMap<>();
     private int mObservations;
     private int mSnapped;
+    private double mWeightTotal;
 
     public PlacementModel() {
     }
@@ -80,13 +86,32 @@ public final class PlacementModel {
      *             should snap explicitly and report it via {@link #observeSnapped}.
      */
     public void observe(final PlacementContext context, final String slot) {
-        if (context == null || slot == null || !AnchorSlots.isKnown(slot)) {
+        observe(context, slot, 1.0);
+    }
+
+    /**
+     * Record a placement with an explicit weight — the feedback-loop guard of plan 4.3.
+     *
+     * <p>A placement the author wrote unprompted is worth 1.0. One they accepted from a suggestion is
+     * worth less, because it is only weak evidence about the author's own preference: accepting a
+     * plausible default is not the same act as choosing a position. Counting the two alike would let
+     * the model confirm itself — it suggests a slot, the author accepts, the slot's count rises, it
+     * suggests it more strongly — until the model is measuring its own past output rather than the
+     * author. The caller supplies the weight; the policy lives with the caller that knows the origin.
+     *
+     * @param weight strictly positive; a non-positive weight is ignored rather than stored, since a
+     *               zero-weight observation would inflate the observation count while contributing
+     *               nothing to the distribution.
+     */
+    public void observe(final PlacementContext context, final String slot, final double weight) {
+        if (context == null || slot == null || !AnchorSlots.isKnown(slot) || weight <= 0.0) {
             return;
         }
         for (final String key : levelKeys(context)) {
-            mCounts.computeIfAbsent(key, k -> new TreeMap<>()).merge(slot, 1, Integer::sum);
+            mCounts.computeIfAbsent(key, k -> new TreeMap<>()).merge(slot, weight, Double::sum);
         }
         mObservations += 1;
+        mWeightTotal += weight;
     }
 
     /**
@@ -97,7 +122,11 @@ public final class PlacementModel {
      * earned. The tally makes the approximation visible in {@code behavior-placement.json}.
      */
     public void observeSnapped(final PlacementContext context, final String slot) {
-        observe(context, slot);
+        observeSnapped(context, slot, 1.0);
+    }
+
+    public void observeSnapped(final PlacementContext context, final String slot, final double weight) {
+        observe(context, slot, weight);
         if (slot != null && AnchorSlots.isKnown(slot)) {
             mSnapped += 1;
         }
@@ -138,7 +167,7 @@ public final class PlacementModel {
 
         final Map<String, Double> scores = new LinkedHashMap<>();
         final Map<String, PlacementSuggestion.Basis> basis = new LinkedHashMap<>();
-        final Map<String, Integer> support = new LinkedHashMap<>();
+        final Map<String, Double> support = new LinkedHashMap<>();
         final Map<String, Double> bestShare = new LinkedHashMap<>();
         double remaining = 1.0;
 
@@ -146,14 +175,17 @@ public final class PlacementModel {
             if (remaining <= 1.0e-9) {
                 break;
             }
-            final Map<String, Integer> counts = residualCounts(level.keys, level.subtractKeys, candidates);
-            final int total = counts.values().stream().mapToInt(Integer::intValue).sum();
-            if (total <= 0) {
+            final Map<String, Double> counts = residualCounts(level.keys, level.subtractKeys, candidates);
+            double total = 0.0;
+            for (final double value : counts.values()) {
+                total += value;
+            }
+            if (total <= 1.0e-9) {
                 continue;
             }
             final double lambda = remaining * (total / (total + K));
-            for (final Map.Entry<String, Integer> entry : counts.entrySet()) {
-                final double share = lambda * (entry.getValue() / (double) total);
+            for (final Map.Entry<String, Double> entry : counts.entrySet()) {
+                final double share = lambda * (entry.getValue() / total);
                 accumulate(scores, basis, support, bestShare,
                         entry.getKey(), share, level.basis, entry.getValue());
             }
@@ -165,7 +197,7 @@ public final class PlacementModel {
             if (!prior.isEmpty()) {
                 for (final Map.Entry<String, Double> entry : prior.entrySet()) {
                     accumulate(scores, basis, support, bestShare,
-                            entry.getKey(), remaining * entry.getValue(), PlacementSuggestion.Basis.PRIOR, 0);
+                            entry.getKey(), remaining * entry.getValue(), PlacementSuggestion.Basis.PRIOR, 0.0);
                 }
                 remaining = 0.0;
             }
@@ -174,7 +206,7 @@ public final class PlacementModel {
             final double share = remaining / candidates.size();
             for (final String slot : candidates) {
                 accumulate(scores, basis, support, bestShare,
-                        slot, share, PlacementSuggestion.Basis.UNIFORM, 0);
+                        slot, share, PlacementSuggestion.Basis.UNIFORM, 0.0);
             }
         }
 
@@ -184,7 +216,7 @@ public final class PlacementModel {
                     entry.getKey(),
                     entry.getValue(),
                     basis.getOrDefault(entry.getKey(), PlacementSuggestion.Basis.UNIFORM),
-                    support.getOrDefault(entry.getKey(), 0)));
+                    support.getOrDefault(entry.getKey(), 0.0)));
         }
         // Ties broken by the extractor's slot priority, so the model and the corpus agree about which
         // of two equally-scored slots is the more specific description of a position.
@@ -200,12 +232,12 @@ public final class PlacementModel {
     private static void accumulate(
             final Map<String, Double> scores,
             final Map<String, PlacementSuggestion.Basis> basis,
-            final Map<String, Integer> support,
+            final Map<String, Double> support,
             final Map<String, Double> bestShare,
             final String slot,
             final double share,
             final PlacementSuggestion.Basis levelBasis,
-            final int levelSupport) {
+            final double levelSupport) {
         scores.merge(slot, share, Double::sum);
         // The reported basis is whichever level contributed most to this slot, not the first that
         // touched it — otherwise a specific level with one observation would take credit for a score
@@ -299,33 +331,33 @@ public final class PlacementModel {
      * Counts at this level minus those already explained by the nested level below it, floored at
      * zero so a non-nested {@code subtractKeys} can never drive a pool negative.
      */
-    private Map<String, Integer> residualCounts(
+    private Map<String, Double> residualCounts(
             final List<String> keys, final List<String> subtractKeys, final List<String> candidates) {
-        final Map<String, Integer> counts = pooledCounts(keys, candidates);
+        final Map<String, Double> counts = pooledCounts(keys, candidates);
         if (subtractKeys.isEmpty()) {
             return counts;
         }
-        final Map<String, Integer> consumed = pooledCounts(subtractKeys, candidates);
-        final Map<String, Integer> out = new LinkedHashMap<>();
-        for (final Map.Entry<String, Integer> entry : counts.entrySet()) {
-            final int residual = entry.getValue() - consumed.getOrDefault(entry.getKey(), 0);
-            if (residual > 0) {
+        final Map<String, Double> consumed = pooledCounts(subtractKeys, candidates);
+        final Map<String, Double> out = new LinkedHashMap<>();
+        for (final Map.Entry<String, Double> entry : counts.entrySet()) {
+            final double residual = entry.getValue() - consumed.getOrDefault(entry.getKey(), 0.0);
+            if (residual > 1.0e-9) {
                 out.put(entry.getKey(), residual);
             }
         }
         return out;
     }
 
-    private Map<String, Integer> pooledCounts(final List<String> keys, final List<String> candidates) {
-        final Map<String, Integer> out = new LinkedHashMap<>();
+    private Map<String, Double> pooledCounts(final List<String> keys, final List<String> candidates) {
+        final Map<String, Double> out = new LinkedHashMap<>();
         for (final String key : keys) {
-            final Map<String, Integer> counts = mCounts.get(key);
+            final Map<String, Double> counts = mCounts.get(key);
             if (counts == null) {
                 continue;
             }
-            for (final Map.Entry<String, Integer> entry : counts.entrySet()) {
+            for (final Map.Entry<String, Double> entry : counts.entrySet()) {
                 if (candidates.contains(entry.getKey())) {
-                    out.merge(entry.getKey(), entry.getValue(), Integer::sum);
+                    out.merge(entry.getKey(), entry.getValue(), Double::sum);
                 }
             }
         }
@@ -343,6 +375,11 @@ public final class PlacementModel {
         return mSnapped;
     }
 
+    /** Summed observation weights. Below the observation count when discounted evidence is present. */
+    public double getWeightTotal() {
+        return mWeightTotal;
+    }
+
     public boolean isEmpty() {
         return mObservations == 0;
     }
@@ -351,12 +388,17 @@ public final class PlacementModel {
 
     public JSONObject toJson() {
         final JSONObject counts = new JSONObject();
-        for (final Map.Entry<String, Map<String, Integer>> entry : mCounts.entrySet()) {
-            counts.put(entry.getKey(), new JSONObject(entry.getValue()));
+        for (final Map.Entry<String, Map<String, Double>> entry : mCounts.entrySet()) {
+            final JSONObject perSlot = new JSONObject();
+            for (final Map.Entry<String, Double> slot : entry.getValue().entrySet()) {
+                perSlot.put(slot.getKey(), Math.round(slot.getValue() * 1000.0) / 1000.0);
+            }
+            counts.put(entry.getKey(), perSlot);
         }
         return new JSONObject()
                 .put("version", MODEL_VERSION)
                 .put("observations", mObservations)
+                .put("weightTotal", Math.round(mWeightTotal * 1000.0) / 1000.0)
                 .put("snapped", mSnapped)
                 .put("smoothingK", K)
                 .put("counts", counts);
@@ -368,6 +410,7 @@ public final class PlacementModel {
             return model;
         }
         model.mObservations = json.optInt("observations", 0);
+        model.mWeightTotal = json.optDouble("weightTotal", model.mObservations);
         model.mSnapped = json.optInt("snapped", 0);
         final JSONObject counts = json.optJSONObject("counts");
         if (counts == null) {
@@ -378,10 +421,10 @@ public final class PlacementModel {
             if (slots == null) {
                 continue;
             }
-            final Map<String, Integer> perSlot = new TreeMap<>();
+            final Map<String, Double> perSlot = new TreeMap<>();
             for (final String slot : slots.keySet()) {
-                final int value = slots.optInt(slot, 0);
-                if (value > 0) {
+                final double value = slots.optDouble(slot, 0.0);
+                if (value > 0.0) {
                     perSlot.put(slot, value);
                 }
             }
