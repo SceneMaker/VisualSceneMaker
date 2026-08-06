@@ -7606,7 +7606,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             if (out == null) {
                 return null;
             }
-            return out.put("model", String.valueOf(llm.getSelectedModel()));
+            // The model's id, not the record's toString — that leaked
+            // "LLMModel[id=qwen3-30b-a3b-mlx, objectType=null, ownedBy=null]" into the response, and
+            // this field is meant to be shown to an author as the source of a suggestion.
+            LLMSupport.LLMModel model = llm.getSelectedModel();
+            return out.put("model", model == null ? "" : String.valueOf(model.id()));
         } catch (Exception exc) {
             sLogger.warning("Placement second opinion unavailable: " + exc.getMessage());
             return null;
