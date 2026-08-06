@@ -21,6 +21,13 @@ Default endpoint is `http://127.0.0.1:4061`.
 
 `runService` is still available and now includes dependency installation automatically.
 
+## Deployment (systemd, Ubuntu)
+
+`deploy/` has a hardened unit, a config file and exact preparation steps:
+**[deploy/README.md](deploy/README.md)**. Read it before a first server install — the step people
+miss is warming the HuggingFace encoder, because without it the service silently falls back to
+Stanza's default parser instead of failing.
+
 ## Server-environment configuration
 
 | Variable | Default | Purpose |

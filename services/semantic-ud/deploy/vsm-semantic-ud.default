@@ -1,0 +1,34 @@
+# Install as /etc/default/vsm-semantic-ud — the only file you should need to edit.
+# systemd EnvironmentFile: KEY=value, no shell expansion, no quotes needed, no `export`.
+
+# --- Bind ---------------------------------------------------------------------------------------
+# Loopback. VSM's Java server is the only caller; the service has no authentication, so do not
+# change this unless VSM runs on a different host, and then firewall the port.
+SEMANTIC_UD_HOST=127.0.0.1
+SEMANTIC_UD_PORT=4061
+
+# --- Parser -------------------------------------------------------------------------------------
+# The package VSM asks for on every script analysis (WebUiServer.SEMANTIC_UD_PREFERRED_PACKAGE).
+# Setting it here means it is built at startup; otherwise the first request pays a ~6 s lazy build
+# and can time out, which silently yields a sentence with no structure.
+SEMANTIC_UD_PACKAGE=de:combined_german-nlp-electra
+SEMANTIC_UD_PRELOAD=de
+SEMANTIC_UD_LANG=de
+
+# --- Models -------------------------------------------------------------------------------------
+# Outside the deploy tree on purpose: update.sh must not be able to delete several hundred MB of
+# models, and they must not appear as untracked files in the repo.
+STANZA_RESOURCES_DIR=/var/lib/vsm-semantic-ud/stanza_resources
+SEMANTIC_UD_RESOURCES_DIR=/var/lib/vsm-semantic-ud/stanza_resources
+
+# The transformer's encoder comes from HuggingFace, separately from the Stanza model. ProtectHome
+# blocks the default ~/.cache, so point it at the state directory explicitly.
+HOME=/var/lib/vsm-semantic-ud
+HF_HOME=/var/lib/vsm-semantic-ud/huggingface
+# Nothing to fetch in steady state; refuse to reach the network so a missing model is a loud
+# startup failure rather than an opaque 500 in the middle of an analysis.
+HF_HUB_OFFLINE=1
+
+# Leave false once the cache is warmed (see deploy/README.md step 4). With false, a missing model
+# fails at startup with exit 1. With true, a first run downloads ~1-2 GB.
+SEMANTIC_UD_AUTO_DOWNLOAD=false

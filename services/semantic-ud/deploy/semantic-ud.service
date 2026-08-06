@@ -1,0 +1,57 @@
+[Unit]
+# Universal-Dependencies parser for VSM's semantic analysis.
+#
+# VSM's Java server calls this over loopback; browsers never do. It therefore binds 127.0.0.1 and
+# needs no firewall rule, no TLS and no auth — and must not be exposed, because it has none.
+Description=VSM semantic-ud parser service
+Documentation=file:///opt/vsm-server/services/semantic-ud/README.md
+# Ordered after the network only because the *first* run may fetch models. With
+# SEMANTIC_UD_AUTO_DOWNLOAD=false (the recommended steady state) this is merely harmless.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vsm-semantic
+Group=vsm-semantic
+
+# Paths and tuning live here so this unit never needs editing:
+#   /etc/default/vsm-semantic-ud
+EnvironmentFile=/etc/default/vsm-semantic-ud
+
+WorkingDirectory=/opt/vsm-server/services/semantic-ud
+ExecStart=/var/lib/vsm-semantic-ud/venv/bin/python3 server.py
+
+Restart=on-failure
+RestartSec=5s
+# Stanza builds a pipeline at startup; on a cold cache that is tens of seconds. Do not let systemd
+# mistake a slow model load for a hang.
+TimeoutStartSec=300
+
+# The parser holds a transformer in memory. Restart rather than let the OOM killer choose.
+MemoryMax=4G
+
+# --- Hardening -------------------------------------------------------------------------------
+# Read-only everywhere except its own state directory. The deploy tree stays read-only, which also
+# means a compromised parser cannot rewrite the code it runs from.
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+ReadWritePaths=/var/lib/vsm-semantic-ud
+# Loopback only. Drop AF_INET6 too if your VSM resolves 127.0.0.1 rather than ::1.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=semantic-ud
+
+[Install]
+WantedBy=multi-user.target
