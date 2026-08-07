@@ -11386,7 +11386,7 @@ Sentence:
     const available = await checkEmbeddingsService();
     if (!available) return null;
     try {
-      const response = await fetchWithTimeout(
+      const response = await authedFetchWithTimeout(
         `${EMBEDDINGS_URL}/embed`,
         {
           method: "POST",
@@ -11487,6 +11487,28 @@ Sentence:
     return best;
   }
 
+  /**
+   * Authenticated fetch with a timeout, for the embeddings sidecar endpoints.
+   *
+   * Those are served by vsm-server behind the same auth as every other API route, but were called
+   * through plain fetchWithTimeout with no Authorization header — so under OIDC every one of them
+   * 401s regardless of whether the sidecar is running, which is what filled the console with
+   * repeated `embeddings/health 401` lines and made the whole similar-scene feature dead on the
+   * server deployment.
+   *
+   * Deliberately NOT apiFetch: that treats a 401 as session loss and tears the session down,
+   * closing the WebSocket. A probe for an optional sidecar must never be able to do that.
+   */
+  async function authedFetchWithTimeout(path, options = {}, timeoutMs = 1200) {
+    await ensureFreshToken();
+    const headers = { ...(options.headers || {}) };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const url = isRemoteConnection && remoteServerUrl ? `${remoteServerUrl}${path}` : path;
+    return fetchWithTimeout(url, { ...options, headers }, timeoutMs);
+  }
+
   async function fetchWithTimeout(url, options = {}, timeoutMs = 1200) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -11507,7 +11529,7 @@ Sentence:
     embeddingsChecking = true;
     embeddingsLastChecked = now;
     try {
-      const response = await fetchWithTimeout(`${EMBEDDINGS_URL}/health`, {}, 1200);
+      const response = await authedFetchWithTimeout(`${EMBEDDINGS_URL}/health`, {}, 1200);
       embeddingsAvailable = response.ok;
       embeddingsReady = false;
       embeddingsModel = "";
@@ -11563,7 +11585,7 @@ Sentence:
     let delay = 300;
     while (Date.now() - start < timeoutMs) {
       try {
-        const resp = await fetchWithTimeout(`${EMBEDDINGS_URL}/health`, {}, 1200);
+        const resp = await authedFetchWithTimeout(`${EMBEDDINGS_URL}/health`, {}, 1200);
         if (resp.ok) {
           return true;
         }
@@ -11588,7 +11610,7 @@ Sentence:
     });
     if (!available) return [];
     try {
-      const response = await fetchWithTimeout(
+      const response = await authedFetchWithTimeout(
         `${EMBEDDINGS_URL}/similarity`,
         {
           method: "POST",
