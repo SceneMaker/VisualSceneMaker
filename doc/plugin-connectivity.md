@@ -48,13 +48,21 @@ Configure the plugin's target address and you're done. This is the internal-netw
 
 ### B-browser — the target is a browser-reachable capability on the user's machine
 
-Microphone, camera, speakers, a WebSerial/WebUSB device, a `localhost` HTTP service the page
-can `fetch`. The server *can't* dial into the user's laptop, but there's already a persistent
+Microphone, camera, speakers, a WebSerial/WebUSB device. The server *can't* dial into the user's laptop, but there's already a persistent
 client→server channel — the main `/ws`. So invert it: the plugin talks to the **browser page**,
 and the page uses browser APIs to reach the local resource. Concretely for ASR-from-the-user's-
 mic: the browser captures audio with `getUserMedia` and streams it over WS to the server-side
 plugin, instead of the plugin pulling from a mic it can't see. **No new infrastructure — just a
 plugin that sources/sinks through the browser.** Covers a lot (anything media- or WebAPI-shaped).
+
+> **Correction (2026-08-07):** an earlier version of this section also listed "a `localhost` HTTP
+> service the page can `fetch`". That does **not** generally work from the deployed editor. The page
+> is served from a public HTTPS origin, so a request to `http://127.0.0.1:…` is subject to Chrome's
+> **Private Network Access** rules: it requires a CORS preflight that the local service must answer
+> with `Access-Control-Allow-Private-Network: true`. We control that for VSM-authored services and
+> not for third-party engines, and browsers are tightening this over time rather than relaxing it.
+> A page can reach browser *capabilities*; it cannot be relied on to reach local *servers*. For that
+> see B-extension below.
 
 ### B-tunnel — the target is a native app / LAN device not routable from the server
 
@@ -65,6 +73,107 @@ the server over WSS (NAT-friendly, like the browser does), registers against the
 session + `projectId`, and relays between the server plugin and the local service — a reverse
 tunnel scoped to VSM sessions. This is the only genuinely new component in the whole space, and
 worth building only when a concrete plugin needs it.
+
+### B-extension — a browser extension as the connector
+
+Between B-browser and B-tunnel, and the option most likely to be worth building first.
+
+A browser extension holding `host_permissions` **is not subject to CORS or Private Network Access**,
+so it can reach `http://127.0.0.1:*` and `ws://localhost:*` where the page cannot. It needs no
+OS-level install, no Gatekeeper approval and no code signing: $5 once for the Chrome Web Store, free
+for Firefox, and the user clicks "Add to Chrome".
+
+It still cannot open raw TCP, so it covers the same plugin subset as the page — but that subset is
+exactly the exploration set (see the inventory below). Combined with third-party engines that are
+already signed and notarised (Ollama and similar), nothing VSM ships needs a certificate and the
+user never sees a security warning.
+
+## What the plugin inventory says about how much of this is worth building
+
+Measured 2026-08-07 across the 24 plugins, because the value of B-tunnel depends entirely on how many
+plugins can never use anything lighter:
+
+| Transport | Plugins | Reachable via page/extension? |
+|---|---|---|
+| Raw TCP/UDP | charamel, odp, reeti, sockets, ssi, ssj, tricatworld, unity | **No** — browsers have no raw socket API. B-tunnel only. |
+| HTTP/WS, dials **out** | asr, decad, heartflow, voicetts | **Yes** — the B-extension candidate set |
+| HTTP/WS, **listens** | charamel-embed, charamel-ws, studymaster-web, yallah | Not needed — these are Direction A, already solved |
+
+So B-extension serves 4 plugins and B-tunnel adds 8 more. If the goal is *exploring* what ASR, TTS
+and LLMs can do, the four are the ones that matter and the extension is sufficient.
+
+## Design principle: ship symbols, not signals
+
+Whatever the transport, the bridge should carry **results, not streams**. `heartflow` already does
+this and is the model to copy: it receives fourteen derived scalars (`hf_bpm`, `hf_rmssd`,
+`hf_breathing_phase`, …) over `ws://localhost:7878` and the PPG waveform never reaches VSM at all.
+Likewise ASR should send the transcript, not the audio, and TTS should receive the text and
+synthesise locally.
+
+**But size is not the axis — synchrony is.** `heartflow` also carries `beat_offset_ms` and a
+heartbeat-prediction message, i.e. behaviour aligned to the user's actual heartbeat. A 100-byte beat
+event is *less* WAN-tolerant than a 2 KB LLM prompt:
+
+| Class | Example | Survives a WAN round trip? |
+|---|---|---|
+| Turn-scale symbols | ASR transcript, LLM reply, TTS request | Yes — invisible at seconds-scale interaction |
+| Event-synchronous symbols | heartbeat events, breathing phase for mirroring | **No** — tiny, but jitter destroys the alignment |
+| Signals | audio, PPG | Never shipped regardless |
+
+The worst case is a sensor on the user's body driving a character rendered in the user's own browser:
+both endpoints local, the decision remote, jitter paid twice. If beat-aligned mirroring is a design
+goal, it belongs in a locally-executed runtime, not behind any bridge.
+
+## Distribution reality for B-tunnel (the deciding constraint)
+
+The bridge agent is small — `ServerMode` is already `{RUNTIME_ONLY, FULL_EDITOR}` and `RuntimeMain`
+is 166 lines, so a third `SATELLITE` mode is an addition to something already built and packaged for
+Mac/Windows/Linux via jpackage, which bundles a JRE (so users never install Java). Tier 1 and Tier 2
+would then be the same download with a switch, which is a much better story than two artifacts.
+
+**What decides whether it is usable by non-programmers is code signing, not architecture.** No
+signing is configured today. Unsigned, on macOS Sequoia the right-click → Open bypass is gone and the
+user must visit System Settings → Privacy & Security → Open Anyway; Windows SmartScreen shows a
+comparable warning. That is precisely the barrier the audience cannot cross, and no UI polish fixes
+it. Apple is €99/year; Windows via Azure Trusted Signing is roughly €10/month. There is no academic
+budget line for this at DFKI (2026-08-07), which is the main argument for B-extension.
+
+Two things worth checking before designing around the absence: DFKI may already hold an Apple
+Developer Organization account (adding an identity to an existing team is free), and an app copied
+from a USB stick at a workshop carries no quarantine flag and opens normally — viable for an audience
+onboarded in person.
+
+## Audience and tiers
+
+The target users are SIA researchers who are **not computer scientists**. That constrains the design
+more than any technical factor: every install, dependency and security dialog is a real loss.
+
+| Tier | User installs | Covers |
+|---|---|---|
+| **0 — Explore** | nothing | browser TTS (`speechSynthesis`), heart rate over Web Bluetooth, hosted LLM |
+| **0.5 — Extension** | a browser extension | local HTTP/WS engines: the four plugins above |
+| **1 — Satellite** | one signed app | everything incl. raw-TCP plugins; needs the signing decision |
+| **2 — Full local** | editor or runtime-engine | everything, offline, studies. Exists today. |
+
+**Tier 1 targets the author's machine during authoring and exploration — not the participant's
+device during a study** (decided 2026-08-07). It therefore never has to satisfy a school's IT policy,
+which removes the hardest constraint.
+
+One caution on Tier 0 ASR: Chrome's `SpeechRecognition` **streams audio to Google's servers**. For a
+population of 10-12 year olds discussing bullying in a therapeutic frame, treat that as
+disqualifying before it is a technical question. The local alternative is Whisper in-browser via
+transformers.js — no cloud, but a 40-200 MB first download.
+
+## Verify before relying on this
+
+Reasoned from the codebase and from general platform knowledge, not tested here:
+
+- that an extension's `host_permissions` bypasses PNA for both `fetch` and WebSocket under
+  Manifest V3, and that an MV3 service worker can hold a long-lived WS — worth a one-day spike
+  before committing
+- the current macOS Sequoia Gatekeeper behaviour and Azure Trusted Signing pricing
+- whether `heartflow`'s beat prediction is actually used for synchronous behaviour, or only for
+  slower arousal-level state — this decides whether the synchronous tier needs to exist
 
 ## The internal-network case (the prompting question)
 
@@ -205,8 +314,13 @@ decision is:
 2. For B, **where is the target and is it routable from the server?**
    - Internal/dedicated, server-reachable → **B-direct** (just configure the address; the
      internal-network case above).
-   - A browser capability on the user's machine → **B-browser** (mediate through `/ws`; no new
-     infra).
-   - A native app / LAN device not routable from the server → **B-tunnel** (needs the client
-     bridge agent — the one real build).
-3. If *most* plugins are client-local, step back and consider **runtime-on-client** instead.
+   - A browser capability on the user's machine — mic, camera, speakers, Web Bluetooth →
+     **B-browser** (mediate through `/ws`; no new infra).
+   - An HTTP/WS service on the user's `localhost` → **B-extension**. Not B-browser: a public
+     HTTPS page cannot be relied on to reach a local server (Private Network Access).
+   - A native app / LAN device speaking raw TCP → **B-tunnel** (needs the client bridge agent —
+     the one real build, and the one gated on code signing).
+3. Then ask what the bridge should *carry*: results, not streams. And check whether the data is
+   event-synchronous — if behaviour must align to it in time, no bridge is fast enough and it
+   belongs in a local runtime.
+4. If *most* plugins are client-local, step back and consider **runtime-on-client** instead.
