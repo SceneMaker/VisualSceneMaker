@@ -624,6 +624,41 @@
     writeCookie(VAR_BADGE_COOKIE, payload);
   }
 
+  /**
+   * One GET of a project's ui-prefs document, shared by every feature that reads from it.
+   *
+   * Plugin badges, the SIA panel, the script-editor height and the semantic display mode each used
+   * to fetch this document independently, so opening a project issued four identical requests —
+   * visible as four ui-prefs lines in the network log, and four 401s when a token was stale.
+   *
+   * Cached as the *promise*, not the result, so callers that start together share one request
+   * rather than racing to be first. Keyed by project id, so switching projects refetches.
+   */
+  let uiPrefsRequest = { projectId: null, promise: null };
+
+  function fetchUiPrefs(projectId) {
+    if (!projectId) return Promise.resolve(null);
+    if (uiPrefsRequest.projectId === projectId && uiPrefsRequest.promise) {
+      return uiPrefsRequest.promise;
+    }
+    // Failures resolve to null rather than rejecting: every consumer treats "no server value" as
+    // "keep the local one", and a rejected shared promise would surface as an unhandled rejection
+    // in whichever consumer happened not to attach a catch.
+    const promise = apiGet(`/api/v1/projects/${projectId}/ui-prefs`).catch(() => null);
+    uiPrefsRequest = { projectId, promise };
+    return promise;
+  }
+
+  /**
+   * Drop the cached document after writing to it, so a later read cannot serve a version that
+   * predates what we just saved. Cheap: nothing reads ui-prefs until the next project switch.
+   */
+  function invalidateUiPrefsCache(projectId) {
+    if (!projectId || uiPrefsRequest.projectId === projectId) {
+      uiPrefsRequest = { projectId: null, promise: null };
+    }
+  }
+
   function loadPluginBadgeState(projectId) {
     if (!projectId) return {};
     try { return JSON.parse(localStorage.getItem(PLUGIN_BADGE_STORAGE_KEY_PREFIX + projectId) || '{}'); }
@@ -632,19 +667,15 @@
 
   async function fetchPluginBadgeStateFromServer(projectId) {
     if (!projectId) return null;
-    try {
-      const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
-      const badges = data?.pluginBadges;
-      if (badges && typeof badges === 'object') return badges;
-      return null;
-    } catch {
-      return null;
-    }
+    const data = await fetchUiPrefs(projectId);
+    const badges = data?.pluginBadges;
+    return badges && typeof badges === 'object' ? badges : null;
   }
 
   function persistPluginBadgeState(projectId, state) {
     if (!projectId) return;
     localStorage.setItem(PLUGIN_BADGE_STORAGE_KEY_PREFIX + projectId, JSON.stringify(state));
+    invalidateUiPrefsCache(projectId);
     apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { pluginBadges: state } }).catch(() => {});
   }
 
@@ -669,19 +700,15 @@
 
   async function fetchSiaPanelPrefsFromServer(projectId) {
     if (!projectId) return null;
-    try {
-      const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
-      const prefs = data?.siaPanel;
-      if (prefs && typeof prefs === 'object') return prefs;
-      return null;
-    } catch {
-      return null;
-    }
+    const data = await fetchUiPrefs(projectId);
+    const prefs = data?.siaPanel;
+    return prefs && typeof prefs === 'object' ? prefs : null;
   }
 
   function persistSiaPanelPrefs(projectId, prefs) {
     if (!projectId) return;
     localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + projectId, JSON.stringify(prefs));
+    invalidateUiPrefsCache(projectId);
     apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { siaPanel: prefs } }).catch(() => {});
   }
 
@@ -699,18 +726,15 @@
 
   async function fetchScriptEditorHeightFromServer(projectId) {
     if (!projectId) return null;
-    try {
-      const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
-      const height = Number(data?.scriptEditorHeight);
-      return Number.isFinite(height) && height > 0 ? height : null;
-    } catch {
-      return null;
-    }
+    const data = await fetchUiPrefs(projectId);
+    const height = Number(data?.scriptEditorHeight);
+    return Number.isFinite(height) && height > 0 ? height : null;
   }
 
   function persistScriptEditorHeight(projectId, heightPx) {
     if (!projectId) return;
     localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId, String(heightPx));
+    invalidateUiPrefsCache(projectId);
     apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { scriptEditorHeight: heightPx } }).catch(() => {});
   }
 
@@ -728,17 +752,14 @@
 
   async function fetchSemanticModeFromServer(projectId) {
     if (!projectId) return null;
-    try {
-      const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
-      return isSemanticModeValue(data?.semanticMode) ? data.semanticMode : null;
-    } catch {
-      return null;
-    }
+    const data = await fetchUiPrefs(projectId);
+    return isSemanticModeValue(data?.semanticMode) ? data.semanticMode : null;
   }
 
   function persistSemanticMode(projectId, mode) {
     if (!projectId) return;
     localStorage.setItem(SEMANTIC_MODE_STORAGE_KEY_PREFIX + projectId, mode);
+    invalidateUiPrefsCache(projectId);
     apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { semanticMode: mode } }).catch(() => {});
   }
 
