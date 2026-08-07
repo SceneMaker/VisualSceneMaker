@@ -47,7 +47,42 @@
   const saveAsKeyShortcut = isMacPlatform ? "Meta+Shift+S" : "Control+Shift+S";
   const exportKeyShortcut = isMacPlatform ? "Meta+E" : "Control+E";
 
-  let token = localStorage.getItem("vsm_token") || "";
+  /**
+   * A stored token is only worth keeping if it has not already expired.
+   *
+   * Sending a stale one costs an entire failed connect: every REST call 401s, the WebSocket is
+   * rejected with 1008, which displays "Missing or invalid token." and clears the token, and only
+   * the *retry* — after its backoff delay — takes the Keycloak refresh path. That is the slow
+   * landing page, the token warning that flashes up, and the apparent reload, all from one cause:
+   * autoConnect() refreshes only when there is no token at all, so a present-but-expired one is
+   * trusted precisely because it exists.
+   *
+   * Conservative on purpose. Only a token that is definitely a JWT, definitely carries `exp`, and
+   * is definitely past it gets discarded. Anything unparsable is kept — the non-OIDC local token is
+   * an opaque random string, not a JWT, and must survive this untouched.
+   */
+  function storedTokenIfStillValid() {
+    const stored = localStorage.getItem("vsm_token") || "";
+    if (!stored) return "";
+    try {
+      const parts = stored.split(".");
+      if (parts.length !== 3) return stored;              // not a JWT: the local-mode token
+      const payload = JSON.parse(
+        atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+      );
+      if (typeof payload?.exp !== "number") return stored;
+      // 30s of slack, matching the refresh threshold used elsewhere: a token about to expire
+      // mid-handshake fails the same way as one already expired.
+      if (payload.exp * 1000 > Date.now() + 30000) return stored;
+      localStorage.removeItem("vsm_token");
+      console.log("[AUTH] Discarded an expired stored token; authenticating fresh.");
+      return "";
+    } catch (err) {
+      return stored;                                       // undecodable: leave it alone
+    }
+  }
+
+  let token = storedTokenIfStillValid();
   // Non-null once ensureKeycloakAuth() has initialized it (info.oidcEnabled === true).
   // Kept as plain state, not reactive — keycloak-js manages its own internal token lifecycle.
   let keycloak = null;
