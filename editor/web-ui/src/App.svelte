@@ -182,6 +182,11 @@
   const SCRIPT_EDITOR_STORAGE_KEY_PREFIX = 'vsm_script_editor_height_';
   const SCRIPT_EDITOR_DEFAULT_HEIGHT = 420;
   const SCRIPT_EDITOR_MIN_HEIGHT = 320; // matches .script-editor's own CSS min-height floor
+  // SceneFlow panel height. Unlike the two above there is no default *value*: with no user height
+  // set, the panel keeps its original width-derived square (--sf-canvas-height falls back to
+  // --sf-canvas-width in app.css), which is why "unset" is null rather than a number here.
+  const SCENEFLOW_HEIGHT_STORAGE_KEY_PREFIX = 'vsm_sceneflow_height_';
+  const SCENEFLOW_MIN_HEIGHT = 320;
   const SEMANTIC_MODE_STORAGE_KEY_PREFIX = 'vsm_semantic_mode_';
   const RUNTIME_STATE_LABELS = {
     running: "Running",
@@ -736,6 +741,39 @@
     localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId, String(heightPx));
     invalidateUiPrefsCache(projectId);
     apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { scriptEditorHeight: heightPx } }).catch(() => {});
+  }
+
+  // SceneFlow panel height — same load/persist shape as the script editor's, except null is a
+  // meaningful value meaning "never resized, keep the width-derived square" (see the constants).
+  function loadSceneFlowPanelHeight(projectId) {
+    if (!projectId) return null;
+    const raw = localStorage.getItem(SCENEFLOW_HEIGHT_STORAGE_KEY_PREFIX + projectId);
+    const parsed = raw ? Number(raw) : NaN;
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  async function fetchSceneFlowPanelHeightFromServer(projectId) {
+    if (!projectId) return null;
+    const data = await fetchUiPrefs(projectId);
+    const height = Number(data?.sceneFlowPanelHeight);
+    return Number.isFinite(height) && height > 0 ? height : null;
+  }
+
+  // heightPx === null clears the override (double-click on the grip), restoring the square.
+  function persistSceneFlowPanelHeight(projectId, heightPx) {
+    if (!projectId) return;
+    if (heightPx === null) {
+      localStorage.removeItem(SCENEFLOW_HEIGHT_STORAGE_KEY_PREFIX + projectId);
+    } else {
+      localStorage.setItem(SCENEFLOW_HEIGHT_STORAGE_KEY_PREFIX + projectId, String(heightPx));
+    }
+    invalidateUiPrefsCache(projectId);
+    // Sent as 0 rather than null to clear: the server merges incoming keys into the stored object
+    // (see WebUiServer.handleUiPrefsPut), so a JSON null would persist as a null rather than
+    // removing the key — and loadSceneFlowPanelHeight/fetch… both treat 0 as "unset" already.
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, {
+      uiPrefs: { sceneFlowPanelHeight: heightPx === null ? 0 : heightPx }
+    }).catch(() => {});
   }
 
   // Semantic Analysis view mode (M13k) — "off" is the default for a project that's never set one
@@ -1306,6 +1344,50 @@
     persistScriptEditorHeight(selectedProjectId, scriptEditorHeight);
   }
 
+  // SceneFlow panel resize: same height-only drag as the two above, with one wrinkle — nothing is
+  // committed until the pointer actually moves. A double-click on the grip (the reset gesture) also
+  // delivers two full down/up pairs, so persisting on every pointerup would fire PUTs that race the
+  // reset's own PUT and can land after it, resurrecting the height the user just cleared.
+  function startSceneFlowPanelResize(event) {
+    if (!isPrimaryPointer(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    sceneFlowPanelResize = { lastClientY: event.clientY, moved: false };
+  }
+
+  function handleSceneFlowPanelResizeMove(event) {
+    if (!sceneFlowPanelResize) return;
+    event.preventDefault();
+    if (!sceneFlowPanelResize.moved) {
+      sceneFlowPanelResize.moved = true;
+      // Seed from the height actually on screen: until the first drag there is no numeric height,
+      // just whatever the width-derived square resolved to.
+      if (sceneFlowPanelHeight === null) {
+        const measured = sceneFlowLayoutEl?.getBoundingClientRect().height;
+        sceneFlowPanelHeight = Math.max(SCENEFLOW_MIN_HEIGHT, Math.round(measured || SCENEFLOW_MIN_HEIGHT));
+      }
+    }
+    const dy = event.clientY - sceneFlowPanelResize.lastClientY;
+    sceneFlowPanelResize.lastClientY = event.clientY;
+    sceneFlowPanelHeight = Math.max(SCENEFLOW_MIN_HEIGHT, sceneFlowPanelHeight + dy);
+  }
+
+  function handleSceneFlowPanelResizeUp() {
+    if (!sceneFlowPanelResize) return;
+    const { moved } = sceneFlowPanelResize;
+    sceneFlowPanelResize = null;
+    if (moved) {
+      persistSceneFlowPanelHeight(selectedProjectId, sceneFlowPanelHeight);
+    }
+  }
+
+  /** Double-click the grip: drop the custom height and go back to the width-derived square. */
+  function resetSceneFlowPanelHeight() {
+    sceneFlowPanelResize = null;
+    sceneFlowPanelHeight = null;
+    persistSceneFlowPanelHeight(selectedProjectId, null);
+  }
+
   // .panel-wide/.sceneflow-panel deliberately break out of <main>'s centered max-width using a
   // `calc(100vw - margin)` full-bleed trick — but 100vw includes the vertical scrollbar's own
   // width while the "50%" reference point it's combined with does not, so on any page tall
@@ -1338,6 +1420,7 @@
       handlePluginBadgeResizeMove(event);
       handleSiaPanelResizeMove(event);
       handleScriptEditorResizeMove(event);
+      handleSceneFlowPanelResizeMove(event);
       handleActionModalPointerMove(event);
     };
     const upHandler = (event) => {
@@ -1346,6 +1429,7 @@
       handlePluginBadgeResizeUp();
       handleSiaPanelResizeUp();
       handleScriptEditorResizeUp();
+      handleSceneFlowPanelResizeUp();
       handleActionModalPointerUp();
     };
     document.addEventListener("mousemove", moveHandler, true);
@@ -1844,6 +1928,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let siaPanelResize = null;   // { lastClientY } | null — height-only, no per-instance keying needed
   let scriptEditorHeight = SCRIPT_EDITOR_DEFAULT_HEIGHT; // persisted per project (M13j)
   let scriptEditorResize = null; // { lastClientY } | null
+  let sceneFlowPanelHeight = null; // px, or null = width-derived square (persisted per project)
+  let sceneFlowPanelResize = null; // { lastClientY } | null
+  let sceneFlowLayoutEl;           // measured to seed the first drag from the square's height
   let previewLoadProgress = {}; // { [instanceName]: 0-100 } — from vm.progress postMessage (M9)
   let previewSpeakingInstances = new Set(); // instanceNames currently speaking — gates ALL turn/emotion
                                              // Play buttons globally so overlapping speech can't be triggered
@@ -2031,10 +2118,29 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   $: selectedProject = projects.find((p) => p.projectId === selectedProjectId) || null;
+  // Inspector section tracks. These were `minmax(0, 1fr)`, which let ONE expanded section swallow
+  // every spare pixel: with 21 variables in a tall panel, Variables took 1296px for content needing
+  // 630px and pushed Commands flush against the panel's bottom edge, where it read as hidden
+  // (reported 2026-08-07). Each expanded section now gets a definite `minmax(one row, its own
+  // content)` track: it never grows past what it has to show, and it still shrinks toward a one-row
+  // floor when the panel is short, rather than being all-or-nothing. A trailing 1fr spacer collects
+  // the leftover at the bottom of the panel instead of inside whichever section happens to be open.
+  const DEF_ROW_H = 28;      // .def-row / .var-row height
+  const DEF_ROW_GAP = 1.6;   // .def-list gap: 0.1rem
+  const LIST_CHROME = 10;    // .def-list padding (0.25rem x2) + 1px border x2
+  const SECTION_HEAD_H = 32; // .definition-header
+  function defSectionTrack(collapsed, rowCount) {
+    if (collapsed) return "auto";
+    const listPx = (rows) => rows * DEF_ROW_H + Math.max(0, rows - 1) * DEF_ROW_GAP + LIST_CHROME;
+    // At least one row so an empty section still shows its "none yet" line rather than collapsing.
+    const rows = Math.max(1, rowCount);
+    return `minmax(${Math.round(SECTION_HEAD_H + listPx(1))}px, ${Math.round(SECTION_HEAD_H + listPx(rows))}px)`;
+  }
   $: inspectorDefGridStyle = [
-    typeDefsCollapsed ? "auto" : "minmax(0, 1fr)",
-    varDefsCollapsed ? "auto" : "minmax(0, 1fr)",
-    cmdExecCollapsed ? "auto" : "minmax(0, 1fr)"
+    defSectionTrack(typeDefsCollapsed, nodeEditorTypeDefs.length),
+    defSectionTrack(varDefsCollapsed, nodeEditorVarDefs.length),
+    defSectionTrack(cmdExecCollapsed, nodeEditorCommands.length),
+    "1fr"
   ].join(" ");
   $: filteredPrefs = filterKeyValues(prefDraft, prefFilter);
   $: projectConfigView = normalizeProjectConfig(projectConfigDraft || projectConfig || {});
@@ -3168,7 +3274,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   })();
   $: sceneFlowFrameColor = superNodeFrameColor(sceneFlow);
   $: sceneFlowFrameStyle = `--sf-frame-color:${sceneFlowFrameColor};`;
-  $: sceneFlowLayoutStyle = "";
+  // Overrides only --sf-canvas-height (app.css). Width stays viewport-derived, and with no user
+  // height the variable falls back to its width-derived default, i.e. the original square.
+  $: sceneFlowLayoutStyle = sceneFlowPanelHeight
+    ? `--sf-canvas-height:${sceneFlowPanelHeight}px;`
+    : "";
   $: if (varBadgeState.visible !== sceneFlowShowVars) {
     varBadgeState = { ...varBadgeState, visible: sceneFlowShowVars };
   }
@@ -3419,6 +3529,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       if (serverHeight && selectedProjectId === _scriptEditorPid) {
         scriptEditorHeight = serverHeight;
         localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + _scriptEditorPid, String(serverHeight));
+      }
+    });
+    sceneFlowPanelHeight = loadSceneFlowPanelHeight(selectedProjectId);
+    const _sceneFlowHeightPid = selectedProjectId;
+    fetchSceneFlowPanelHeightFromServer(_sceneFlowHeightPid).then((serverHeight) => {
+      if (serverHeight && selectedProjectId === _sceneFlowHeightPid) {
+        sceneFlowPanelHeight = serverHeight;
+        localStorage.setItem(SCENEFLOW_HEIGHT_STORAGE_KEY_PREFIX + _sceneFlowHeightPid, String(serverHeight));
       }
     });
     semanticMode = loadSemanticMode(selectedProjectId);
@@ -3938,6 +4056,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     siaPanelOpen = false;
     siaLoaded = {};
     siaPanelResize = null;
+    sceneFlowPanelHeight = null;
+    sceneFlowPanelResize = null;
     previewLoadProgress = {};
     previewSpeakingInstances = new Set();
     showEditor = false;
@@ -16244,6 +16364,7 @@ Sentence:
           class:left-collapsed={!sceneFlowShowBlocks}
           class:right-collapsed={!sceneFlowShowInspector}
           style={sceneFlowLayoutStyle}
+          bind:this={sceneFlowLayoutEl}
         >
           {#if sceneFlowShowBlocks}
             <aside
@@ -17943,6 +18064,18 @@ Sentence:
           {:else}
             <div class="sceneflow-side-placeholder sceneflow-region-right" aria-hidden="true"></div>
           {/if}
+          <!-- Anchored to .sceneflow-layout, not .sceneflow-panel: the panel also contains the
+               scene script below, so its own bottom-right corner is far below this band. The
+               layout spans the full width whichever side rail is collapsed, so this corner is
+               stable. -->
+          <div
+            class="sceneflow-resize"
+            title="Drag to resize height · double-click to reset"
+            aria-hidden="true"
+            on:pointerdown|stopPropagation={startSceneFlowPanelResize}
+            on:mousedown|stopPropagation={startSceneFlowPanelResize}
+            on:dblclick|stopPropagation={resetSceneFlowPanelHeight}
+          ></div>
         </div>
       {:else}
         <p class="muted">No SceneFlow data loaded yet.</p>

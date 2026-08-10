@@ -2639,6 +2639,32 @@ a.export-link {
   align-items: stretch;
 }
 
+/* Height grip, same visual language as .script-editor-resize. Sits just outside the side panels'
+   rounded corners so it never overlaps their content, and above the canvas/inspector so a drag
+   starting on it isn't swallowed by the SVG's own pointer handling. */
+.sceneflow-resize {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  cursor: ns-resize;
+  touch-action: none;
+  z-index: 3;
+  background:
+    linear-gradient(135deg, transparent 45%, #c0b8ae 45%, #c0b8ae 55%, transparent 55%),
+    linear-gradient(135deg, transparent 65%, #c0b8ae 65%, #c0b8ae 75%, transparent 75%),
+    linear-gradient(135deg, transparent 82%, #c0b8ae 82%);
+  border-radius: 0 0 8px 0;
+}
+
+.sceneflow-resize:hover {
+  background:
+    linear-gradient(135deg, transparent 45%, #8d8579 45%, #8d8579 55%, transparent 55%),
+    linear-gradient(135deg, transparent 65%, #8d8579 65%, #8d8579 75%, transparent 75%),
+    linear-gradient(135deg, transparent 82%, #8d8579 82%);
+}
+
 .sceneflow-layout.left-collapsed {
   grid-template-columns: 0 minmax(0, 1fr) var(--sf-side-width);
 }
@@ -2674,26 +2700,36 @@ a.export-link {
 }
 
 .sceneflow-blocks {
+  /* Floor for a flexible section: its header plus one list row, so a section can never be squeezed
+     down to a content-free sliver (AGENTS did exactly that — measured 65px — when the band was
+     dragged short, reported 2026-08-07). */
+  --sf-section-floor: 104px;
   background: #e7e1d8;
   border: 1px dashed var(--stroke);
   border-radius: var(--radius-md);
   padding: 1rem 1rem 0.6rem;
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  /* auto, not hidden: this panel used to silently CLIP anything past its box while the inspector
+     next to it scrolled, so content here could become unreachable rather than merely offscreen. */
+  overflow: auto;
   display: grid;
   gap: 1.2rem;
   align-content: stretch;
-  grid-template-rows: auto minmax(0, 0.4fr) minmax(0, 0.6fr) minmax(0, 0fr);
+  grid-template-rows:
+    auto
+    minmax(var(--sf-section-floor), 0.4fr)
+    minmax(var(--sf-section-floor), 0.6fr)
+    minmax(0, 0fr);
   box-sizing: border-box;
 }
 
 .sceneflow-blocks.agents-collapsed:not(.scenes-collapsed) {
-  grid-template-rows: auto auto minmax(0, 1fr) minmax(0, 0fr);
+  grid-template-rows: auto auto minmax(var(--sf-section-floor), 1fr) minmax(0, 0fr);
 }
 
 .sceneflow-blocks.scenes-collapsed:not(.agents-collapsed) {
-  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 0fr);
+  grid-template-rows: auto minmax(var(--sf-section-floor), 1fr) auto minmax(0, 0fr);
 }
 
 .sceneflow-blocks.agents-collapsed.scenes-collapsed {
