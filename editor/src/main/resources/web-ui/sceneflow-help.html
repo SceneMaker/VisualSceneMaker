@@ -199,7 +199,7 @@
 <main>
   <div class="title-row">
     <img src="/images/vsm_logo.svg" alt="Visual SceneMaker">
-    <h1>SceneFlow Guide<span class="version-pill">v1.2 · 2026-08-10</span></h1>
+    <h1>SceneFlow Guide<span class="version-pill">v1.3 · 2026-08-11</span></h1>
   </div>
   <p class="subtitle">How SceneFlow editing is structured, and how to model common interaction patterns</p>
 
@@ -220,7 +220,12 @@
   </div>
 
   <h2 id="canvas">Canvas &amp; panels</h2>
-  <p>The SceneFlow editor has three regions (screenshots below from the ExampleProject):</p>
+  <p>
+    The SceneFlow editor has three regions, held together in one framed workspace &mdash; the same
+    kind of frame the script editor below it sits in. The blocks and inspector panels share the
+    frame's background, so the whole area reads as a single surface with the canvas inset into it
+    (screenshots below from the ExampleProject).
+  </p>
 
   <h3>Blocks (left)</h3>
   <p>Drag or click to create nodes, supernodes, comments, and edges. Below that: the project's configured <strong>Agents</strong> and available <strong>Scenes</strong>.</p>
@@ -247,8 +252,8 @@
   <h3>Resizing the editor</h3>
   <p>
     By default the three regions are as tall as the canvas is wide, which on a wide window can make
-    them taller than you need. Drag the <strong>grip in the bottom-right corner</strong> of the
-    SceneFlow area to set the height yourself; the blocks and inspector panels follow along.
+    them taller than you need. Drag the <strong>grip in the frame's bottom-right corner</strong> to
+    set the height yourself; the blocks and inspector panels follow along.
     Once set, the height stays put when you resize the browser window, and is remembered per
     project. <strong>Double-click the grip</strong> to clear it and go back to the
     width-based default.
@@ -442,7 +447,7 @@
     <p>No polling loop at all. The instant the i-edge's condition (e.g. an incoming <code>Event</code> variable matching a button-press signal) becomes true, it preemptively interrupts whatever's running and reacts right away.</p>
   </div>
 
-  <footer>Visual SceneMaker — SceneFlow editing reference · v1.2 · 2026-08-10</footer>
+  <footer>Visual SceneMaker — SceneFlow editing reference · v1.3 · 2026-08-11</footer>
 </main>
 
 </div>

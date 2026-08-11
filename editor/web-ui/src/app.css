@@ -2330,10 +2330,16 @@ a.export-link {
   --sf-gap: 0.5rem;
   --sf-panel-pad: var(--panel-pad);
   --sf-side-margin: 0.75rem;
+  /* Inset of the frame that holds blocks + canvas + inspector as one slab (.sceneflow-layout).
+     Subtracted from --sf-canvas-width below: the frame sits between the panel and the three
+     regions, so without this the canvas would silently lose that much width — and since the
+     default height is derived from the canvas width, the default height with it. */
+  --sf-frame-pad: 0.45rem;
+  --sf-frame-border: 1px;
   /* Same scrollbar-width correction as .panel-wide above — margin-left/right (below) don't need
      it, only the width, since the scrollbar only ever overshoots the right edge. */
   --sf-viewport-width: calc(100vw - var(--scrollbar-width, 0px) - (2 * var(--sf-side-margin)));
-  --sf-canvas-width: calc(var(--sf-viewport-width) - (2 * var(--sf-panel-pad)) - (2 * var(--sf-side-width)) - (2 * var(--sf-gap)));
+  --sf-canvas-width: calc(var(--sf-viewport-width) - (2 * var(--sf-panel-pad)) - (2 * var(--sf-frame-pad)) - (2 * var(--sf-frame-border)) - (2 * var(--sf-side-width)) - (2 * var(--sf-gap)));
   --sf-canvas-height: var(--sf-canvas-width);
   grid-column: 1 / -1;
   user-select: none;
@@ -2630,6 +2636,12 @@ a.export-link {
   color: var(--muted);
 }
 
+/* Frame holding the blocks panel, the canvas and the inspector as one connected slab, rather than
+   three cards floating separately on the panel. Filled with the same #e7e1d8 the two side panels
+   already use, so they merge into it and only their dashed outlines mark them out — the canvas then
+   reads as inset into a single workspace. Border/radius match .script-editor-frame so this frame and
+   the script editor's below it are recognisably the same device. The height grip lives on this
+   element (see .sceneflow-resize), i.e. on the frame rather than on the inspector's corner. */
 .sceneflow-layout {
   position: relative;
   display: grid;
@@ -2637,15 +2649,20 @@ a.export-link {
   gap: var(--sf-gap);
   height: var(--sf-canvas-height);
   align-items: stretch;
+  background: #e7e1d8;
+  border: var(--sf-frame-border) solid var(--stroke);
+  border-radius: 12px;
+  padding: var(--sf-frame-pad);
+  box-sizing: border-box;
 }
 
-/* Height grip, same visual language as .script-editor-resize. Sits just outside the side panels'
-   rounded corners so it never overlaps their content, and above the canvas/inspector so a drag
-   starting on it isn't swallowed by the SVG's own pointer handling. */
+/* Height grip, same visual language and placement as .script-editor-resize: tucked into the frame's
+   own bottom-right corner, inside its border radius. Above the canvas/inspector so a drag starting
+   on it isn't swallowed by the SVG's own pointer handling. */
 .sceneflow-resize {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  bottom: 2px;
+  right: 2px;
   width: 16px;
   height: 16px;
   cursor: ns-resize;
@@ -2881,7 +2898,10 @@ a.export-link {
 }
 
 .sceneflow-container {
-  border: 4px solid var(--sf-frame-color, var(--stroke));
+  /* 2px, not the original 4px: it now sits just inside .sceneflow-layout's own frame, and two
+     nested borders that heavy read as busy. Still carries the current supernode's colour, which
+     is what makes it worth keeping at all. */
+  border: 2px solid var(--sf-frame-color, var(--stroke));
   border-radius: var(--radius-md);
   background: #f9f6ed;
   overflow: hidden;
