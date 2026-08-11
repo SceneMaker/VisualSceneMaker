@@ -2540,9 +2540,28 @@ a.export-link {
   cursor: not-allowed;
 }
 
+/* Pinned to the top of the window so project state, Save and the runtime controls stay reachable
+   once the page grows past the viewport (the SceneFlow frame and the script below it scroll under
+   it). Deliberately plain `sticky` with no JS: the earlier attempt at a stay-visible header combined
+   sticky with a bind:clientHeight-driven calc() height and locked the page up (see the note on
+   .script-sticky-header below) — there is nothing measured here, so that feedback loop can't form.
+   top: 0 rather than an inset matching the panel's padding: any gap above the header would let the
+   canvas show through above it as it scrolls past.
+   z-index sits in the free band between the in-canvas overlays it must cover (runtime var panel 20,
+   helper dropdown 40, comment overlay 10, preview panels ~5-15) and the dialogs that must still
+   cover IT (.project-action-confirmation 190, .modal-backdrop 200, .cmd-ac-dropdown 210). */
 .sceneflow-controls-panel {
+  position: sticky;
+  top: 0;
+  z-index: 60;
   background: #e7e1d8;
   border: 1px dashed var(--stroke);
+  /* Solid and darker than the dashed sides, plus a soft drop shadow. Everything that scrolls under
+     this bar — the SceneFlow frame, the script card — is the very same #e7e1d8, so the default
+     1px dashed var(--stroke) edge left the pinned menu visually fused with whatever passed beneath
+     it. #c0b8ae is the tone already used for the resize grips, so this introduces no new colour. */
+  border-bottom: 1px solid #c0b8ae;
+  box-shadow: 0 3px 8px rgba(28, 27, 21, 0.10);
   border-radius: var(--radius-md);
   padding: 0.75rem 0.9rem;
   display: grid;
