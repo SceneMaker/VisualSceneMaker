@@ -199,7 +199,7 @@
 <main>
   <div class="title-row">
     <img src="/images/vsm_logo.svg" alt="Visual SceneMaker">
-    <h1>SceneFlow Guide<span class="version-pill">v1.4 · 2026-08-11</span></h1>
+    <h1>SceneFlow Guide<span class="version-pill">v1.5 · 2026-08-11</span></h1>
   </div>
   <p class="subtitle">How SceneFlow editing is structured, and how to model common interaction patterns</p>
 
@@ -244,9 +244,10 @@
 
   <p>
     Canvas toolbar (top of the graph): <strong>Toggle node snap</strong> (magnet icon — snaps
-    dragged nodes to a grid) and <strong>Toggle info overlays</strong> (circled <em>i</em> — shows
+    dragged nodes to a grid), <strong>Toggle info overlays</strong> (circled <em>i</em> — shows
     or hides the small colored command badges on nodes, see <a href="#commands">Commands</a>
-    below). This guide's own button sits right beside them.
+    below), and <strong>Show/hide variable badges</strong> (stacked cards — see
+    <a href="#variables">Variables</a> below). This guide's own button sits right beside them.
   </p>
 
   <h3>The menu stays put</h3>
@@ -384,6 +385,27 @@
     press — commonly the condition an i-edge watches).
   </p>
 
+  <h3>Variable badges on the canvas</h3>
+  <p>
+    Two kinds of badge float over the graph: one for the chart's own variables (global, plus local
+    when you are inside a supernode), and one per configured plugin showing that plugin's variables
+    and their current values — handy for watching plugin state while a flow runs.
+  </p>
+  <p>
+    Each badge starts as a <strong>title-only chip</strong>. Click its chevron to expand it, and drag
+    its title bar to move it or the bottom-right corner to resize it; position and expanded state are
+    remembered per project. A project with several plugins would otherwise cover a good part of the
+    canvas, so keeping them folded by default leaves the graph readable.
+  </p>
+  <p>
+    To get them out of the way entirely, use the
+    <svg class="icon-inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h10.5v5.5H3.75zM9.75 13.25h10.5v5.5H9.75z"/></svg>
+    <strong>Show/hide variable badges</strong> button in the canvas toolbar &mdash; it hides every
+    badge at once, chart and plugin alike, and remembers the setting. Expanded badges come back
+    expanded when you switch them on again. The same values are also always available without the
+    badges: in the Inspector's Variables section, and in the runtime monitor.
+  </p>
+
   <h2 id="commands">Commands</h2>
   <p>
     A node can carry commands, run once when the node is entered. In compact/info view (the
@@ -456,7 +478,7 @@
     <p>No polling loop at all. The instant the i-edge's condition (e.g. an incoming <code>Event</code> variable matching a button-press signal) becomes true, it preemptively interrupts whatever's running and reacts right away.</p>
   </div>
 
-  <footer>Visual SceneMaker — SceneFlow editing reference · v1.4 · 2026-08-11</footer>
+  <footer>Visual SceneMaker — SceneFlow editing reference · v1.5 · 2026-08-11</footer>
 </main>
 
 </div>

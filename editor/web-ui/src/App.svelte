@@ -144,8 +144,8 @@
   const DEFAULT_AGENT_PORT = "7777";
   const DEFAULT_VAR_BADGE_STATE = {
     visible: true,
-    global: { x: 16, y: 12, w: 240, h: 150, expanded: true },
-    local: { x: 16, y: 190, w: 240, h: 150, expanded: true }
+    global: { x: 16, y: 12, w: 240, h: 150, expanded: false },
+    local: { x: 16, y: 190, w: 240, h: 150, expanded: false }
   };
   const DEFAULT_SCENEFLOW_TOGGLES = {
     nodeSnap: true,
@@ -686,7 +686,10 @@
 
   function getPluginBadgePos(instanceName, index) {
     if (pluginBadgeState[instanceName]) return pluginBadgeState[instanceName];
-    return { x: PLUGIN_BADGE_DEFAULT_X, y: PLUGIN_BADGE_DEFAULT_Y + index * PLUGIN_BADGE_Y_STEP, w: PLUGIN_BADGE_DEFAULT_W, h: PLUGIN_BADGE_DEFAULT_H, expanded: true };
+    // expanded: false — a badge starts as a title-only chip. Expanded was the old default, which
+    // meant every plugin dropped a full panel onto the canvas the first time a project was opened.
+    // Only affects badges with no persisted state; anyone who has already expanded one keeps it.
+    return { x: PLUGIN_BADGE_DEFAULT_X, y: PLUGIN_BADGE_DEFAULT_Y + index * PLUGIN_BADGE_Y_STEP, w: PLUGIN_BADGE_DEFAULT_W, h: PLUGIN_BADGE_DEFAULT_H, expanded: false };
   }
 
   // Only the panel's height persists across sessions — whether an agent is loaded does NOT
@@ -17019,6 +17022,21 @@ Sentence:
               <button
                 type="button"
                 class="sceneflow-toggle sceneflow-toggle-icon"
+                class:active={sceneFlowShowVars}
+                on:click={toggleVarBadges}
+                aria-pressed={sceneFlowShowVars}
+                aria-label={sceneFlowShowVars ? "Hide variable badges" : "Show variable badges"}
+                disabled={!sceneFlow}
+                title={sceneFlowShowVars ? "Hide variable badges" : "Show variable badges"}
+              >
+                <!-- Stacked cards: the badges themselves, shown/hidden as one group. -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h10.5v5.5H3.75zM9.75 13.25h10.5v5.5H9.75z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="sceneflow-toggle sceneflow-toggle-icon"
                 on:click={openSceneFlowHelp}
                 aria-label="Open SceneFlow help"
                 title="Open SceneFlow help"
@@ -17034,7 +17052,7 @@ Sentence:
                 variables={displayGlobalVarList.map((def) => ({ line: varBadgeLine(def), description: varBadgeLine(def) }))}
                 loading={runtimeLoading}
                 error={runtimeError}
-                expanded={varBadgeState.global?.expanded ?? true}
+                expanded={varBadgeState.global?.expanded ?? false}
                 x={varBadgeState.global?.x ?? 0}
                 y={varBadgeState.global?.y ?? 0}
                 w={varBadgeState.global?.w ?? VAR_BADGE_MIN_WIDTH}
@@ -17051,7 +17069,7 @@ Sentence:
                   variables={displayLocalVarList.map((def) => ({ line: varBadgeLine(def), description: varBadgeLine(def) }))}
                   loading={runtimeLoading}
                   error={runtimeError}
-                  expanded={varBadgeState.local?.expanded ?? true}
+                  expanded={varBadgeState.local?.expanded ?? false}
                   x={varBadgeState.local?.x ?? 0}
                   y={varBadgeState.local?.y ?? 0}
                   w={varBadgeState.local?.w ?? VAR_BADGE_MIN_WIDTH}
@@ -17063,7 +17081,11 @@ Sentence:
                 />
               {/if}
             {/if}
-            {#if selectedProjectId && pluginBadgeDescriptors.length > 0}
+            <!-- Same sceneFlowShowVars gate as the project variable badges above: one toolbar
+                 button hides every badge on the canvas. Plugin badges previously had no visibility
+                 control at all, so a project's canvas gained one permanent panel per plugin (4
+                 plugins in the ExampleProject already covered 20% of the canvas). -->
+            {#if sceneFlowShowVars && selectedProjectId && pluginBadgeDescriptors.length > 0}
               {#each pluginBadgeDescriptors as badge, i (badge.instanceName)}
                 <VarBadge
                   title={badge.pluginName}
@@ -17085,7 +17107,7 @@ Sentence:
                     }
                     return { line, description: v.description || line };
                   })}
-                  expanded={pluginBadgeState[badge.instanceName]?.expanded ?? true}
+                  expanded={pluginBadgeState[badge.instanceName]?.expanded ?? false}
                   x={pluginBadgeState[badge.instanceName]?.x ?? PLUGIN_BADGE_DEFAULT_X}
                   y={pluginBadgeState[badge.instanceName]?.y ?? (PLUGIN_BADGE_DEFAULT_Y + i * PLUGIN_BADGE_Y_STEP)}
                   w={pluginBadgeState[badge.instanceName]?.w ?? PLUGIN_BADGE_DEFAULT_W}
