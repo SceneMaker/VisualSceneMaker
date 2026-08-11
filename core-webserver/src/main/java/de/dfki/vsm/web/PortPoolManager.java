@@ -26,6 +26,10 @@ import java.util.TreeSet;
  * project can run concurrently on this one server process without two projects' plugins
  * fighting over the same port.
  *
+ * <p><b>Off unless explicitly enabled</b> ({@code VSM_PORT_POOL_ENABLED}, implied by
+ * {@code VSM_PLUGIN_PATH_PREFIX_ENABLED}) — see {@code mPoolEnabled}. On a desktop run the
+ * authored ports are correct and must not be touched.
+ *
  * <p>Allocation is keyed by an opaque "owner" string (in practice, the project's
  * {@code projectId}) and happens <b>once per owner, ever</b> — not once per Runtime.Start.
  * This is deliberate, not an oversight: {@code charamel-embed}'s transport is constructed
@@ -82,6 +86,17 @@ public class PortPoolManager {
     private final int mPoolSize;
     private final Path mRegistryFile;
     private final boolean mPathPrefixEnabled;
+    /**
+     * Whether to override plugin ports at all. OFF by default, because port pooling only makes
+     * sense for the multi-user server deployment: on a desktop run (./gradlew run) the authored
+     * project.xml ports are exactly right, and overriding them silently breaks any project
+     * content that references a plugin's port literally (screens.json's character URL,
+     * srcVar values) — the {@code _portRewrites} machinery that repairs those is itself only
+     * active behind path-prefix routing, i.e. only on the server. Confirmed 2026-08-11: a local
+     * run allocated pool ports, charamel-embed bound one, and the character iframe kept
+     * requesting the authored localhost:3040 and failed to load.
+     */
+    private final boolean mPoolEnabled;
 
     /** Every port not currently handed out. */
     private final TreeSet<Integer> mFreePorts = new TreeSet<>();
@@ -94,19 +109,30 @@ public class PortPoolManager {
 
     public PortPoolManager() {
         this(intEnv("VSM_PORT_POOL_START", 20000), intEnv("VSM_PORT_POOL_SIZE", 200), resolveDefaultRegistryFile(),
-                boolEnv("VSM_PLUGIN_PATH_PREFIX_ENABLED", false));
+                boolEnv("VSM_PLUGIN_PATH_PREFIX_ENABLED", false),
+                // Path-prefix routing implies pooling (it exists to route the pooled ports), so
+                // enabling it is enough — the deployment's compose already sets it and needs no
+                // change. VSM_PORT_POOL_ENABLED allows pooling without prefix routing.
+                boolEnv("VSM_PORT_POOL_ENABLED", false)
+                        || boolEnv("VSM_PLUGIN_PATH_PREFIX_ENABLED", false));
     }
 
     /** Package-private, exercised directly by tests with a small pool and a temp registry file. */
     PortPoolManager(int poolStart, int poolSize, Path registryFile) {
-        this(poolStart, poolSize, registryFile, false);
+        this(poolStart, poolSize, registryFile, false, true);
     }
 
     PortPoolManager(int poolStart, int poolSize, Path registryFile, boolean pathPrefixEnabled) {
+        this(poolStart, poolSize, registryFile, pathPrefixEnabled, true);
+    }
+
+    PortPoolManager(int poolStart, int poolSize, Path registryFile, boolean pathPrefixEnabled,
+                    boolean poolEnabled) {
         mPoolStart = poolStart;
         mPoolSize = poolSize;
         mRegistryFile = registryFile;
         mPathPrefixEnabled = pathPrefixEnabled;
+        mPoolEnabled = poolEnabled;
         for (int i = 0; i < poolSize; i++) {
             mFreePorts.add(poolStart + i);
         }
@@ -152,6 +178,12 @@ public class PortPoolManager {
      *         error is surfaced to the caller rather than queueing (Decision 16).
      */
     public synchronized void ensureAllocated(String ownerKey, List<PluginConfig> pluginConfigs) {
+        if (!mPoolEnabled) {
+            // Desktop/single-user run: leave the authored project.xml ports completely alone
+            // (see mPoolEnabled's docs). No allocation is recorded, so withOriginalConfig()
+            // correctly becomes a pass-through for saves too.
+            return;
+        }
         if (isAllocated(ownerKey)) {
             return;
         }

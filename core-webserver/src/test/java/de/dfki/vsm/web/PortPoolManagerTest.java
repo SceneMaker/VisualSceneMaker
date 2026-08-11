@@ -167,6 +167,27 @@ class PortPoolManagerTest {
     }
 
     @Test
+    void poolingDisabledLeavesAuthoredPortsCompletelyUntouched() {
+        // The desktop/single-user case: no allocation at all, so project content that
+        // references a plugin port literally (screens.json's character URL) stays valid.
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), false, false);
+        PluginConfig gui = htmlguiWsLike();
+        PluginConfig avatar = charamelEmbedLike("CharamelEmbedXenia");
+
+        pool.ensureAllocated("project-1", List.of(gui, avatar));
+
+        assertEquals("3040", avatar.getProperty("port"));
+        assertEquals("8080", gui.getProperty("html_port"));
+        assertEquals("4041", gui.getProperty("ws_port"));
+        assertNull(avatar.getProperty("_pathPrefix"));
+        assertNull(avatar.getProperty("_portRewrites"));
+        assertEquals(10, pool.freeCount());          // nothing handed out
+        assertFalse(pool.isAllocated("project-1"));
+        // And a save through withOriginalConfig is a pass-through that still sees authored ports.
+        assertEquals("3040", pool.withOriginalConfig("project-1", () -> avatar.getProperty("port")));
+    }
+
+    @Test
     void pathPrefixDisabledByDefaultLeavesNoSyntheticProperty() {
         PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"));
         PluginConfig config = charamelEmbedLike("CharamelEmbedXenia");
