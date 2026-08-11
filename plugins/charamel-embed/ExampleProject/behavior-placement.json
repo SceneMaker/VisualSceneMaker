@@ -1,0 +1,92 @@
+{
+  "observations": {
+    "charamel-embed|emotion|L7|S4|T4": {
+      "origin": "authored",
+      "function": "emotion/attitude",
+      "slot": "before-object",
+      "turnPosition": "LAST",
+      "affiliate": "rheme",
+      "clauseType": "subordinate"
+    },
+    "charamel-embed|emotion|L4|S2|T1": {
+      "origin": "authored",
+      "function": "emotion/attitude",
+      "slot": "after-predicate",
+      "turnPosition": "LAST",
+      "affiliate": "rheme",
+      "clauseType": "main"
+    },
+    "runtime|pause|L4|S1|T1": {
+      "origin": "authored",
+      "slot": "before-subject",
+      "turnPosition": "FIRST",
+      "affiliate": "clause",
+      "clauseType": "main"
+    },
+    "charamel-embed|emotion|L10|S6|T0": {
+      "origin": "authored",
+      "function": "emotion/attitude",
+      "slot": "before-predicate",
+      "turnPosition": "LAST",
+      "affiliate": "rheme",
+      "clauseType": "main"
+    },
+    "charamel-embed|emotion|L7|S3|T8": {
+      "origin": "authored",
+      "function": "emotion/attitude",
+      "slot": "before-verb",
+      "turnPosition": "FIRST",
+      "affiliate": "rheme",
+      "clauseType": "subordinate"
+    }
+  },
+  "dismissals": {},
+  "model": {
+    "smoothingK": 5,
+    "counts": {
+      "a=rheme": {
+        "before-verb": 1,
+        "before-object": 1,
+        "before-predicate": 1,
+        "after-predicate": 1
+      },
+      "f=*|a=clause": {"before-subject": 1},
+      "f=emotion/attitude": {
+        "before-verb": 1,
+        "before-object": 1,
+        "before-predicate": 1,
+        "after-predicate": 1
+      },
+      "f=emotion/attitude|a=rheme": {
+        "before-verb": 1,
+        "before-object": 1,
+        "before-predicate": 1,
+        "after-predicate": 1
+      },
+      "f=emotion/attitude|a=rheme|c=subordinate|t=FIRST": {"before-verb": 1},
+      "f=*|a=clause|c=main|t=FIRST": {"before-subject": 1},
+      "f=emotion/attitude|a=rheme|c=main|t=LAST": {
+        "before-predicate": 1,
+        "after-predicate": 1
+      },
+      "f=*|a=clause|c=main": {"before-subject": 1},
+      "f=emotion/attitude|a=rheme|c=subordinate|t=LAST": {"before-object": 1},
+      "f=*": {"before-subject": 1},
+      "a=clause": {"before-subject": 1},
+      "f=emotion/attitude|a=rheme|c=main": {
+        "before-predicate": 1,
+        "after-predicate": 1
+      },
+      "f=emotion/attitude|a=rheme|c=subordinate": {
+        "before-verb": 1,
+        "before-object": 1
+      }
+    },
+    "observations": 5,
+    "snapped": 0,
+    "version": 1,
+    "weightTotal": 5
+  },
+  "version": 1,
+  "updatedAt": "2026-08-10T13:29:06.415157Z"
+}

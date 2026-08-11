@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Thu, 23 Jul 2026 11:15:04" start="S3;S1;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 11 Aug 2026 16:57:03" start="S3;S1;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -88,13 +88,13 @@
     <EEdge target="N2" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="270" yPos="235" ctrlXPos="308" ctrlYPos="235"/>
-        <ControlPoint xPos="380" yPos="235" ctrlXPos="343" ctrlYPos="235"/>
+        <ControlPoint xPos="303" yPos="128" ctrlXPos="341" ctrlYPos="128"/>
+        <ControlPoint xPos="373" yPos="128" ctrlXPos="343" ctrlYPos="128"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="200" yPos="200"/>
+      <Position xPos="233" yPos="93"/>
     </Graphics>
   </Node>
   <Node id="N2" name="done" history="false">
@@ -107,13 +107,13 @@
     <TEdge target="N2" start="" timeout="1000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="440" yPos="210" ctrlXPos="500" ctrlYPos="157"/>
-          <ControlPoint xPos="390" yPos="210" ctrlXPos="401" ctrlYPos="149"/>
+          <ControlPoint xPos="433" yPos="103" ctrlXPos="493" ctrlYPos="50"/>
+          <ControlPoint xPos="383" yPos="103" ctrlXPos="394" ctrlYPos="42"/>
         </Connection>
       </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="380" yPos="200"/>
+      <Position xPos="373" yPos="93"/>
     </Graphics>
   </Node>
   <Node id="N11" name="do emotion" history="false">
@@ -133,27 +133,35 @@
                       <Add>
                         <Add>
                           <Add>
-                            <StringLiteral><![CDATA[[Xenia emotion type=]]></StringLiteral>
+                            <StringLiteral><![CDATA[[Xenia emotion type=']]></StringLiteral>
                             <SimpleVariable name="emo_type"/>
                           </Add>
-                          <StringLiteral><![CDATA[ intensity=]]></StringLiteral>
+                          <StringLiteral><![CDATA[' intensity=']]></StringLiteral>
                         </Add>
                         <SimpleVariable name="emo_intensity"/>
                       </Add>
-                      <StringLiteral><![CDATA[ attack=]]></StringLiteral>
+                      <StringLiteral><![CDATA[' attack=']]></StringLiteral>
                     </Add>
                     <SimpleVariable name="emo_attack"/>
                   </Add>
-                  <StringLiteral><![CDATA[ hold=]]></StringLiteral>
+                  <StringLiteral><![CDATA[' hold=']]></StringLiteral>
                 </Add>
                 <SimpleVariable name="emo_hold"/>
               </Add>
-              <StringLiteral><![CDATA[ decay=]]></StringLiteral>
+              <StringLiteral><![CDATA[' decay=']]></StringLiteral>
             </Add>
             <SimpleVariable name="emo_decay"/>
           </Add>
-          <StringLiteral><![CDATA[]]]></StringLiteral>
+          <StringLiteral><![CDATA[']]]></StringLiteral>
         </Add>
+        <StructExpression>
+          <Assignment>
+            <SimpleVariable name="__vsm_mode"/>
+            <Expression>
+              <StringLiteral><![CDATA[nonblocking]]></StringLiteral>
+            </Expression>
+          </Assignment>
+        </StructExpression>
       </PlayAction>
       <Assignment>
         <SimpleVariable name="emo_type"/>
@@ -165,13 +173,13 @@
     <EEdge target="S2" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="205" yPos="372" ctrlXPos="157" ctrlYPos="399"/>
-        <ControlPoint xPos="90" yPos="440" ctrlXPos="146" ctrlYPos="384"/>
+        <ControlPoint xPos="303" yPos="268" ctrlXPos="251" ctrlYPos="268"/>
+        <ControlPoint xPos="163" yPos="268" ctrlXPos="216" ctrlYPos="268"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="200" yPos="320"/>
+      <Position xPos="303" yPos="233"/>
     </Graphics>
   </Node>
   <Node id="N12" name="do background" history="false">
@@ -199,13 +207,13 @@
     <EEdge target="S2" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="205" yPos="577" ctrlXPos="157" ctrlYPos="548"/>
-        <ControlPoint xPos="90" yPos="510" ctrlXPos="146" ctrlYPos="566"/>
+        <ControlPoint xPos="128" yPos="443" ctrlXPos="128" ctrlYPos="391"/>
+        <ControlPoint xPos="128" yPos="303" ctrlXPos="128" ctrlYPos="356"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="200" yPos="560"/>
+      <Position xPos="93" yPos="443"/>
     </Graphics>
   </Node>
   <Node id="N15" name="scene" history="false">
@@ -233,13 +241,13 @@
     <EEdge target="S3" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="443" yPos="478" ctrlXPos="391" ctrlYPos="478"/>
-        <ControlPoint xPos="303" yPos="478" ctrlXPos="356" ctrlYPos="478"/>
+        <ControlPoint xPos="443" yPos="408" ctrlXPos="391" ctrlYPos="408"/>
+        <ControlPoint xPos="303" yPos="408" ctrlXPos="356" ctrlYPos="408"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="443" yPos="443"/>
+      <Position xPos="443" yPos="373"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="wait for agent" comment="" hideLocalVar="false" hideGlobalVar="false" start="N10;">
@@ -252,8 +260,8 @@
     <IEdge target="N1" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="90" yPos="235" ctrlXPos="128" ctrlYPos="235"/>
-          <ControlPoint xPos="200" yPos="235" ctrlXPos="163" ctrlYPos="235"/>
+          <ControlPoint xPos="93" yPos="128" ctrlXPos="131" ctrlYPos="128"/>
+          <ControlPoint xPos="233" yPos="128" ctrlXPos="196" ctrlYPos="128"/>
         </Connection>
       </Graphics>
       <AndAnd>
@@ -262,7 +270,7 @@
       </AndAnd>
     </IEdge>
     <Graphics>
-      <Position xPos="20" yPos="200"/>
+      <Position xPos="23" yPos="93"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -300,8 +308,8 @@
     <IEdge target="N11" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="90" yPos="455" ctrlXPos="146" ctrlYPos="423"/>
-          <ControlPoint xPos="210" yPos="380" ctrlXPos="170" ctrlYPos="420"/>
+          <ControlPoint xPos="163" yPos="277" ctrlXPos="216" ctrlYPos="291"/>
+          <ControlPoint xPos="304" yPos="277" ctrlXPos="253" ctrlYPos="291"/>
         </Connection>
       </Graphics>
       <Neq>
@@ -312,8 +320,8 @@
     <IEdge target="N12" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="90" yPos="495" ctrlXPos="146" ctrlYPos="527"/>
-          <ControlPoint xPos="210" yPos="570" ctrlXPos="170" ctrlYPos="530"/>
+          <ControlPoint xPos="119" yPos="303" ctrlXPos="106" ctrlYPos="356"/>
+          <ControlPoint xPos="119" yPos="444" ctrlXPos="106" ctrlYPos="393"/>
         </Connection>
       </Graphics>
       <Neq>
@@ -322,7 +330,7 @@
       </Neq>
     </IEdge>
     <Graphics>
-      <Position xPos="20" yPos="440"/>
+      <Position xPos="93" yPos="233"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -360,8 +368,8 @@
     <IEdge target="N15" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="303" yPos="487" ctrlXPos="356" ctrlYPos="501"/>
-          <ControlPoint xPos="444" yPos="487" ctrlXPos="393" ctrlYPos="501"/>
+          <ControlPoint xPos="303" yPos="417" ctrlXPos="356" ctrlYPos="431"/>
+          <ControlPoint xPos="444" yPos="417" ctrlXPos="393" ctrlYPos="431"/>
         </Connection>
       </Graphics>
       <Neq>
@@ -370,7 +378,7 @@
       </Neq>
     </IEdge>
     <Graphics>
-      <Position xPos="233" yPos="443"/>
+      <Position xPos="233" yPos="373"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
