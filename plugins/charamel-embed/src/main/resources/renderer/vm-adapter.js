@@ -355,12 +355,52 @@
     ws.onerror = function () {};
   }
 
+  // A plain <script> onerror carries no status, so a vendor outage, a CSP block, an
+  // extension/content blocker and a typo'd engineUrl all looked identical — which cost a
+  // debugging round on 2026-08-11 (Charamel were mid-deploy of the engine; nothing was wrong
+  // on the VSM side). So on failure: probe once to narrow the cause down, say so in the
+  // overlay instead of leaving "Charakter lädt …" up forever, and retry with backoff, since
+  // vendor deploys are transient and a page left open should recover by itself.
+  var ENGINE_RETRY_DELAYS_MS = [2000, 5000, 15000, 30000];
+  var engineAttempt = 0;
+
+  function setOverlayText(text) {
+    var ov = document.getElementById('overlay');
+    if (ov) ov.textContent = text;
+  }
+
   function loadEngine() {
     var s = document.createElement('script');
     s.src = cfg.engineUrl;
     s.onload = function () { initEngine(); connect(); startHeartbeat(); };
-    s.onerror = function () { console.error('VSM: failed to load engine', cfg.engineUrl); };
+    s.onerror = function () {
+      s.remove();                 // don't accumulate dead <script> nodes across retries
+      onEngineLoadFailed();
+    };
     document.head.appendChild(s);
+  }
+
+  function onEngineLoadFailed() {
+    var url = cfg.engineUrl;
+    var retryMs = ENGINE_RETRY_DELAYS_MS[Math.min(engineAttempt, ENGINE_RETRY_DELAYS_MS.length - 1)];
+    engineAttempt++;
+    var tail = ' Retrying in ' + retryMs + 'ms (attempt ' + engineAttempt + ').';
+    // no-cors probe: an opaque *success* means the network path to the engine host is fine, so
+    // the script load itself was blocked. A rejection means we cannot reach it at all.
+    fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' }).then(function () {
+      console.error('VSM: engine script BLOCKED (host is reachable) — ' + url
+        + '\n  The engine host answered, so the script itself was blocked. Check for a'
+        + ' Content-Security-Policy (script-src) on this page, a browser extension /'
+        + ' content blocker, or a wrong Content-Type from the engine host.' + tail);
+      setOverlayText('Charakter-Engine blockiert – siehe Konsole');
+    }).catch(function () {
+      console.error('VSM: engine UNREACHABLE — ' + url
+        + '\n  Cannot reach the engine host at all: it may be down or mid-deploy (Charamel'
+        + ' update vuppetmaster.com from time to time), or DNS / a proxy / being offline is in'
+        + ' the way. This is usually transient and NOT a VSM misconfiguration.' + tail);
+      setOverlayText('Charakter-Engine nicht erreichbar – erneuter Versuch …');
+    });
+    setTimeout(loadEngine, retryMs);
   }
 
   // Audio MUST be unlocked by a real user gesture in THIS iframe's document — allow="autoplay" does
