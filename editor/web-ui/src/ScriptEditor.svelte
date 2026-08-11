@@ -27,7 +27,16 @@
                                        // cursor's position (replaces the old double-click-on-plain-text popup)
   export let actionSpans = [];      // [{offsetStart, offsetEnd, actionActor, actionName, features, raw}] — M13b
   export let markdownSpans = [];    // [{offsetStart, offsetEnd, kind: "section"|"note", level, body, raw}]
-  export let compactCommands = false; // M13c: global compact/full view toggle — also drives markdownSpans rendering
+  // Three-way view of a turn's text, cycled from the script toolbar:
+  //   "code"      — raw source; every [command ...] shown literally as typed
+  //   "annotated" — commands collapse to labelled badges ("[Xenia: emotion happy]")
+  //   "text"      — commands collapse further to small neutral patches, so the utterance text
+  //                 itself is what reads; the command is still on hover and still editable by
+  //                 double-click. For authors focusing on wording rather than behaviour.
+  // Also drives markdownSpans rendering: styled in both annotated and text, raw in code.
+  export let viewMode = "annotated";
+  $: commandsCollapsed = viewMode !== "code";
+  $: commandsMinimal = viewMode === "text";
 
   // Scene highlight decoration machinery
   const setSceneHighlightsEffect = StateEffect.define();
@@ -455,21 +464,33 @@
   }
 
   class ActionCompactWidget extends WidgetType {
-    constructor(span, selected) {
+    constructor(span, selected, minimal = false) {
       super();
       this.span = span;
       this.selected = selected;
+      this.minimal = minimal;
     }
     eq(other) {
       return other.span.offsetStart === this.span.offsetStart
         && other.span.offsetEnd === this.span.offsetEnd
         && other.span.raw === this.span.raw
-        && other.selected === this.selected;
+        && other.selected === this.selected
+        && other.minimal === this.minimal;
     }
     toDOM() {
       const el = document.createElement("span");
-      el.className = this.selected ? "cm-action-compact cm-action-compact-selected" : "cm-action-compact";
+      const base = this.minimal ? "cm-action-compact cm-action-minimal" : "cm-action-compact";
+      el.className = this.selected ? `${base} cm-action-compact-selected` : base;
       el.draggable = true;
+      if (this.minimal) {
+        // Deliberately empty — no icon, no action name, no glyph of any kind. In "text" mode a
+        // command is reduced to a narrow bar the width of roughly one character, so a turn reads
+        // as continuous prose and the bars register as seams rather than as content competing with
+        // the words. el.title (set below, same as every other mode) reveals the actual command on
+        // hover, and double-click still opens its editor.
+        el.setAttribute("aria-label", this.span.raw);
+        return this.attachActionHandlers(el);
+      }
       el.appendChild(buildActionCompactIcon(isBlockingSpan(this.span)));
       if (this.span.actionName === "background") {
         // A single wrapper (rather than appending text/swatch/text as separate flex children of
@@ -485,6 +506,13 @@
       } else {
         el.appendChild(document.createTextNode(compactLabelForSpan(this.span)));
       }
+      return this.attachActionHandlers(el);
+    }
+
+    /** Hover text, selection/copy, drag-to-move and double-click-to-edit. Shared by the labelled
+     *  ("annotated") and neutral ("text") renderings so the two modes differ only in appearance —
+     *  a folded command stays fully inspectable and editable either way. */
+    attachActionHandlers(el) {
       el.title = this.span.raw;
       el.addEventListener("click", (event) => {
         event.preventDefault();
@@ -1114,17 +1142,17 @@
     applyPlayButtons(playableTurns);
   }
 
-  function applyActionDisplay(spans, compact, selectedKey) {
+  function applyActionDisplay(spans, collapsed, minimal, selectedKey) {
     if (!view) return;
     const doc = view.state.doc;
     const ranges = [];
-    if (compact) {
+    if (collapsed) {
       for (const span of spans || []) {
         const from = Math.floor(span.offsetStart);
         const to = Math.floor(span.offsetEnd);
         if (!Number.isFinite(from) || !Number.isFinite(to) || from < 0 || to > doc.length || to <= from) continue;
         const selected = !!selectedKey && selectedKey.offsetStart === span.offsetStart && selectedKey.offsetEnd === span.offsetEnd;
-        const widget = new ActionCompactWidget(span, selected);
+        const widget = new ActionCompactWidget(span, selected, minimal);
         ranges.push(Decoration.replace({ widget }).range(from, to));
       }
     }
@@ -1133,7 +1161,7 @@
   }
 
   $: if (view) {
-    applyActionDisplay(actionSpans, compactCommands, selectedActionKey);
+    applyActionDisplay(actionSpans, commandsCollapsed, commandsMinimal, selectedActionKey);
   }
 
   function applyMarkdownDisplay(spans, compact) {
@@ -1155,7 +1183,7 @@
   }
 
   $: if (view) {
-    applyMarkdownDisplay(markdownSpans, compactCommands);
+    applyMarkdownDisplay(markdownSpans, commandsCollapsed);
   }
 </script>
 

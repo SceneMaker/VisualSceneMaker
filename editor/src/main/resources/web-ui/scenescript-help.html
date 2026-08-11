@@ -157,6 +157,11 @@
     display: inline-block; width: 0.8em; height: 0.8em; margin: 0 0.15em;
     border-radius: 2px; border: 1px solid rgba(0, 0, 0, 0.35); vertical-align: -0.05em;
   }
+  /* A command folded away in "text" view — mirrors .cm-action-minimal in sceneScriptTheme.js. */
+  .script-chip-folded {
+    display: inline-block; width: 0.5em; height: 1.15em;
+    vertical-align: -0.22em; border-radius: 2px; background: #BDCBC5;
+  }
 
   hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
@@ -186,7 +191,7 @@
   <a href="#notes">Notes</a>
 
   <div class="nav-group">Editing</div>
-  <a href="#view-modes">Compact / plain view</a>
+  <a href="#view-modes">Three views of a script</a>
   <a href="#editing-commands">Editing inline commands</a>
   <a href="#suggested-positions">Suggested positions</a>
   <a href="#preview">SIA preview panel</a>
@@ -195,7 +200,7 @@
 <main>
   <div class="title-row">
     <img src="/images/vsm_logo.svg" alt="Visual SceneMaker">
-    <h1>SceneScript Guide<span class="version-pill">v1.2 · 2026-08-06</span></h1>
+    <h1>SceneScript Guide<span class="version-pill">v1.3 · 2026-08-10</span></h1>
   </div>
   <p class="subtitle">How to write and edit dialogue scripts in Visual SceneMaker</p>
 
@@ -311,26 +316,40 @@ Bob: Let's begin.</pre>
     <code>_italic_</code> text.
   </p>
 
-  <h2 id="view-modes">Compact / plain view</h2>
+  <h2 id="view-modes">Three views of a script</h2>
   <p>
-    The toolbar button next to the script editor toggles how the script is displayed:
+    The toolbar button next to the script editor cycles through three ways of displaying the same
+    script &mdash; each click moves to the next one, and the third click returns to the first. Your
+    choice is remembered per project.
   </p>
   <ul>
     <li>
       <svg class="icon-inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m16.95 8.465l1.414-1.415l4.95 4.95l-4.95 4.95l-1.414-1.414L20.485 12zm-9.9 0L3.515 12l3.535 3.536l-1.414 1.414L.686 12l4.95-4.95z"/></svg>
-      <strong>Code-view icon</strong> — showing the raw text exactly as typed, including
+      <strong>Code view</strong> — the raw text exactly as typed, including
       <code>[...]</code> brackets, <code>#</code> headings and <code>Note:</code> prefixes. This
       is also the only mode you can type directly into a heading or note.
     </li>
     <li>
+      <svg class="icon-inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14M5 12h5M5 17h9"/><rect x="12.5" y="9.5" width="7.5" height="5" rx="1.5" fill="currentColor" opacity="0.55"/></svg>
+      <strong>Annotated text</strong> — a rendered, easier-to-read view: inline commands become
+      labelled chips like <span class="script-chip"><svg class="script-chip-icon" viewBox="0 0 24 24"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg>[emotion happy]</span>, and headings/notes are styled. This is the default.
+    </li>
+    <li>
       <svg class="icon-inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 12h14M5 16h6"/></svg>
-      <strong>Text icon</strong> — a rendered, easier-to-read view: inline commands become
-      compact chips like <span class="script-chip"><svg class="script-chip-icon" viewBox="0 0 24 24"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg>[emotion happy]</span>, and headings/notes are styled.
+      <strong>Text</strong> — for writing and reading the spoken words themselves. Commands fold
+      away to narrow grey bars (<span class="script-chip-folded" title="[emotion happy]"></span>),
+      so a turn reads as continuous prose:
+      <code>Xenia:&nbsp;<span class="script-chip-folded"></span>&nbsp;Hallo&nbsp;<span class="script-chip-folded"></span>&nbsp;ich bin Xenia.</code>
+      Nothing is lost &mdash; <strong>hover</strong> a bar to read the command it stands for, and
+      <strong>double-click</strong> it to edit it, exactly as in annotated text.
     </li>
   </ul>
 
   <h2 id="editing-commands">Editing inline commands</h2>
-  <p>In compact view, an inline command is a chip you can work with directly:</p>
+  <p>
+    In annotated text and text view, an inline command is a chip (or folded bar) you can work with
+    directly:
+  </p>
   <ul>
     <li><strong>Ctrl+I</strong> (<strong>Cmd+I</strong> on Mac) with the cursor inside a turn opens the insert dialog — it lists the turn's own speaking agent's commands first, then every other configured agent in the project.</li>
     <li><strong>Double-click</strong> an existing chip to open the same dialog pre-filled, for editing its parameters or target agent.</li>
@@ -378,7 +397,7 @@ Bob: Let's begin.</pre>
     command text at your current position in the script editor.
   </p>
 
-  <footer>Visual SceneMaker — SceneScript authoring reference · v1.1 · 2026-07-22</footer>
+  <footer>Visual SceneMaker — SceneScript authoring reference · v1.3 · 2026-08-10</footer>
 </main>
 
 </div>

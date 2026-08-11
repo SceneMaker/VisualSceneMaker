@@ -86,6 +86,23 @@ export const sceneScriptTheme = EditorView.theme(
       fontSize: "1em",
       cursor: "grab"
     },
+    // "text" view: every command folds to an empty narrow bar (the widget renders no glyph at all)
+    // so a turn reads as continuous prose and the bars act as seams rather than as content. Sized
+    // to roughly one character wide by the text's own line box tall, matching the semantic-analysis
+    // word highlights' visual weight. Overrides .cm-action-compact's inline-flex/padding above,
+    // which exist to lay out the icon+label the annotated badge has and this one does not.
+    ".cm-action-minimal": {
+      display: "inline-block",
+      width: "0.5em",
+      height: "1.15em",
+      verticalAlign: "-0.22em",
+      padding: "0",
+      borderRadius: "2px",
+      background: "#BDCBC5"
+    },
+    ".cm-action-minimal:hover": {
+      background: "#A8B9B2"
+    },
     ".cm-action-compact-dragging": {
       opacity: "0.4"
     },

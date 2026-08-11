@@ -743,6 +743,29 @@
     apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { scriptEditorHeight: heightPx } }).catch(() => {});
   }
 
+  // Script view mode (code / annotated / text) — same load/persist shape as the heights above.
+  // Worth remembering per project: "text" in particular is a deliberate writing mode an author
+  // stays in for a whole session, so resetting it on every reload would be a constant annoyance.
+  function loadScriptViewMode(projectId) {
+    if (!projectId) return "annotated";
+    const raw = localStorage.getItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + projectId);
+    return SCRIPT_VIEW_MODES.includes(raw) ? raw : "annotated";
+  }
+
+  async function fetchScriptViewModeFromServer(projectId) {
+    if (!projectId) return null;
+    const data = await fetchUiPrefs(projectId);
+    const mode = data?.scriptViewMode;
+    return SCRIPT_VIEW_MODES.includes(mode) ? mode : null;
+  }
+
+  function persistScriptViewMode(projectId, mode) {
+    if (!projectId) return;
+    localStorage.setItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + projectId, mode);
+    invalidateUiPrefsCache(projectId);
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { scriptViewMode: mode } }).catch(() => {});
+  }
+
   // SceneFlow panel height — same load/persist shape as the script editor's, except null is a
   // meaningful value meaning "never resized, keep the width-derived square" (see the constants).
   function loadSceneFlowPanelHeight(projectId) {
@@ -1612,7 +1635,21 @@
   // M13c: global compact/full toggle for embedded [...] commands — a pure view decoration
   // (ScriptEditor), never touches scriptDraft/the saved file. Defaults to compact since that's
   // the only view where inline commands are drag-reorderable (M13f).
-  let scriptCommandsCompact = true;
+  // Script view cycles code -> annotated -> text -> code (see ScriptEditor's `viewMode`).
+  // "annotated" is the default, matching the previous compact-commands default.
+  const SCRIPT_VIEW_MODES = ["code", "annotated", "text"];
+  const SCRIPT_VIEW_LABELS = {
+    code: "Code view — commands shown as typed",
+    annotated: "Annotated text — commands as labelled badges",
+    text: "Text — commands folded away, hover to read, double-click to edit"
+  };
+  const SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX = 'vsm_script_view_mode_';
+  let scriptViewMode = "annotated";
+  function cycleScriptViewMode() {
+    const next = (SCRIPT_VIEW_MODES.indexOf(scriptViewMode) + 1) % SCRIPT_VIEW_MODES.length;
+    scriptViewMode = SCRIPT_VIEW_MODES[next];
+    persistScriptViewMode(selectedProjectId, scriptViewMode);
+  }
   let scriptStatus = "";
   let scriptError = "";
   let scriptLoading = false;
@@ -3531,6 +3568,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + _scriptEditorPid, String(serverHeight));
       }
     });
+    scriptViewMode = loadScriptViewMode(selectedProjectId);
+    const _scriptViewModePid = selectedProjectId;
+    fetchScriptViewModeFromServer(_scriptViewModePid).then((serverMode) => {
+      if (serverMode && selectedProjectId === _scriptViewModePid) {
+        scriptViewMode = serverMode;
+        localStorage.setItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + _scriptViewModePid, serverMode);
+      }
+    });
     sceneFlowPanelHeight = loadSceneFlowPanelHeight(selectedProjectId);
     const _sceneFlowHeightPid = selectedProjectId;
     fetchSceneFlowPanelHeightFromServer(_sceneFlowHeightPid).then((serverHeight) => {
@@ -4056,6 +4101,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     siaPanelOpen = false;
     siaLoaded = {};
     siaPanelResize = null;
+    scriptViewMode = "annotated";
     sceneFlowPanelHeight = null;
     sceneFlowPanelResize = null;
     previewLoadProgress = {};
@@ -18181,21 +18227,28 @@ Sentence:
             <button
               type="button"
               class="panel-save command-display-toggle"
-              class:active={scriptCommandsCompact}
-              on:click={() => (scriptCommandsCompact = !scriptCommandsCompact)}
-              aria-pressed={scriptCommandsCompact}
-              aria-label={scriptCommandsCompact ? "Show full commands" : "Show compact commands"}
-              title={scriptCommandsCompact ? "Showing compact commands — click for full" : "Showing full commands — click for compact"}
+              class:active={scriptViewMode !== "code"}
+              on:click={cycleScriptViewMode}
+              aria-label={SCRIPT_VIEW_LABELS[scriptViewMode]}
+              title={`${SCRIPT_VIEW_LABELS[scriptViewMode]} — click to cycle`}
             >
-              {#if scriptCommandsCompact}
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-                  <title>text</title>
-                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 12h14M5 16h6"/>
-                </svg>
-              {:else}
+              {#if scriptViewMode === "code"}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
                   <title>code-view</title>
                   <path fill="currentColor" d="m16.95 8.465l1.414-1.415l4.95 4.95l-4.95 4.95l-1.414-1.414L20.485 12zm-9.9 0L3.515 12l3.535 3.536l-1.414 1.414L.686 12l4.95-4.95z"/>
+                </svg>
+              {:else if scriptViewMode === "annotated"}
+                <!-- Lines with a tag on one of them: text that still carries visible commands. -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                  <title>annotated text</title>
+                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14M5 12h5M5 17h9"/>
+                  <rect x="12.5" y="9.5" width="7.5" height="5" rx="1.5" fill="currentColor" opacity="0.55"/>
+                </svg>
+              {:else}
+                <!-- Plain lines only: commands folded away. -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+                  <title>text</title>
+                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 12h14M5 16h6"/>
                 </svg>
               {/if}
             </button>
@@ -18564,7 +18617,7 @@ Sentence:
                 onGhostClick={handleGhostMarkerClick}
                 actionSpans={actionSpans}
                 markdownSpans={markdownSpans}
-                compactCommands={scriptCommandsCompact}
+                viewMode={scriptViewMode}
                 onChange={(value) => {
                   scriptDraft = value;
                   scheduleScriptDiagnostics();
