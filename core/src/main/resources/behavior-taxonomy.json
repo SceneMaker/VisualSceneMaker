@@ -547,6 +547,20 @@
       "evidence": "declared-by-vendor", "confidence": 1.0, "note": "Not nonverbal behavior." },
     { "plugin": "charamel-embed", "command": "stop", "channel": "control",
       "neuroges": null, "vsm": { "cospeech": false, "affiliate": "none" },
-      "evidence": "declared-by-vendor", "confidence": 1.0 }
+      "evidence": "declared-by-vendor", "confidence": 1.0 },
+    { "plugin": "charamel-embed", "command": "bone", "channel": "head",
+      "neuroges": null, "vsm": { "cospeech": false, "affiliate": "none" },
+      "evidence": "declared-by-vendor", "confidence": 1.0,
+      "note": "Raw skeleton-rotation primitive (vm.animateBone), not a communicative behavior in itself — any bone, any Euler angle. Channel is 'head' because the current VuppetMaster rig exposes only the Head bone; revisit if further bones are exposed. Deliberately not co-speech: the placement service should propose the meaningful behaviors built on top of this (e.g. 'nod'), never the primitive." },
+    { "plugin": "charamel-embed", "command": "nod", "channel": "head",
+      "neuroges": { "structure": "repetitive", "function": "emblem/social convention", "type": null },
+      "vsm": { "cospeech": true, "affiliate": "clause" },
+      "evidence": "inferred-from-name", "confidence": 0.8,
+      "note": "Yes-emblem. Also the canonical listener backchannel — placement in a speaker utterance and in a listening state are different problems. Deliberately identical to the charamel-ws 'nod' tag: same nonverbal behavior on a different renderer, and one behavior must not read as two categories across plugins. 'repetitive' matches the command's repeated-cycle default (repeats=2); a caller passing repeats='1' is arguably 'phasic', a per-instance distinction only video coding can settle." },
+    { "plugin": "charamel-embed", "command": "shake", "channel": "head",
+      "neuroges": { "structure": "repetitive", "function": "emblem/social convention", "type": null },
+      "vsm": { "cospeech": true, "affiliate": "clause" },
+      "evidence": "inferred-from-name", "confidence": 0.8,
+      "note": "No-emblem, the counterpart to 'nod'. Deliberately identical to the charamel-ws 'headshake'/'shakehead' tags: same nonverbal behavior on a different renderer." }
   ]
 }

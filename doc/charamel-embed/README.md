@@ -51,8 +51,34 @@ and matching the dashboard's *API — Basic* docs:
 - **Emotions:** `vm.setEmotion(type, {intensity, attack, hold, decay})`, `vm.clearEmotion()`,
   `vm.setEmotionCoordinates(valence, arousal, opts)`, `vm.setBaseEmotion(v, a)`.
   Types: happy, sad, angry, tear, disgust, surprise, smile, excited, fear, bored, relaxed.
-- **Other:** `setAnimationSpeed`, `setBlinkInterval`, `playAnimation`, camera methods. **No gaze/head
-  primitive** on the public surface (internal head-bone only) — realtime gaze/head still needs Charamel.
+- **Bone animation:** `vm.animateBone(boneName, euler, {attack, hold, decay, additive})` — added by
+  Charamel and confirmed against the live bundle 2026-08-11. This supersedes the earlier finding that
+  there was no public head primitive.
+  - `boneName` is matched **case-insensitively** against the skeleton; an unknown name logs a console
+    warning and is otherwise ignored. Only **`Head`** is exposed by the current rig.
+  - `euler` is `{x, y, z}` in **radians**, applied in `XYZ` order (it goes straight into a
+    `THREE.Euler`). The plugin's own command surface is in **degrees** and converts at the engine
+    boundary — see `animateBoneDegrees()` in `vm-adapter.js`.
+  - **Which axis does what is rig-specific, and the Head bone does *not* follow the usual
+    pitch/yaw/roll ordering.** Established by testing the live Xenia rig (2026-08-11):
+
+    | Axis | Movement |
+    |---|---|
+    | `x` | **yaw** — turn / shake ("no") |
+    | `y` | **pitch** — nod ("yes"); **negative drops the chin** |
+    | `z` | **roll** — head tilt (by elimination; not separately confirmed) |
+
+    Each bone carries its own local frame, so re-verify if Charamel exposes further bones rather
+    than assuming this mapping generalises.
+  - `attack`/`decay` default to **500 ms** each. **An omitted `hold` means "hold indefinitely"**
+    (`holdInfinite`), *not* zero — so a one-shot movement must pass `hold` explicitly, and a
+    sustained pose is released by re-issuing the command at the neutral angle with an explicit hold.
+  - `additive` defaults to **true**: the rotation layers on top of the running idle animation.
+    `false` replaces the bone's pose and restores the base pose when the envelope ends.
+  - Envelope phases are attack → hold → decay; re-issuing for the same bone replaces its envelope,
+    which is what makes repeated calls usable as procedural motion.
+- **Other:** `setAnimationSpeed`, `setBlinkInterval`, `playAnimation`, camera methods. Realtime *gaze*
+  still has no public primitive (internal only).
 - **Audio:** the engine uses **Howler**, whose AudioContext only resumes on a **user gesture in the
   character page's own document**. `allow="autoplay"` does *not* resume a covered cross-origin iframe
   (verified: state stays `suspended`). Hence the character page's click-to-start overlay, and — when
@@ -63,6 +89,18 @@ and matching the dashboard's *API — Basic* docs:
 
 - The character page served by the plugin (`renderer/character.html` + `renderer/vm-adapter.js`) is the
   production counterpart of this probe: the adapter maps JSON command envelopes
-  (`{cmd:"speak"|"emotion"|"background"|"clearEmotion", …}`) to these same engine calls, and maps
-  `onMarker`/`onEnd` back to VSM feedback strings.
+  (`{cmd:"speak"|"emotion"|"background"|"clearEmotion"|"bone"|"nod", …}`) to these same engine calls,
+  and maps `onMarker`/`onEnd` back to VSM feedback strings.
+- **Authoring the bone API** (SceneFlow `PlayAction` or an inline scene marker):
+
+  | Command | Example | Notes |
+  |---|---|---|
+  | `bone` | `[Xenia bone name='Head' y='-12' attack='150' hold='300' decay='250']` | Full generic access. Degrees; `x` yaw / `y` pitch / `z` roll (see the axis table above). |
+  | `bone` (sustained) | `[Xenia bone name='Head' z='8']` | No `hold` ⇒ held until changed. Release with `[Xenia bone name='Head' z='0' hold='0']`. |
+  | `nod` | `[Xenia nod]`, `[Xenia nod repeats='3' amplitude='8' period='320']` | Procedural nodding ("yes") on the pitch axis, starting downward. `amplitude` is the **full peak-to-peak** swing **centred on the neutral pose** — 12 means 6° down, 12° across to 6° up, 6° back to centre — at uniform angular speed, ending at rest. |
+  | `shake` | `[Xenia shake]`, `[Xenia shake repeats='3' amplitude='20']` | The "no" counterpart, same centred oscillation on the yaw axis (default amplitude 16). |
+
+  Both accept `blocking='true'` to hold the scene for the movement's estimated duration (`nod` uses
+  `repeats × period`); as with `emotion`, that duration is an estimate — the engine gives no
+  completion callback for bone animation.
 - Full design & status: `~/.claude/plans/charamel-embed-vuppetmaster-jsapi.md` (plan doc).

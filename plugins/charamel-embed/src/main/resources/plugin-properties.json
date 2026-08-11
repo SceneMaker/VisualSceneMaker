@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.3",
-    "specHash": "68284fc0f9b0741e",
+    "specVersion": "1.6",
+    "specHash": "2ba7a7d8e2d89a39",
     "plugin": {
         "id": "charamel-embed",
         "name": "Charamel Embed (VuppetMaster JS-API)",
@@ -189,6 +189,129 @@
             "summary": "Release the current emotion back to the idle base mood",
             "params": [
                 
+            ]
+        },
+        {
+            "name": "bone",
+            "type": "action",
+            "summary": "Rotate a skeleton bone with an attack/hold/decay envelope (vm.animateBone)",
+            "description": "Generic form: [Xenia bone name='Head' y='-12' attack='150' hold='300' decay='250']. Angles are DEGREES (converted to the engine's radians by vm-adapter.js) applied as an Euler XYZ rotation. On the current Head rig the axes are x = yaw (turn/shake), y = pitch (nod; NEGATIVE drops the chin), z = roll (tilt) - verified against the live rig, which does not follow the usual pitch/yaw/roll ordering. Only 'Head' is exposed by the current VuppetMaster rig. Omitting hold strikes a SUSTAINED pose held until changed - release it by re-issuing the command at the neutral angle with an explicit hold, e.g. [Xenia bone name='Head' y='0' hold='0']. For plain nodding prefer the 'nod' command.",
+            "uiCategory": "unclassified",
+            "params": [
+                {
+                    "name": "name",
+                    "type": "string",
+                    "required": false,
+                    "description": "Bone name on the skeleton, case-insensitive (default 'Head'). Unknown names are warned about in the browser console and otherwise ignored by the engine."
+                },
+                {
+                    "name": "x",
+                    "type": "float",
+                    "required": false,
+                    "description": "Yaw in degrees - the turn/shake axis (default 0)"
+                },
+                {
+                    "name": "y",
+                    "type": "float",
+                    "required": false,
+                    "description": "Pitch in degrees - the nod axis; NEGATIVE drops the chin (default 0)"
+                },
+                {
+                    "name": "z",
+                    "type": "float",
+                    "required": false,
+                    "description": "Roll in degrees - the head-tilt axis (default 0)"
+                },
+                {
+                    "name": "attack",
+                    "type": "int",
+                    "required": false,
+                    "description": "Fade-in ms (default 500)"
+                },
+                {
+                    "name": "hold",
+                    "type": "int",
+                    "required": false,
+                    "description": "Sustain ms; omit for a sustained pose held until changed"
+                },
+                {
+                    "name": "decay",
+                    "type": "int",
+                    "required": false,
+                    "description": "Fade-out ms back to the resting pose (default 500)"
+                },
+                {
+                    "name": "additive",
+                    "type": "bool",
+                    "required": false,
+                    "description": "true (default) layers the rotation on top of the running idle animation; false replaces the bone's pose outright"
+                }
+            ]
+        },
+        {
+            "name": "nod",
+            "type": "action",
+            "summary": "Procedural head nod - repeated down-and-back pitch excursions",
+            "description": "Convenience form built on vm.animateBone: [Xenia nod], [Xenia nod repeats='3' amplitude='8' period='320']. Each cycle pitches the head by amplitude degrees and rocks back, so the head always returns to its resting pose. Layered additively over the idle animation.",
+            "uiCategory": "unclassified",
+            "params": [
+                {
+                    "name": "amplitude",
+                    "type": "float",
+                    "required": false,
+                    "description": "Full peak-to-peak excursion in degrees; the head swings +/-amplitude/2 around the neutral pose, so 12 means 6 down then 6 up (default 12)"
+                },
+                {
+                    "name": "repeats",
+                    "type": "int",
+                    "required": false,
+                    "description": "Number of nod cycles (default 2)"
+                },
+                {
+                    "name": "period",
+                    "type": "int",
+                    "required": false,
+                    "description": "Duration of one down-and-back cycle in ms (default 400)"
+                },
+                {
+                    "name": "name",
+                    "type": "string",
+                    "required": false,
+                    "description": "Bone to nod (default 'Head')"
+                }
+            ]
+        },
+        {
+            "name": "shake",
+            "type": "action",
+            "summary": "Procedural head shake - repeated side-to-side yaw excursions",
+            "description": "Convenience form built on vm.animateBone, the 'no' counterpart to 'nod': [Xenia shake], [Xenia shake repeats='3' amplitude='20' period='320']. Swings on the yaw (turn) axis, centred on the neutral pose, and always ends back at rest. Layered additively over the idle animation.",
+            "uiCategory": "convention",
+            "params": [
+                {
+                    "name": "amplitude",
+                    "type": "float",
+                    "required": false,
+                    "description": "Full peak-to-peak excursion in degrees; the head swings +/-amplitude/2 around the neutral pose, so 16 means 8 to one side then 8 to the other (default 16)"
+                },
+                {
+                    "name": "repeats",
+                    "type": "int",
+                    "required": false,
+                    "description": "Number of shake cycles (default 2)"
+                },
+                {
+                    "name": "period",
+                    "type": "int",
+                    "required": false,
+                    "description": "Duration of one side-to-side cycle in ms (default 400)"
+                },
+                {
+                    "name": "name",
+                    "type": "string",
+                    "required": false,
+                    "description": "Bone to shake (default 'Head')"
+                }
             ]
         }
     ],

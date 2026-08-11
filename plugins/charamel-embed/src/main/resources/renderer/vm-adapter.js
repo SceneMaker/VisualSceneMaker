@@ -101,6 +101,100 @@
     }
   }
 
+  // ---- bone animation ------------------------------------------------------
+  // vm.animateBone(boneName, euler, opts) takes its euler in RADIANS (the engine feeds it straight
+  // into a THREE.Euler, which is radian-valued). VSM authors are not engineers, so the command
+  // surface is in DEGREES and the conversion happens here, at the single point where the engine is
+  // actually called — keeping every other layer (SceneFlow command, executor, wire envelope) in the
+  // unit an author typed.
+  //
+  // opts mirrors the engine's own envelope contract:
+  //   attack / decay  ms, default 500 each (engine-side)
+  //   hold            ms; ABSENT means hold forever (engine's holdInfinite), NOT zero
+  //   additive        default true — layer on top of the running idle animation rather than
+  //                   replacing the bone's pose outright
+  function num(value, fallback) {
+    var n = parseFloat(value);
+    return isFinite(n) ? n : fallback;
+  }
+
+  function animateBoneDegrees(boneName, xDeg, yDeg, zDeg, opts) {
+    if (!vm || typeof vm.animateBone !== 'function') {
+      console.warn('VSM: animateBone not available on this engine build');
+      return;
+    }
+    var name = boneName || 'Head';
+    var toRad = Math.PI / 180;
+    var euler = {
+      x: num(xDeg, 0) * toRad,
+      y: num(yDeg, 0) * toRad,
+      z: num(zDeg, 0) * toRad
+    };
+    var o = {};
+    if (opts && opts.attack   !== undefined) o.attack   = num(opts.attack, 500);
+    if (opts && opts.decay    !== undefined) o.decay    = num(opts.decay, 500);
+    if (opts && opts.hold     !== undefined) o.hold     = num(opts.hold, 0);
+    if (opts && opts.additive !== undefined) o.additive = !!opts.additive;
+    vm.animateBone(name, euler, o);
+  }
+
+  // Which Euler axis moves the head which way, established by testing the live Xenia rig
+  // (2026-08-11) rather than assumed from the usual pitch/yaw/roll ordering — on this skeleton the
+  // Head bone's local frame does NOT follow it:
+  //   x = yaw   (turn / shake, "no")
+  //   y = pitch (nod, "yes") — NEGATIVE drops the chin
+  //   z = roll  (tilt, ear-to-shoulder) — by elimination, not separately confirmed
+  // If a further bone is exposed, re-verify: each bone has its own local frame.
+  var BONE_AXES = { yaw: 'x', pitch: 'y', roll: 'z' };
+
+  /**
+   * Schedules a symmetric oscillation of one bone axis around its NEUTRAL pose.
+   *
+   * `amplitude` is the full peak-to-peak excursion, so the head swings ±amplitude/2: amplitude 12
+   * travels 6deg out, 12deg across to the other side, then 6deg back to centre. An earlier version
+   * animated 0 -> +amplitude -> 0, which only ever moved to one side and read as a lopsided twitch.
+   *
+   * One cycle of `period` ms is built from quarter-cycle legs, all at the same angular speed:
+   *   q       neutral -> first extreme
+   *   2q      extreme -> opposite extreme   (repeated 2*repeats-1 times, alternating)
+   *   q       last extreme -> neutral       (as a decay, which also frees the envelope)
+   * Total is exactly repeats * period, which is what the executor's blocking estimate assumes.
+   *
+   * Every leg but the last deliberately OMITS hold: the engine reads an absent hold as "hold
+   * indefinitely", which parks the bone at that extreme until the next leg takes over. That is what
+   * lets the legs chain smoothly — the engine starts each new envelope from the current delta
+   * (additive), so there is no snap between legs. The final leg instead uses attack:0 + hold:0 +
+   * decay, so it eases from the last extreme back to neutral and then deletes its envelope rather
+   * than leaving one alive forever.
+   */
+  function scheduleOscillation(spec) {
+    var half = spec.amplitude / 2;
+    var q = spec.period / 4;
+    var crossings = 2 * spec.repeats - 1;   // always odd, so the motion ends opposite where it began
+    var axis = spec.axis;
+
+    function legAt(delayMs, deg, opts) {
+      setTimeout(function () {
+        var v = { x: 0, y: 0, z: 0 };
+        v[axis] = deg;
+        animateBoneDegrees(spec.bone, v.x, v.y, v.z, opts);
+      }, delayMs);
+    }
+
+    // out to the first extreme
+    legAt(0, spec.firstSign * half, { attack: q, additive: true });
+    // alternating full-span crossings
+    for (var k = 1; k <= crossings; k++) {
+      legAt(q + (k - 1) * 2 * q,
+            spec.firstSign * half * (k % 2 === 0 ? 1 : -1),
+            { attack: 2 * q, additive: true });
+    }
+    // ease the last extreme back to neutral (crossings is odd => last target is -firstSign*half)
+    legAt(q + crossings * 2 * q,
+          -spec.firstSign * half,
+          { attack: 0, hold: 0, decay: q, additive: true });
+  }
+
   // ---- transport entry -----------------------------------------------------
   function vsmDispatch(env) {
     if (!vm) { console.warn('VSM: engine not ready, dropping', env); return; }
@@ -147,6 +241,36 @@
       case 'clearEmotion':
         vm.clearEmotion();
         break;
+
+      case 'bone': {
+        animateBoneDegrees(env.bone, env.x, env.y, env.z, env);
+        break;
+      }
+
+      case 'nod': {
+        scheduleOscillation({
+          bone: env.bone || 'Head',
+          axis: BONE_AXES.pitch,
+          firstSign: -1,    // negative pitch drops the chin, so a nod starts downward
+          amplitude: num(env.amplitude, 12),
+          repeats: Math.max(1, Math.round(num(env.repeats, 2))),
+          period: Math.max(1, num(env.period, 400))
+        });
+        break;
+      }
+
+      case 'shake': {
+        scheduleOscillation({
+          bone: env.bone || 'Head',
+          axis: BONE_AXES.yaw,
+          // Which side a shake starts on carries no meaning, unlike a nod's downward start.
+          firstSign: -1,
+          amplitude: num(env.amplitude, 16),
+          repeats: Math.max(1, Math.round(num(env.repeats, 2))),
+          period: Math.max(1, num(env.period, 400))
+        });
+        break;
+      }
 
       default:
         console.warn('VSM: unknown cmd', env);

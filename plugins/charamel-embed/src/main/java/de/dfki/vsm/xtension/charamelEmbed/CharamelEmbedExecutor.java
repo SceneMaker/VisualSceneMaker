@@ -63,6 +63,15 @@ public class CharamelEmbedExecutor extends ActivityExecutor
     private static final long BLOCKING_DEFAULT_DECAY_MS = 300;
     private static final long BLOCKING_TRANSPORT_BUFFER_MS = 50;
 
+    // Bone-animation envelope defaults, matching vm.animateBone's own engine-side defaults (500/500,
+    // confirmed 2026-08-11 against the shipped engine bundle) — deliberately NOT the emotion
+    // defaults above, which are a different VuppetMaster call with a different envelope.
+    private static final long BONE_DEFAULT_ATTACK_MS = 500;
+    private static final long BONE_DEFAULT_DECAY_MS = 500;
+    // Procedural-nod defaults — must track vm-adapter.js's 'nod' case, which owns the real values.
+    private static final long NOD_DEFAULT_REPEATS = 2;
+    private static final long NOD_DEFAULT_PERIOD_MS = 400;
+
     // Upper bound on how long broadcastSpeakAndAwaitStop() will wait for a "<vmuid>:stop" feedback
     // marker before giving up. Without this, a page reload/relaunch (or transport hiccup) that
     // orphans a pending id leaves the calling thread parked in mPendingSpeechIds.wait() forever.
@@ -415,6 +424,16 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             case "clearemotion":
                 broadcast("{\"cmd\":\"clearEmotion\"}");
                 break;
+            // Bone animation (vm.animateBone). Generic form: [Xenia bone name='Head' x='-12' hold='300']
+            case "bone":
+                broadcastBone(f);
+                break;
+            // Procedural head movement built on the same API — see vm-adapter.js's
+            // scheduleOscillation() for the per-leg scheduling and the axis each one uses.
+            case "nod":
+            case "shake":
+                broadcastOscillation(name.toLowerCase(), f);
+                break;
             // Generic form: [Xenia emotion type='happy' intensity='0.8' ...]
             case "emotion":
                 broadcastEmotion(getActionFeatureValue("type", f), f);
@@ -431,11 +450,11 @@ public class CharamelEmbedExecutor extends ActivityExecutor
 
     /**
      * Blocks the calling thread (an {@code ActivityWorker}, per {@code ActivityScheduler.schedule()}'s
-     * join-on-{@code Type.blocking} contract) for the estimated duration of a blocking emotion's
-     * attack+hold+decay envelope, plus {@link #BLOCKING_TRANSPORT_BUFFER_MS}. Only "emotion" (and its
-     * convenience named-emotion aliases, e.g. {@code [Xenia happy blocking='true']}) supports blocking
-     * today — background/clearEmotion have no meaningful "duration" to wait out, so a blocking flag on
-     * those is silently ignored here (nothing to sleep for).
+     * join-on-{@code Type.blocking} contract) for the estimated duration of a blocking command's
+     * envelope, plus {@link #BLOCKING_TRANSPORT_BUFFER_MS}. Supported by "emotion" (and its
+     * convenience named-emotion aliases, e.g. {@code [Xenia happy blocking='true']}), by "bone", and
+     * by "nod" — background/clearEmotion/stop have no meaningful "duration" to wait out, so a
+     * blocking flag on those is silently ignored here (nothing to sleep for).
      *
      * <p><b>Why a timer instead of a real completion signal:</b> unlike {@code speak} (which has the
      * engine-native {@code id:start}/{@code id:stop} marker handshake), VuppetMaster gives no callback
@@ -449,13 +468,32 @@ public class CharamelEmbedExecutor extends ActivityExecutor
      * mid-transition when the next scene action fires) or unnecessarily long, adjust the constant.
      */
     private void sleepForBlockingEnvelope(String name, LinkedList<ActionFeature> f) {
-        if (!isEmotionActionName(name)) {
+        final String lower = name == null ? "" : name.toLowerCase();
+        final long durationMs;
+        if ("nod".equals(lower) || "shake".equals(lower)) {
+            // These run repeats × period ms of scheduled cycles page-side (vm-adapter.js), so their
+            // duration comes from those two rather than from an attack/hold/decay envelope. Defaults
+            // must track the adapter's own.
+            long repeats = Math.max(1, parseMsOrDefault(getActionFeatureValue("repeats", f), NOD_DEFAULT_REPEATS));
+            long period = Math.max(1, parseMsOrDefault(getActionFeatureValue("period", f), NOD_DEFAULT_PERIOD_MS));
+            durationMs = repeats * period + BLOCKING_TRANSPORT_BUFFER_MS;
+        } else if ("bone".equals(lower)) {
+            // Engine-accurate defaults for animateBone (500/500), which differ from the emotion
+            // envelope defaults below. An omitted hold means "hold indefinitely" engine-side, so
+            // there is no finite duration to wait for — treat it as 0 here rather than blocking the
+            // scene forever on a pose that is meant to persist.
+            long attack = parseMsOrDefault(getActionFeatureValue("attack", f), BONE_DEFAULT_ATTACK_MS);
+            long hold = parseMsOrDefault(getActionFeatureValue("hold", f), 0);
+            long decay = parseMsOrDefault(getActionFeatureValue("decay", f), BONE_DEFAULT_DECAY_MS);
+            durationMs = attack + hold + decay + BLOCKING_TRANSPORT_BUFFER_MS;
+        } else if (isEmotionActionName(lower)) {
+            long attack = parseMsOrDefault(getActionFeatureValue("attack", f), BLOCKING_DEFAULT_ATTACK_MS);
+            long hold = parseMsOrDefault(getActionFeatureValue("hold", f), BLOCKING_DEFAULT_HOLD_MS);
+            long decay = parseMsOrDefault(getActionFeatureValue("decay", f), BLOCKING_DEFAULT_DECAY_MS);
+            durationMs = attack + hold + decay + BLOCKING_TRANSPORT_BUFFER_MS;
+        } else {
             return;
         }
-        long attack = parseMsOrDefault(getActionFeatureValue("attack", f), BLOCKING_DEFAULT_ATTACK_MS);
-        long hold = parseMsOrDefault(getActionFeatureValue("hold", f), BLOCKING_DEFAULT_HOLD_MS);
-        long decay = parseMsOrDefault(getActionFeatureValue("decay", f), BLOCKING_DEFAULT_DECAY_MS);
-        long durationMs = attack + hold + decay + BLOCKING_TRANSPORT_BUFFER_MS;
         try {
             Thread.sleep(durationMs);
         } catch (InterruptedException exc) {
@@ -502,8 +540,71 @@ public class CharamelEmbedExecutor extends ActivityExecutor
         broadcast(sb.toString());
     }
 
+    /**
+     * Rotates a named bone (vm.animateBone) with an attack/hold/decay envelope.
+     *
+     * <p>Angles are authored in DEGREES and converted to the engine's radians in vm-adapter.js — see
+     * its {@code animateBoneDegrees} for why the conversion lives at the engine boundary rather than
+     * here.
+     *
+     * <p>{@code hold} is forwarded only when the author actually set it: the engine reads an absent
+     * hold as "hold indefinitely", which is the documented way to strike a sustained pose (and is
+     * how {@code emotion} already behaves). To release such a pose, re-issue the command with the
+     * neutral angle and an explicit hold, e.g. {@code [Xenia bone name='Head' x='0' hold='0']}.
+     */
+    private void broadcastBone(LinkedList<ActionFeature> f) {
+        String bone = getActionFeatureValue("name", f);
+        if (bone == null || bone.isBlank()) {
+            // Only "Head" is exposed by the current VuppetMaster rig, so defaulting keeps the
+            // common case terse ([Xenia bone x='-12']) without hiding the parameter.
+            bone = "Head";
+        }
+        StringBuilder sb = new StringBuilder("{\"cmd\":\"bone\",\"bone\":\"").append(escapeJson(bone)).append("\"");
+        appendNumber(sb, "x",      getActionFeatureValue("x", f));
+        appendNumber(sb, "y",      getActionFeatureValue("y", f));
+        appendNumber(sb, "z",      getActionFeatureValue("z", f));
+        appendNumber(sb, "attack", getActionFeatureValue("attack", f));
+        appendNumber(sb, "hold",   getActionFeatureValue("hold", f));
+        appendNumber(sb, "decay",  getActionFeatureValue("decay", f));
+        appendBoolean(sb, "additive", getActionFeatureValue("additive", f));
+        sb.append("}");
+        broadcast(sb.toString());
+    }
+
+    /**
+     * Procedural head oscillation — {@code nod} (pitch) or {@code shake} (yaw): {@code repeats}
+     * cycles of {@code amplitude} degrees peak-to-peak, centred on the neutral pose, one every
+     * {@code period} ms.
+     *
+     * <p>Which axis each maps to, the amplitude/repeats/period defaults and the per-leg scheduling
+     * all live in vm-adapter.js's {@code scheduleOscillation} — this side only forwards what the
+     * author actually typed, so the two cannot drift apart.
+     */
+    private void broadcastOscillation(String cmd, LinkedList<ActionFeature> f) {
+        String bone = getActionFeatureValue("name", f);
+        StringBuilder sb = new StringBuilder("{\"cmd\":\"").append(cmd).append("\"");
+        if (bone != null && !bone.isBlank()) {
+            sb.append(",\"bone\":\"").append(escapeJson(bone)).append("\"");
+        }
+        appendNumber(sb, "amplitude", getActionFeatureValue("amplitude", f));
+        appendNumber(sb, "repeats",   getActionFeatureValue("repeats", f));
+        appendNumber(sb, "period",    getActionFeatureValue("period", f));
+        sb.append("}");
+        broadcast(sb.toString());
+    }
+
     private static void appendNumber(StringBuilder sb, String key, String val) {
         if (val != null && !val.isBlank()) sb.append(",\"").append(key).append("\":").append(val.trim());
+    }
+
+    /** Appends a JSON boolean for an author-typed "true"/"false" (anything else is ignored, leaving
+     *  the engine's own default in force rather than silently coercing a typo to false). */
+    private static void appendBoolean(StringBuilder sb, String key, String val) {
+        if (val == null || val.isBlank()) return;
+        String v = val.trim().toLowerCase();
+        if (v.equals("true") || v.equals("false")) {
+            sb.append(",\"").append(key).append("\":").append(v);
+        }
     }
 
     /**
