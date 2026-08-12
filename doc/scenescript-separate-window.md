@@ -38,14 +38,17 @@ area reads no node, edge, selection or graph state.
 
 **Its inputs are all project-level or its own:**
 
-| Needs | Source |
-| --- | --- |
-| script text, diagnostics, scenes, elements | REST `/script`, `/script/scenes`, `/script/elements` + WS |
-| agents & plugin commands | `projectConfigView` + `pluginInterfaces` — `previewCapableAgents` is built from exactly those two (`App.svelte:3600`), *not* from the graph |
-| semantic analysis | REST `/semantic`, `/semantic/analyze` |
-| scene highlights during a run | runtime `sceneHistory` from `/runtime` + WS runtime events |
-| SIA preview state | local to the window + the plugin preview REST endpoints |
-| editor height, view mode, SIA panel height | per-project `ui-prefs` |
+| Needs                                      | Source                                                     |
+|--------------------------------------------|------------------------------------------------------------|
+| script text, diagnostics, scenes, elements | REST `/script`, `/script/scenes`, `/script/elements` + WS  |
+| agents & plugin commands                   | `projectConfigView` + `pluginInterfaces` (see note)        |
+| semantic analysis                          | REST `/semantic`, `/semantic/analyze`                      |
+| scene highlights during a run              | runtime `sceneHistory` from `/runtime` + WS runtime events |
+| SIA preview state                          | local to the window + the plugin preview REST endpoints    |
+| editor height, view mode, SIA panel height | per-project `ui-prefs`                                     |
+
+Note: `previewCapableAgents` is built from exactly those two sources (`App.svelte:3600`) — *not*
+from the graph. That is what makes the SIA preview movable.
 
 **The two script↔flow integrations are server-mediated, so they work from any window with no local
 graph:**
@@ -127,17 +130,20 @@ same `BroadcastChannel` as the draft, so text and history arrive together and ca
 
 ### 3.2a Per-view preferences
 
-`scriptViewMode` and `scriptEditorHeight` are **remembered separately for the detached window**, not
-inherited from the main window. A detached window exists precisely to be larger and read differently
-(often "text" mode on a second monitor), so carrying the inline layout's sizing across would defeat
-the point.
+All three of the script area's layout preferences are **remembered separately for the detached
+window**, not inherited from the main window:
+
+- `scriptViewMode`
+- `scriptEditorHeight`
+- the SIA panel height
+
+A detached window exists precisely to be larger and read differently (often "text" mode on a second
+monitor), so carrying the inline layout's sizing across would defeat the point — and that argument
+applies to the preview panel exactly as it does to the editor.
 
 Implementation: distinct `ui-prefs` keys per view rather than new storage — the server merges
 incoming keys into the stored object (`WebUiServer.handleUiPrefsPut`), so adding keys is safe and
 will not disturb existing prefs.
-
-*Assumption to confirm:* the SIA panel height follows the same rule, for consistency with the editor
-height. Only view mode and editor height were explicitly specified.
 
 ### 3.3 What the detached window shows
 
@@ -145,12 +151,12 @@ The script area's **own toolbar comes along unchanged** — Search, Generate Sce
 Semantic Analysis and its mode selector, Preview, the view-mode cycle, help, apply. Above it sits a
 **minimal top row**:
 
-| In the top row | Deliberately absent |
-| --- | --- |
-| project name | node/edge tools, supernode field, breadcrumbs |
+| In the top row      | Deliberately absent                                   |
+|---------------------|-------------------------------------------------------|
+| project name        | node/edge tools, supernode field, breadcrumbs         |
 | dirty / saved state | canvas toggles (snap, info overlays, variable badges) |
-| **Merge** button | runtime Start / Pause / Stop |
-| Save | SceneFlow help |
+| **Merge** button    | runtime Start / Pause / Stop                          |
+| Save                | SceneFlow help                                        |
 
 Copy/paste/undo/redo need no buttons — the keyboard already covers them.
 
@@ -248,8 +254,9 @@ All settled in discussion (2026-08-11/12):
 - Undo history → handed over explicitly on both transitions; feasible via `historyField` (§3.2).
 - Detached window contents → script's own toolbar plus a minimal top row (§3.3).
 - Orphan behaviour → the detached window becomes a full editor (§3.4).
-- Per-view preferences → view mode and editor height remembered separately (§3.2a).
+- Per-view preferences → view mode, editor height **and SIA panel height** all remembered
+  separately (§3.2a).
 - When detach is offered → only while the project is stopped (§3.1).
 - Documentation → tracked as phase 3 (§5).
 
-One assumption left to confirm: whether the SIA panel height is also remembered per view (§3.2a).
+Nothing is left open. The design is ready to build from.
