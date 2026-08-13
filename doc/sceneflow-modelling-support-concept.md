@@ -265,9 +265,13 @@ Ordered roughly by dependency:
    names/groups, per-agent plugin command inventories, screens with their variable bindings**
    (all listed as intended in llm-supported-flow-generation.md, never delivered).
 2. **Move/expose the IR pipeline.** `de.dfki.vsm.sceneflow.ir` lives in the root `src/` module
-   with CLI entry points only. It must become reachable from the web server (likely relocate to
-   core/core-webserver, respecting the Java-17 rule) and get REST/WS routes for: situation →
-   candidates, candidate → preview explanation, candidate → apply.
+   with CLI entry points only. It must become reachable from the web server and get REST/WS routes
+   for: situation → candidates, candidate → preview explanation, candidate → apply.
+   *Verified 2026-08-13:* the package's only VSM dependencies are `model.sceneflow.*`,
+   `util.xml.XMLUtilities` and `util.llm.LLMSupport` — all in `core` — plus `org.json`. So it
+   relocates to **`core-webserver`** (Java 21, already depends on `core` + `org.json`) with no new
+   dependencies. The Java-17 rule does **not** apply: the assistant is an *authoring* feature, and
+   Android deploys the runtime, not the editor. Keep it out of `core` for exactly that reason.
 3. **Extend the catalogue** per §4: `level`, `resourceRequirements`, `assistantScript`,
    `tutorialScript`; add the missing Level-1/2 entries (sequence, ask-and-wait, branch, fork,
    timed cue, idle loop) as executable templates — these are simpler than the constrained-activity
