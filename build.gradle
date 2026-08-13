@@ -566,6 +566,94 @@ tasks.register('generateCapabilitySnapshot') {
             ]
         }
 
+        // SceneScript inventory. Scenes are content rather than graph structure, so they get
+        // their own top-level section instead of living under "flow", mirroring the project's
+        // own split between scenescript.xml and sceneflow.xml. "name" is the scene *group*
+        // name, which is what PlayScene takes: language variants of one name are one group.
+        def sceneScriptXmlFile = file("${sourceDir}/scenescript.xml")
+        def sceneGroups = [:]
+        def sceneSections = []
+        if (sceneScriptXmlFile.exists()) {
+            def sceneScript = slurper.parse(sceneScriptXmlFile)
+
+            sceneScript.SceneSection.each { sec ->
+                def heading = sec.@heading.text()
+                if (heading != null && !heading.trim().isEmpty()) {
+                    sceneSections << heading.trim()
+                }
+            }
+
+            sceneScript.SceneObject.each { so ->
+                def sceneName = so.@identifier.text()?.trim()
+                if (!sceneName) {
+                    return
+                }
+                def group = sceneGroups.get(sceneName)
+                if (group == null) {
+                    group = [
+                            name            : sceneName,
+                            languages       : [] as Set,
+                            speakers        : [] as Set,
+                            turnCount       : 0,
+                            wordCount       : 0,
+                            referencedAgents: [] as Set,
+                            inlineCommands  : [] as Set,
+                            parameters      : [] as Set
+                    ]
+                    sceneGroups.put(sceneName, group)
+                }
+
+                def language = so.@language.text()?.trim()
+                if (language) {
+                    group.languages << language
+                }
+
+                so.SceneTurn.each { turn ->
+                    group.turnCount = group.turnCount + 1
+                    def speaker = turn.@speaker.text()?.trim()
+                    if (speaker) {
+                        group.speakers << speaker
+                    }
+                    turn.depthFirst().each { inner ->
+                        def tag = inner.name().toString()
+                        if (tag == 'SceneWord') {
+                            group.wordCount = group.wordCount + 1
+                        } else if (tag == 'SceneParam') {
+                            // A scene with parameters cannot be played without arguments.
+                            def paramName = inner.@name.text()?.trim()
+                            if (paramName) {
+                                group.parameters << paramName
+                            }
+                        } else if (tag == 'ActionObject') {
+                            def commandName = inner.@name.text()?.trim()
+                            if (commandName) {
+                                group.inlineCommands << commandName
+                            }
+                            // An empty actor means the command is addressed to the turn's own
+                            // speaker rather than to a separate agent.
+                            def actor = inner.@actor.text()?.trim()
+                            if (actor) {
+                                group.referencedAgents << actor
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        def scenes = sceneGroups.values().collect { g ->
+            [
+                    name            : g.name,
+                    languages       : (g.languages as List).sort(),
+                    speakers        : (g.speakers as List).sort(),
+                    turnCount       : g.turnCount,
+                    wordCount       : g.wordCount,
+                    parameters      : (g.parameters as List).sort(),
+                    referencedAgents: (g.referencedAgents as List).sort(),
+                    inlineCommands  : (g.inlineCommands as List).sort()
+            ]
+        }.sort { it.name }
+
         def nodes = []
         def edges = []
 
@@ -655,7 +743,7 @@ tasks.register('generateCapabilitySnapshot') {
         }
 
         def snapshot = [
-                snapshotVersion: '1.0',
+                snapshotVersion: '1.1',
                 generatedAt    : new Date().format("yyyy-MM-dd'T'HH:mm:ssXXX"),
                 source         : sourceDir.absolutePath,
                 project        : [
@@ -663,6 +751,10 @@ tasks.register('generateCapabilitySnapshot') {
                         androidProject: parseBoolean(projectXml?.@androidProject?.text()),
                         plugins       : plugins,
                         agents        : agents
+                ],
+                script         : [
+                        scenes  : scenes,
+                        sections: sceneSections
                 ],
                 flow           : [
                         rootId          : rootId,
@@ -674,12 +766,48 @@ tasks.register('generateCapabilitySnapshot') {
                 ]
         ]
 
+        // Key-parity check against the schema. The schema sets additionalProperties:false
+        // everywhere, so an emitted key it does not declare makes the snapshot invalid. This
+        // drift went unnoticed for months once already (the committed fixture carried a
+        // variable type the schema's enum rejected), so fail here rather than ship it.
+        def schemaFile = file("${projectDir}/doc/capability-snapshot.schema.json")
+        if (schemaFile.exists()) {
+            def schema = new groovy.json.JsonSlurper().parse(schemaFile)
+            def drift = []
+            def compareKeys = { String path, Map declared, Map emitted ->
+                emitted.keySet().findAll { !declared.containsKey(it) }.each {
+                    drift << "  ${path}.${it} is emitted but not declared in the schema"
+                }
+            }
+            compareKeys('', schema.properties as Map, snapshot as Map)
+            ['project', 'script', 'flow'].each { section ->
+                if (snapshot[section] instanceof Map && schema.properties[section]?.properties) {
+                    compareKeys(section, schema.properties[section].properties as Map,
+                            snapshot[section] as Map)
+                }
+            }
+            def declaredSceneKeys = schema.properties.script?.properties?.scenes?.items?.properties
+            if (declaredSceneKeys && !scenes.isEmpty()) {
+                compareKeys('script.scenes[]', declaredSceneKeys as Map, scenes[0] as Map)
+            }
+            def declaredVersion = schema.properties.snapshotVersion?.const
+            if (declaredVersion && declaredVersion != snapshot.snapshotVersion) {
+                drift << "  snapshotVersion is ${snapshot.snapshotVersion} but the schema pins ${declaredVersion}"
+            }
+            if (!drift.isEmpty()) {
+                throw new GradleException("Capability snapshot does not match "
+                        + "doc/capability-snapshot.schema.json:\n" + drift.join('\n')
+                        + "\n\nUpdate the schema and the generator together.")
+            }
+        }
+
         def outFile = file(snapshotOutPath)
         outFile.parentFile.mkdirs()
         outFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(snapshot)) + System.lineSeparator()
 
         logger.lifecycle("Capability snapshot written to: ${outFile}")
         logger.lifecycle("Source project directory: ${sourceDir}")
+        logger.lifecycle("Scenes: ${scenes.size()} · agents: ${agents.size()} · nodes: ${nodes.size()}")
     }
 }
 

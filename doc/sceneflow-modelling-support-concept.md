@@ -44,8 +44,9 @@ Resource metadata the assistant can build on:
   behavior-placement ghost markers (Phase 4, complete — accept path always routes through
   `InsertActionDialog`, provenance `origin: authored|accepted-suggestion`), plugin `newVars`.
 - **Tutorial infrastructure**: tutorial shelf (`GET /api/v1/projects/tutorials` + landing panel)
-  exists but ships empty; the First-Run Setup Wizard (B1) and contextual Shepherd.js tour (B3)
-  from `doc/deployment-and-tutorial-plan.md` are specified but unbuilt.
+  with its first bundled entry installed at `editor/src/main/resources/res/tutorials/1-IntakeInterview/`;
+  the First-Run Setup Wizard (B1) and contextual Shepherd.js tour (B3) from
+  `doc/deployment-and-tutorial-plan.md` are specified but unbuilt.
 
 **Conclusion:** the realisation phase is mostly a *connection and extension* effort, not a
 green-field build.
@@ -259,11 +260,14 @@ the elements, the assistant **guides the author to build them** and *verifies* e
 
 Ordered roughly by dependency:
 
-1. **Live capability snapshot service.** Today a hand-made fixture consumed by tests/Gradle. Need
-   a generator class + REST endpoint (`GET /api/v1/projects/{pid}/capabilities`), refreshed on
-   edit — and the schema extended with what the assistant needs most and v1 omits: **scene
-   names/groups, per-agent plugin command inventories, screens with their variable bindings**
-   (all listed as intended in llm-supported-flow-generation.md, never delivered).
+1. **Live capability snapshot service.** Still a build-time artifact rather than a service: needs a
+   REST endpoint (`GET /api/v1/projects/{pid}/capabilities`) refreshed on edit, and the generator
+   moved out of inline Groovy in `build.gradle` into a class the server can call.
+   *Partly done 2026-08-13:* the **scene inventory** is now emitted as a top-level `script` section
+   (scene group name, language variants, speakers, turn and word counts, parameters, referenced
+   agents, inline commands), snapshot version `1.1`. Still missing: **per-agent plugin command
+   inventories and screens with their variable bindings**, both listed as intended in
+   `llm-supported-flow-generation.md` and never delivered.
 2. **Move/expose the IR pipeline.** `de.dfki.vsm.sceneflow.ir` lives in the root `src/` module
    with CLI entry points only. It must become reachable from the web server and get REST/WS routes
    for: situation → candidates, candidate → preview explanation, candidate → apply.
@@ -295,6 +299,48 @@ Ordered roughly by dependency:
    regeneration of the stale `capability-snapshot.designpatterns.json` fixture)*; teach "multiple
    start nodes" and "History resume" as named patterns in the help; remove the stale root
    `plugin-properties.json` duplicate.
+
+---
+
+## 7a. Inconsistencies found while researching this concept
+
+Recorded here so they are not rediscovered. None is in scope for the concept itself, and each is
+cheap to fix once someone is in the relevant file. Semantics findings live separately in
+[`patterns/1.1-fixed-sequence.md`](patterns/1.1-fixed-sequence.md) §2 and §9.
+
+**Terminology**
+
+- **`SceneFlow` / `chart` / `graph` / `flow` are used with four different scopes** in one help file
+  and nothing tells the author: `SceneFlow` is both the whole artifact and specifically its root,
+  `chart` is any container including supernodes, `graph` is the canvas rendering, and `flow` is the
+  running behaviour. A supernode is therefore a "chart" that is not a "SceneFlow", while variables
+  are "declared per chart".
+- **Two mutually exclusive registers coexist.** The shipped `sceneflow-help.html` opens with
+  "hierarchical state machine", "states", "transitions", while the 2026-08 author-facing material
+  deliberately builds a step and session vocabulary with no graph terms. Whichever wins, they
+  currently contradict each other in tone and in referent.
+- **Label mismatches:** the help calls the edge type "Interrupt" while the web UI labels it
+  "Interruptive edge"; the SceneScript help calls a turn's `Speaker:` a *speaker* while the resolved
+  target is an *agent*.
+- **VSM's one-line self-description differs in all four places it appears** (the About box, the
+  installer README, `CLAUDE.md`, and the review sheet), and `README.md` has none at all. The
+  review sheet's introduction is the best current formulation and is the one to standardise on.
+
+**Runtime and tooling**
+
+- **`SceneDoneEvent` is fired but sets no variable.** `ReactivePlayer` conveys it and only UI
+  bridges consume it, so it cannot be used as a completion signal in a flow. Relevant to the
+  completion handshake in `patterns/1.1-fixed-sequence.md` §3 variant B: the event an author would
+  want already exists and is simply not exposed to the flow.
+- **The capability snapshot fixture had never validated against its own schema.** The schema pinned
+  variable `type` to a five-value enum while the generator emits parameterised Event types such as
+  `Event(*, 10)`. Nothing ever ran a schema validator over it. Fixed 2026-08-13 by relaxing the type
+  to a pattern and adding a key-parity check inside `generateCapabilitySnapshot`, which now fails
+  rather than emitting a snapshot the schema would reject.
+- **`doc/DesignPatterns` contains a scene that cannot play.** Scene `Welcome` has speaker `Anne`,
+  but the project declares only the `timer` agent, so the speaker resolves to nothing. It is
+  harmless today because no node plays that scene, and it is a useful test case for the resource
+  check described in §5 phase 3.
 
 ---
 

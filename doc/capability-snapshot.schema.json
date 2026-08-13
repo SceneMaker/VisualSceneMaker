@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://scenemaker.dfki.de/schema/sceneflow-ir/v1/capability-snapshot.schema.json",
-  "title": "SceneFlow Capability Snapshot v1",
+  "title": "SceneFlow Capability Snapshot v1.1",
   "description": "Runtime/project capability context used to constrain LLM IR generation and semantic validation.",
   "type": "object",
   "additionalProperties": false,
@@ -14,7 +14,7 @@
   "properties": {
     "snapshotVersion": {
       "type": "string",
-      "const": "1.0"
+      "const": "1.1"
     },
     "generatedAt": {
       "type": "string",
@@ -51,6 +51,81 @@
             "$ref": "#/$defs/agent"
           },
           "default": []
+        }
+      }
+    },
+    "script": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "SceneScript content inventory. Scenes are content rather than graph structure, so they sit beside \"flow\" rather than inside it.",
+      "properties": {
+        "scenes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Scene group name. This is the value PlayScene takes; language variants of one name form one group."
+              },
+              "languages": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Two-letter codes of the language variants that exist for this scene group."
+              },
+              "speakers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Turn speakers. Each must match a project agent name for the scene to play."
+              },
+              "turnCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "wordCount": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Spoken words. Zero means the scene carries only commands or parameters."
+              },
+              "parameters": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Scene parameter names. A scene with parameters needs arguments passed to PlayScene."
+              },
+              "referencedAgents": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Agents addressed by inline commands other than the turn speaker."
+              },
+              "inlineCommands": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Names of inline commands used inside the scene. Each must be provided by a plugin."
+              }
+            }
+          }
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Section headings used to structure the script document. Not spoken."
         }
       }
     },
@@ -203,13 +278,8 @@
         },
         "type": {
           "type": "string",
-          "enum": [
-            "Int",
-            "Bool",
-            "Float",
-            "String",
-            "Event"
-          ]
+          "pattern": "^(Int|Bool|Float|String|Event)(\\s*\\(.*\\))?$",
+          "description": "Base type Int, Bool, Float, String or Event, optionally parameterised. Event variables carry a parameter list in the model, for example \"Event(*, 10)\", so the base name alone does not match."
         },
         "scope": {
           "type": "string",

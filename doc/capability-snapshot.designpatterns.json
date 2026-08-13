@@ -1,6 +1,6 @@
 {
-    "snapshotVersion": "1.0",
-    "generatedAt": "2026-08-13T14:06:18+02:00",
+    "snapshotVersion": "1.1",
+    "generatedAt": "2026-08-13T18:25:05+02:00",
     "source": "/Users/gebhard/Code/Repo/VisualSceneMaker/doc/DesignPatterns",
     "project": {
         "name": "DesignPatterns",
@@ -21,6 +21,33 @@
                     
                 ]
             }
+        ]
+    },
+    "script": {
+        "scenes": [
+            {
+                "name": "Welcome",
+                "languages": [
+                    "de"
+                ],
+                "speakers": [
+                    "Anne"
+                ],
+                "turnCount": 1,
+                "wordCount": 5,
+                "parameters": [
+                    
+                ],
+                "referencedAgents": [
+                    
+                ],
+                "inlineCommands": [
+                    
+                ]
+            }
+        ],
+        "sections": [
+            
         ]
     },
     "flow": {
