@@ -261,6 +261,117 @@ class SceneFlowIrSemanticValidatorTest {
         }
     }
 
+    @Test
+    void reportsUnknownLiteralSceneAsWarning() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene(\"Nonexistent\")"), snapshotWithScenes());
+
+        assertFalse(result.hasErrors(), "An unknown scene must not block acceptance");
+        assertTrue(issueCodes(result).contains("SCENE_REF_UNKNOWN"),
+                "Expected SCENE_REF_UNKNOWN for an undeclared scene");
+    }
+
+    @Test
+    void acceptsKnownLiteralScene() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene(\"Welcome\")"), snapshotWithScenes());
+        assertFalse(issueCodes(result).contains("SCENE_REF_UNKNOWN"));
+    }
+
+    @Test
+    void acceptsKnownScenePlayedWithArguments() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene(\"Address\", [user = user_name])"), snapshotWithScenes());
+        assertFalse(issueCodes(result).contains("SCENE_REF_UNKNOWN"));
+    }
+
+    /**
+     * A scene name may legitimately be a variable or built at runtime. Neither can be resolved
+     * statically, so the rule must stay silent rather than report a scene that does not exist yet.
+     */
+    @Test
+    void ignoresSceneNamesThatAreNotLiterals() {
+        SceneFlowIrSemanticValidator validator = new SceneFlowIrSemanticValidator();
+        for (String commandText : new String[] {
+                "PlayScene(topic)",
+                "PlayScene(\"Topic_\" + topic)",
+                "PlayScene(prefix + suffix)"
+        }) {
+            SemanticValidationResult result = validator.validate(
+                    irWithCommand(commandText), snapshotWithScenes());
+            assertFalse(issueCodes(result).contains("SCENE_REF_UNKNOWN"),
+                    "Must not report a non-literal scene name: " + commandText);
+        }
+    }
+
+    /**
+     * Snapshots taken before the scene inventory existed carry no script section. Treating that as
+     * "no scenes declared" would report every scene in the flow as missing.
+     */
+    @Test
+    void staysSilentWhenSnapshotHasNoSceneInventory() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene(\"Anything\")"), baseSnapshot());
+        assertFalse(issueCodes(result).contains("SCENE_REF_UNKNOWN"));
+    }
+
+    /**
+     * A single-quoted scene name used to compile successfully into a reference to a variable of that
+     * name, with nothing reporting it. It must be an error, not a warning: no bare single quote is
+     * ever correct in command text.
+     */
+    @Test
+    void rejectsSingleQuotedStringsInCommandText() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene('Welcome')"), snapshotWithScenes());
+
+        assertTrue(issueCodes(result).contains("COMMAND_TEXT_INVALID_QUOTE"));
+        assertTrue(result.hasErrors(), "A single-quoted string must block acceptance");
+    }
+
+    /**
+     * Single quotes inside a double-quoted string are legitimate and common in embedded action text.
+     */
+    @Test
+    void allowsSingleQuotesInsideDoubleQuotedActionText() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayAction(\"[background color='#77bb41']\")"),
+                        snapshotWithScenes());
+        assertFalse(issueCodes(result).contains("COMMAND_TEXT_INVALID_QUOTE"));
+        assertFalse(result.hasErrors());
+    }
+
+    private Set<String> issueCodes(final SemanticValidationResult result) {
+        java.util.Set<String> codes = new java.util.LinkedHashSet<>();
+        for (SemanticIssue issue : result.getIssues()) {
+            codes.add(issue.getCode());
+        }
+        return codes;
+    }
+
+    private JSONObject irWithCommand(final String commandText) {
+        return new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", new JSONArray()
+                        .put(new JSONObject()
+                                .put("op", "add_node_command")
+                                .put("nodeId", "N1")
+                                .put("commandText", commandText)));
+    }
+
+    private JSONObject snapshotWithScenes() {
+        return baseSnapshot()
+                .put("snapshotVersion", "1.1")
+                .put("script", new JSONObject()
+                        .put("sections", new JSONArray())
+                        .put("scenes", new JSONArray()
+                                .put(new JSONObject().put("name", "Welcome"))
+                                .put(new JSONObject().put("name", "Address")
+                                        .put("parameters", new JSONArray().put("user")))
+                                .put(new JSONObject().put("name", "Topic_Weather"))));
+    }
+
     private JSONObject baseSnapshot() {
         return new JSONObject()
                 .put("snapshotVersion", "1.0")

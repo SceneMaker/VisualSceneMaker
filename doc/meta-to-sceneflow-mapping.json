@@ -1,6 +1,6 @@
 {
-  "version": "1.1",
-  "updatedAt": "2026-02-24",
+  "version": "1.2",
+  "updatedAt": "2026-08-13",
   "purpose": "Machine-readable realization matrix from constrained-activity meta model to Visual SceneMaker SceneFlow concepts.",
   "metaToSceneFlow": [
     {
@@ -269,6 +269,20 @@
       "scope": "general",
       "severity": "warning",
       "description": "Condition expressions may only reference known variables.",
+      "activation": {}
+    },
+    {
+      "id": "SCENE_REF_UNKNOWN",
+      "scope": "general",
+      "severity": "warning",
+      "description": "A PlayScene command with a literal scene name should refer to a scene the project declares. Only literal names are checked: a name given as a variable or computed at runtime, such as PlayScene(\"Topic_\" + topic), is not knowable statically and is left alone. Warning rather than error because a scene may legitimately be authored after the flow that plays it.",
+      "activation": {}
+    },
+    {
+      "id": "COMMAND_TEXT_INVALID_QUOTE",
+      "scope": "general",
+      "severity": "error",
+      "description": "Command text must use double quotes for strings. A bare single quote is rejected by the lexer and the contents are then read as an identifier, so PlayScene('greet') compiles silently into a reference to a variable named greet. Error rather than warning because there is no case in which a bare single quote is correct. Single quotes inside a double-quoted string, as in embedded action text, are allowed.",
       "activation": {}
     },
     {

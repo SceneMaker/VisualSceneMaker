@@ -23,6 +23,13 @@ public final class SceneFlowIrSemanticValidator {
     private static final Set<String> EDGE_TYPES = Set.of("EEDGE", "CEDGE", "PEDGE", "TEDGE", "FEDGE", "IEDGE");
     private static final Set<String> VARIABLE_TYPES = Set.of("Int", "Bool", "Float", "String", "Event");
     private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("\\b[A-Za-z_][A-Za-z0-9_]*\\b");
+    /**
+     * Matches a PlayScene whose scene name is a plain double-quoted literal, optionally followed by
+     * arguments. Deliberately does not match a bare variable or a concatenation such as
+     * {@code PlayScene("Topic_" + topic)}, because those names are only known at runtime.
+     */
+    private static final Pattern PLAY_SCENE_LITERAL = Pattern.compile(
+            "^PlayScene\\s*\\(\\s*\"([^\"]*)\"\\s*(?:,.*)?\\)$", Pattern.DOTALL);
     private static final Set<String> RESERVED_TOKENS = Set.of(
             "true", "false", "null", "and", "or", "not", "in", "if", "then", "else");
     private static final String RULE_EXIT_TARGET_OUTSIDE_SCOPE = "SUPERNODE_EXIT_TARGET_OUTSIDE_SCOPE";
@@ -52,6 +59,8 @@ public final class SceneFlowIrSemanticValidator {
             "VARDEF_NAME_MISSING",
             "VARDEF_TYPE_INVALID",
             "VAR_REF_UNKNOWN",
+            "SCENE_REF_UNKNOWN",
+            "COMMAND_TEXT_INVALID_QUOTE",
             RULE_EXIT_TARGET_OUTSIDE_SCOPE,
             RULE_INTERNAL_LIVENESS_REQUIRED,
             "SUPERNODE_EXIT_TARGET_IN_SCOPE",
@@ -102,8 +111,122 @@ public final class SceneFlowIrSemanticValidator {
                     nodeParentById, superNodeIds, result);
         }
 
+        validateNodeCommands(operations, snapshot, result);
         validateConfiguredInvariants(ir, operations, nodeParentById, superNodeIds, result);
         return result;
+    }
+
+    /**
+     * Checks the text of node-command operations.
+     *
+     * <p>Runs as its own pass rather than through the operation-handler registry, because it needs
+     * the snapshot's scene inventory rather than the node and edge context those handlers thread
+     * through.
+     */
+    private void validateNodeCommands(
+            final JSONArray operations,
+            final JSONObject snapshot,
+            final SemanticValidationResult result) {
+        final Set<String> sceneNames = sceneNamesFrom(snapshot);
+        for (int i = 0; i < operations.length(); i++) {
+            final JSONObject op = operations.optJSONObject(i);
+            if (op == null) {
+                continue;
+            }
+            final String kind = op.optString("op", "");
+            if (!"add_node_command".equals(kind) && !"update_node_command".equals(kind)) {
+                continue;
+            }
+            final String commandText = op.optString("commandText", "");
+            final String path = "/operations/" + i + "/commandText";
+
+            if (hasQuoteOutsideString(commandText)) {
+                emitIssue(result, "COMMAND_TEXT_INVALID_QUOTE", path,
+                        "Single quotes are not string delimiters in command text. The parser rejects "
+                                + "the quote and reads the contents as an identifier, so "
+                                + "PlayScene('greet') silently becomes a reference to a variable "
+                                + "named greet. Use double quotes.");
+            }
+
+            // An empty inventory means either a project with no scenes or a snapshot predating the
+            // inventory. Guessing would report every scene in the flow as missing.
+            if (sceneNames.isEmpty()) {
+                continue;
+            }
+            final String literal = literalSceneNameIn(commandText);
+            if (literal == null || sceneNames.contains(literal)) {
+                continue;
+            }
+            emitIssue(result, "SCENE_REF_UNKNOWN", path,
+                    "Unknown scene: \"" + literal + "\". The project declares "
+                            + sceneNames.size() + " scene(s).");
+        }
+    }
+
+    /**
+     * True when a single quote appears outside a double-quoted string. Double quotes are the only
+     * string delimiter the glue lexer accepts, so a bare single quote is always a defect. Single
+     * quotes <em>inside</em> a double-quoted string are legitimate and common, for example in
+     * embedded action text such as {@code PlayAction("[background color='#77bb41']")}.
+     */
+    private boolean hasQuoteOutsideString(final String text) {
+        boolean inDoubleQuote = false;
+        for (int i = 0; i < text.length(); i++) {
+            final char c = text.charAt(i);
+            if (c == '\\') {
+                i++;
+                continue;
+            }
+            if (c == '"') {
+                inDoubleQuote = !inDoubleQuote;
+            } else if (c == '\'' && !inDoubleQuote) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private Set<String> sceneNamesFrom(final JSONObject snapshot) {
+        final Set<String> names = new LinkedHashSet<>();
+        if (snapshot == null) {
+            return names;
+        }
+        final JSONObject script = snapshot.optJSONObject("script");
+        if (script == null) {
+            return names;
+        }
+        final JSONArray scenes = script.optJSONArray("scenes");
+        if (scenes == null) {
+            return names;
+        }
+        for (int i = 0; i < scenes.length(); i++) {
+            final JSONObject scene = scenes.optJSONObject(i);
+            if (scene == null) {
+                continue;
+            }
+            final String name = scene.optString("name", "").trim();
+            if (!name.isEmpty()) {
+                names.add(name);
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Extracts the scene name from a PlayScene command when, and only when, it is a plain quoted
+     * literal. Returns null for anything else, including a bare variable, a concatenation, and any
+     * command that is not a PlayScene.
+     */
+    private String literalSceneNameIn(final String commandText) {
+        if (commandText == null) {
+            return null;
+        }
+        final Matcher matcher = PLAY_SCENE_LITERAL.matcher(commandText.trim());
+        if (!matcher.matches()) {
+            return null;
+        }
+        return matcher.group(1);
     }
 
     public JSONArray describeActiveRules(final JSONObject ir, final JSONObject snapshot) {
