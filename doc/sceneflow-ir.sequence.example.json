@@ -1,0 +1,83 @@
+{
+  "irVersion": "1.0",
+  "mode": "patch",
+  "metadata": {
+    "source": "template-sequence",
+    "situation": "First greet the visitor, then explain the study, then ask for consent."
+  },
+  "assumptions": [
+    "Each step plays a scene, so the bare EEDGE chain gives true step-after-step ordering: PlayScene blocks the node until the scene has finished playing.",
+    "Scenes greet, explain_study and ask_consent are assumed to exist in the SceneScript. The capability snapshot carries no scene inventory, so this cannot be validated here.",
+    "Positions are emitted by the template rather than left to the pipeline, so the chain reads left to right and does not collide with existing nodes.",
+    "AskConsent is the final step and deliberately has no outgoing edge. A real sequence should be given a continuation target."
+  ],
+  "operations": [
+    {
+      "op": "create_node",
+      "opId": "step-1-node",
+      "reason": "First step of the sequence.",
+      "parentSuperNodeId": "SceneFlow",
+      "nodeId": "Greet",
+      "name": "Greet",
+      "isStartNode": true,
+      "position": { "x": 120, "y": 1700 }
+    },
+    {
+      "op": "add_node_command",
+      "opId": "step-1-command",
+      "reason": "Content of the first step.",
+      "nodeId": "Greet",
+      "commandText": "PlayScene(\"greet\")"
+    },
+    {
+      "op": "create_node",
+      "opId": "step-2-node",
+      "reason": "Second step of the sequence.",
+      "parentSuperNodeId": "SceneFlow",
+      "nodeId": "ExplainStudy",
+      "name": "ExplainStudy",
+      "position": { "x": 440, "y": 1700 }
+    },
+    {
+      "op": "add_node_command",
+      "opId": "step-2-command",
+      "reason": "Content of the second step.",
+      "nodeId": "ExplainStudy",
+      "commandText": "PlayScene(\"explain_study\")"
+    },
+    {
+      "op": "create_node",
+      "opId": "step-3-node",
+      "reason": "Third and final step of the sequence.",
+      "parentSuperNodeId": "SceneFlow",
+      "nodeId": "AskConsent",
+      "name": "AskConsent",
+      "position": { "x": 760, "y": 1700 }
+    },
+    {
+      "op": "add_node_command",
+      "opId": "step-3-command",
+      "reason": "Content of the third step.",
+      "nodeId": "AskConsent",
+      "commandText": "PlayScene(\"ask_consent\")"
+    },
+    {
+      "op": "create_edge",
+      "opId": "step-1-to-2",
+      "reason": "Advance to the second step once the first has finished.",
+      "edgeId": "SeqGreetToExplainStudy",
+      "edgeType": "EEDGE",
+      "sourceNodeId": "Greet",
+      "targetNodeId": "ExplainStudy"
+    },
+    {
+      "op": "create_edge",
+      "opId": "step-2-to-3",
+      "reason": "Advance to the third step once the second has finished.",
+      "edgeId": "SeqExplainStudyToAskConsent",
+      "edgeType": "EEDGE",
+      "sourceNodeId": "ExplainStudy",
+      "targetNodeId": "AskConsent"
+    }
+  ]
+}
