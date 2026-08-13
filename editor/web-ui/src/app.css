@@ -2629,6 +2629,29 @@ a.export-link {
   max-width: 26rem;
 }
 
+/* §3.4 one-per-client lock: full-window veil over a refused second script window. */
+.script-window-blocked {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(28, 27, 21, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.script-window-blocked-card {
+  background: #f3efe7;
+  border: 1px solid #c0b8ae;
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(28, 27, 21, 0.25);
+  padding: 1.25rem 1.5rem;
+  max-width: 30rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
 /* Shown in the main window while the script area lives in the detached window. */
 .script-detached-placeholder {
   background: #e7e1d8;

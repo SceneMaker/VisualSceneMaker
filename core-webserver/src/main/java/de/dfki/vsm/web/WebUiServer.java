@@ -2087,7 +2087,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                     .start(bindHost, port);
         }
         if (hasWebUi) {
-            mApp.get("/", ctx -> ctx.redirect("/web-ui/"));
+            // Preserve the query string: invite links (?session=...) and detached script
+            // windows (?view=script) enter through the root URL, and dropping their
+            // parameters silently turns them into a plain editor on whatever project
+            // localStorage last remembered.
+            mApp.get("/", ctx -> {
+                final String query = ctx.queryString();
+                ctx.redirect("/web-ui/" + (query != null && !query.isEmpty() ? "?" + query : ""));
+            });
         }
         registerRoutes();
         // Pre-copy bundled tutorials to ~/.vsm.d/tutorials/ so the first tutorial-list

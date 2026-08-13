@@ -2984,8 +2984,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       showEditor &&
       // Only the window that currently renders the script editor auto-applies — while the
       // script is detached, the main window's mirrored draft must not race the detached
-      // window's own auto-apply (doc/scenescript-separate-window.md §4.3).
+      // window's own auto-apply (doc/scenescript-separate-window.md §4.3). A refused second
+      // script window (§3.4 lock) must not auto-apply either.
       scriptAreaVisible &&
+      !scriptWindowBlocked &&
       wsConnected &&
       !!selectedProjectId &&
       scriptDirty &&
@@ -8326,11 +8328,34 @@ Sentence:
   let scriptDetached = false;        // main window: script area currently lives in a detached window
   let detachedScriptWindow = null;   // main window: window.open handle, reused to focus (§3.1)
   let pendingDetachHandoff = null;   // main window: payload captured at detach, sent on child "ready"
-  let scriptHandoffPending = null;   // receiving window: payload waiting for the editor to mount
   let scriptMergeAckTimer = null;    // detached window: merge is only final once the main window acks
   let scriptMergeError = "";
   let scriptDetachChannel = null;
   let scriptDetachChannelPid = null;
+  // Lifecycle hardening (§3.4). Every channel message carries the sender's per-window id so
+  // handoffs can be TARGETED — a broadcast handoff would otherwise reset every listening
+  // script window at once.
+  const WINDOW_ID = Math.random().toString(36).slice(2);
+  const SCRIPT_PROMOTE_KEY = "vsm_script_promote_handoff";
+  let lastDetachedSnapshot = null;    // main: child's final state, posted on its pagehide
+  let lastScriptWindowBeat = 0;       // main: child heartbeat, close detection without a handle
+  let scriptDetachWatchTimer = null;  // main: 1s watchdog while detached (same pattern as the
+                                      // runtime GUI popup — window.close has no cross-window event)
+  let scriptWindowHeartbeatTimer = null; // child: posts a heartbeat every 2s while active
+  let scriptWindowBlocked = false;    // child: a second script window on one project is refused
+  let scriptPromoteTimer = null;      // child: grace period before becoming a full editor
+  // A promoted window restores its draft + undo history across its own reload through
+  // sessionStorage (same-tab only, consumed exactly once).
+  let scriptHandoffPending = (() => {
+    try {
+      const raw = sessionStorage.getItem(SCRIPT_PROMOTE_KEY);
+      if (raw) {
+        sessionStorage.removeItem(SCRIPT_PROMOTE_KEY);
+        return JSON.parse(raw);
+      }
+    } catch (_) {}
+    return null;
+  })();
   $: scriptAreaVisible = isScriptWindow || !scriptDetached;
   // Detach is only offered while the project is not running (§3.1); merging back stays
   // available during a run.
@@ -8352,8 +8377,21 @@ Sentence:
     scriptDetachChannel = new BroadcastChannel(`vsm-script-window:${pid}`);
     scriptDetachChannel.onmessage = (event) => handleScriptWindowMessage(event?.data);
     if (isScriptWindow) {
-      // Announce ourselves — the main window answers with the draft/history handoff.
-      scriptDetachChannel.postMessage({ type: "script-window-ready" });
+      // Announce ourselves — the main window answers with the draft/history handoff. Skipped
+      // after a promotion stash (this window is about to have state of its own).
+      if (!scriptHandoffPending) {
+        scriptDetachChannel.postMessage({ type: "script-window-ready", wid: WINDOW_ID });
+      }
+      if (scriptWindowHeartbeatTimer) clearInterval(scriptWindowHeartbeatTimer);
+      scriptWindowHeartbeatTimer = setInterval(() => {
+        if (!scriptWindowBlocked && scriptDetachChannel) {
+          try { scriptDetachChannel.postMessage({ type: "script-heartbeat", wid: WINDOW_ID }); } catch (_) {}
+        }
+      }, 2000);
+    } else {
+      // Lets a still-open detached window re-attach to a main window that reloaded (and lost
+      // scriptDetached): the child answers with script-window-alive, and we re-adopt (§3.4).
+      scriptDetachChannel.postMessage({ type: "main-hello", wid: WINDOW_ID });
     }
   }
 
@@ -8372,7 +8410,11 @@ Sentence:
   // applied too early, see applyScriptSnapshot's hasDirtyDraft gate).
   function applyPendingScriptHandoff() {
     const payload = scriptHandoffPending;
-    if (!payload || !scriptEditorRef || !scriptLoaded) return;
+    if (!payload || !scriptEditorRef || !scriptLoaded || scriptWindowBlocked) return;
+    if (payload.projectId && payload.projectId !== selectedProjectId) {
+      scriptHandoffPending = null;
+      return;
+    }
     if (!scriptEditorRef.getStateSnapshot()) {
       // Editor component exists but its CodeMirror view hasn't mounted yet — retry shortly,
       // keeping the payload pending.
@@ -8402,7 +8444,7 @@ Sentence:
     }
   }
 
-  $: if (scriptHandoffPending && scriptEditorRef && scriptLoaded) {
+  $: if (scriptHandoffPending && scriptEditorRef && scriptLoaded && !scriptWindowBlocked) {
     applyPendingScriptHandoff();
   }
 
@@ -8435,6 +8477,8 @@ Sentence:
     if (!win) return; // popup blocked — nothing was torn down yet, the click just does nothing
     detachedScriptWindow = win;
     pendingDetachHandoff = payload;
+    lastDetachedSnapshot = null;
+    lastScriptWindowBeat = Date.now();
     // Hide before the child renders, so the editor never exists in two windows at once (§3.1).
     scriptDetached = true;
   }
@@ -8442,7 +8486,101 @@ Sentence:
   function focusDetachedScriptWindow() {
     if (detachedScriptWindow && !detachedScriptWindow.closed) {
       try { detachedScriptWindow.focus(); } catch (_) {}
+      return;
     }
+    // No handle (this main window reloaded and re-adopted the detached state) — ask the child
+    // to raise itself instead.
+    scriptDetachChannel?.postMessage({ type: "script-focus-request" });
+  }
+
+  // --- §3.4 lifecycle hardening ---------------------------------------------------------------
+
+  // Main window: watches the detached window while scriptDetached. A directly closed child is
+  // treated as a merge — the script re-renders here with the child's last posted state, so
+  // draft and undo history survive even that path. Uses the handle's .closed when we have one
+  // (same 1s polling pattern as the runtime GUI popup) and the child heartbeat when we don't.
+  function scriptDetachWatchTick() {
+    if (!scriptDetached || isScriptWindow) return;
+    const handleClosed = !!(detachedScriptWindow && detachedScriptWindow.closed);
+    const beatStale =
+      !detachedScriptWindow &&
+      lastScriptWindowBeat > 0 &&
+      Date.now() - lastScriptWindowBeat > 6000;
+    if (!handleClosed && !beatStale) return;
+    const snapshot = lastDetachedSnapshot;
+    lastDetachedSnapshot = null;
+    detachedScriptWindow = null;
+    pendingDetachHandoff = null;
+    scriptDetached = false;
+    if (snapshot) {
+      scriptHandoffPending = snapshot;
+    }
+  }
+
+  $: {
+    const shouldWatch = scriptDetached && !isScriptWindow;
+    if (shouldWatch && !scriptDetachWatchTimer) {
+      scriptDetachWatchTimer = setInterval(scriptDetachWatchTick, 1000);
+    } else if (!shouldWatch && scriptDetachWatchTimer) {
+      clearInterval(scriptDetachWatchTimer);
+      scriptDetachWatchTimer = null;
+    }
+  }
+
+  // Both directions of "a window went away" are announced on pagehide. The receiving side never
+  // acts on the announcement alone — a reload fires pagehide too — it only stores state (main)
+  // or starts a grace period (child) and lets the watchdog / hello traffic decide.
+  function handleWindowPagehide() {
+    if (!scriptDetachChannel) return;
+    try {
+      if (isScriptWindow) {
+        if (!scriptWindowBlocked) {
+          scriptDetachChannel.postMessage({
+            type: "script-closing",
+            wid: WINDOW_ID,
+            ...buildScriptHandoffPayload()
+          });
+        }
+      } else if (scriptDetached) {
+        scriptDetachChannel.postMessage({ type: "main-closing", wid: WINDOW_ID });
+      }
+    } catch (_) {}
+  }
+
+  // Detached window: the main window announced it is closing. Wait out a grace period first —
+  // a reloading main window posts main-hello well within it — then take over as a full editor
+  // (§3.4: "no dead end, nothing to recover").
+  function schedulePromotionToFullEditor() {
+    if (!isScriptWindow || scriptWindowBlocked || scriptPromoteTimer) return;
+    scriptPromoteTimer = setTimeout(() => {
+      scriptPromoteTimer = null;
+      promoteScriptWindowToFullEditor();
+    }, 6000);
+  }
+
+  function cancelPromotionToFullEditor() {
+    if (scriptPromoteTimer) {
+      clearTimeout(scriptPromoteTimer);
+      scriptPromoteTimer = null;
+    }
+  }
+
+  // Becoming a full editor means reloading without ?view=script — isScriptWindow gates markup
+  // and preference keys all over, so an in-place flip would leave half-consistent state. The
+  // draft + undo history survive the reload through sessionStorage (consumed on startup).
+  function promoteScriptWindowToFullEditor() {
+    if (!isScriptWindow || !selectedProjectId) return;
+    try {
+      sessionStorage.setItem(
+        SCRIPT_PROMOTE_KEY,
+        JSON.stringify({ projectId: selectedProjectId, ...buildScriptHandoffPayload() })
+      );
+    } catch (_) {}
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.hash = "";
+    url.searchParams.set("session", selectedProjectId);
+    window.location.replace(url.toString());
   }
 
   // Detached window: hand everything back and close. Closing waits for the main window's ack —
@@ -8455,7 +8593,7 @@ Sentence:
     scriptMergeAckTimer = setTimeout(() => {
       scriptMergeAckTimer = null;
       scriptMergeError =
-        "The main editor window did not respond — is it still open? Nothing was lost; keep working here or try again.";
+        "The main editor window did not respond — it may be closed. Nothing was lost: try again, or take over with “Continue here”.";
     }, 2000);
   }
 
@@ -8463,6 +8601,10 @@ Sentence:
     if (!msg || typeof msg !== "object") return;
     if (isScriptWindow) {
       if (msg.type === "script-handoff") {
+        // Handoffs are targeted — a broadcast would reset every listening script window.
+        if (msg.targetWid && msg.targetWid !== WINDOW_ID) return;
+        if (scriptWindowBlocked) return;
+        cancelPromotionToFullEditor(); // a handoff proves a main window is alive
         scriptHandoffPending = msg;
       } else if (msg.type === "script-merge-ack") {
         if (scriptMergeAckTimer) {
@@ -8470,23 +8612,78 @@ Sentence:
           scriptMergeAckTimer = null;
         }
         window.close();
+      } else if (msg.type === "main-hello") {
+        // A main window (re)appeared: no promotion needed, and tell it the script already
+        // lives here so it re-adopts the detached state (§3.4, main reloaded while detached).
+        cancelPromotionToFullEditor();
+        if (!scriptWindowBlocked) {
+          scriptDetachChannel?.postMessage({ type: "script-window-alive", wid: WINDOW_ID });
+        }
+      } else if (msg.type === "main-closing") {
+        schedulePromotionToFullEditor();
+      } else if (msg.type === "script-focus-request") {
+        if (!scriptWindowBlocked) {
+          try { window.focus(); } catch (_) {}
+        }
+      } else if (msg.type === "script-window-ready") {
+        // Another script window announced itself (manually pasted URL, §3.4): the one that
+        // already holds the script refuses it.
+        if (msg.wid && msg.wid !== WINDOW_ID && !scriptWindowBlocked) {
+          scriptDetachChannel?.postMessage({ type: "script-window-taken", targetWid: msg.wid });
+        }
+      } else if (msg.type === "script-window-taken") {
+        if (msg.targetWid !== WINDOW_ID) return;
+        scriptWindowBlocked = true;
+        scriptHandoffPending = null;
+        cancelPromotionToFullEditor();
+        // Drop any foreign draft that slipped in before the refusal arrived.
+        scriptDraft = scriptText;
       }
       return;
     }
     // Main-window side.
-    if (msg.type === "script-window-ready" && scriptDetached) {
-      // Fresh child: send the payload captured at detach. A child that was reloaded (F5) gets
-      // the live draft instead — the main window mirrors it via script.live while its own
-      // draft stays clean — without undo history, which did not survive the reload anyway.
-      const payload = pendingDetachHandoff || buildScriptHandoffPayload();
+    if (msg.type === "script-window-ready") {
+      // A script window asked for state. Three cases share this path: the child we just opened
+      // (payload captured at detach), a child that reloaded (its pagehide snapshot, so undo
+      // history survives an F5 too), and a pasted-URL child while we are NOT detached — that
+      // one makes us adopt the detached state, which is the §3.4 lock from the main side.
+      const payload =
+        pendingDetachHandoff ||
+        lastDetachedSnapshot ||
+        (scriptLoaded ? buildScriptHandoffPayload() : null);
       pendingDetachHandoff = null;
-      scriptDetachChannel?.postMessage({ type: "script-handoff", ...payload });
+      lastDetachedSnapshot = null;
+      lastScriptWindowBeat = Date.now();
+      scriptDetached = true;
+      if (payload) {
+        scriptDetachChannel?.postMessage({ type: "script-handoff", targetWid: msg.wid, ...payload });
+      }
+      return;
+    }
+    if (msg.type === "script-window-alive") {
+      // Our reload lost scriptDetached, but a script window is still holding the script.
+      lastScriptWindowBeat = Date.now();
+      scriptDetached = true;
+      return;
+    }
+    if (msg.type === "script-heartbeat") {
+      lastScriptWindowBeat = Date.now();
+      return;
+    }
+    if (msg.type === "script-closing") {
+      // Not acted on directly — a reloading child fires pagehide too. The watchdog (handle
+      // .closed / stale heartbeat) decides whether this was really a close; until then the
+      // snapshot just waits so draft AND undo history survive a direct close.
+      if (scriptDetached) {
+        lastDetachedSnapshot = msg;
+      }
       return;
     }
     if (msg.type === "script-merge") {
       scriptDetached = false;
       detachedScriptWindow = null;
       pendingDetachHandoff = null;
+      lastDetachedSnapshot = null;
       scriptHandoffPending = msg;
       scriptDetachChannel?.postMessage({ type: "script-merge-ack" });
     }
@@ -15832,7 +16029,7 @@ Sentence:
   }
 </script>
 
-<svelte:window on:keydown={handleGlobalKeydown} on:keyup={handleGlobalKeyup} on:blur={handleWindowBlur} />
+<svelte:window on:keydown={handleGlobalKeydown} on:keyup={handleGlobalKeyup} on:blur={handleWindowBlur} on:pagehide={handleWindowPagehide} />
 
 {#if projectActionConfirmation}
   {#key projectActionConfirmationId}
@@ -15840,6 +16037,21 @@ Sentence:
       {projectActionConfirmation}
     </div>
   {/key}
+{/if}
+
+{#if isScriptWindow && scriptWindowBlocked}
+  <!-- §3.4 one-per-client lock: a second script window on the same project (manually pasted
+       URL) is refused rather than allowed to diverge. Lives outside <main>, whose rise
+       animation makes it a containing block that would clip this fixed veil. -->
+  <div class="script-window-blocked" role="alertdialog" aria-modal="true">
+    <div class="script-window-blocked-card">
+      <strong>The scene script is already open in another window.</strong>
+      <p class="muted">
+        Only one detached script window per project is allowed on a machine. Close this
+        window and continue in the existing one.
+      </p>
+    </div>
+  </div>
 {/if}
 
 <main class:editor-view={showEditor}>
@@ -16259,6 +16471,14 @@ Sentence:
             {/if}
             {#if scriptMergeError}
               <span class="error script-window-merge-error">{scriptMergeError}</span>
+              <button
+                type="button"
+                class="ghost panel-save"
+                on:click={promoteScriptWindowToFullEditor}
+                title="Turn this window into a full editor (SceneFlow and script) — nothing is lost"
+              >
+                Continue here
+              </button>
             {/if}
             <button
               type="button"
