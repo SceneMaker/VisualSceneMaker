@@ -1,6 +1,12 @@
 # Proposal: detaching the SceneScript editor (with SIA preview) into its own window
 
-**Status:** proposal, nothing implemented
+**Status:** implemented, all four phases (2026-08-13)
+— phase 1 `6b8ed000` (detach/merge, draft + undo-history hand-over, per-view prefs),
+phase 2 `7ad9bcc3` (lifecycle hardening §3.4; also fixed the `/` → `/web-ui/` redirect dropping
+query strings, which silently broke invite links and pasted script-window URLs),
+phase 3 `e5204d16` (scenescript-help.html §5, v1.4),
+phase 4 `d7292981` (presence view-marking §4.4 — the §4.1 note about deleting
+`CharacterPreviewPanel` was already moot: `e8ddbb08` had deleted the file itself).
 **Date:** 2026-08-12 (revised — supersedes the 2026-08-11 first draft)
 **Scope:** let the scene script editor plus its SIA preview be *detached* from the main editor into a
 separate browser window, so it can fill a second monitor while the SceneFlow graph fills the first,
