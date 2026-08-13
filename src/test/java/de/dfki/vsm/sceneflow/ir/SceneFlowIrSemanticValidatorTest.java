@@ -278,11 +278,52 @@ class SceneFlowIrSemanticValidatorTest {
         assertFalse(issueCodes(result).contains("SCENE_REF_UNKNOWN"));
     }
 
+    /** Scene arguments are a struct in braces. Brackets are not glue syntax. */
     @Test
     void acceptsKnownScenePlayedWithArguments() {
         SemanticValidationResult result = new SceneFlowIrSemanticValidator()
-                .validate(irWithCommand("PlayScene(\"Address\", [user = user_name])"), snapshotWithScenes());
+                .validate(irWithCommand("PlayScene(\"Address\", { user = username })"), snapshotWithScenes());
+        assertTrue(issueCodes(result).isEmpty(),
+                "A correct call with its declared parameter must be clean, was: " + issueCodes(result));
+    }
+
+    @Test
+    void reportsSceneParameterThatIsNotSupplied() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene(\"Address\")"), snapshotWithScenes());
+
+        assertTrue(issueCodes(result).contains("SCENE_PARAM_MISSING"),
+                "Address declares 'user', so playing it with no arguments must be reported");
         assertFalse(issueCodes(result).contains("SCENE_REF_UNKNOWN"));
+    }
+
+    @Test
+    void reportsStructFieldThatIsNotADeclaredParameter() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene(\"Address\", { usr = username })"), snapshotWithScenes());
+
+        assertTrue(issueCodes(result).contains("SCENE_PARAM_UNKNOWN"), "Misspelled parameter");
+        assertTrue(issueCodes(result).contains("SCENE_PARAM_MISSING"), "'user' is still unsupplied");
+    }
+
+    /**
+     * Binding is by name, and the runtime ignores any argument that is not a struct, so a bare value
+     * supplies nothing despite looking like it passes one.
+     */
+    @Test
+    void reportsNonStructArgumentToAParameterisedScene() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene(\"Address\", username)"), snapshotWithScenes());
+
+        assertTrue(issueCodes(result).contains("SCENE_ARG_NOT_STRUCT"));
+        assertTrue(issueCodes(result).contains("SCENE_PARAM_MISSING"));
+    }
+
+    @Test
+    void acceptsSceneWithoutParametersPlayedWithoutArguments() {
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator()
+                .validate(irWithCommand("PlayScene(\"Welcome\")"), snapshotWithScenes());
+        assertTrue(issueCodes(result).isEmpty(), "Was: " + issueCodes(result));
     }
 
     /**

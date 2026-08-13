@@ -1,5 +1,5 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "updatedAt": "2026-08-13",
   "purpose": "Machine-readable realization matrix from constrained-activity meta model to Visual SceneMaker SceneFlow concepts.",
   "metaToSceneFlow": [
@@ -283,6 +283,27 @@
       "scope": "general",
       "severity": "error",
       "description": "Command text must use double quotes for strings. A bare single quote is rejected by the lexer and the contents are then read as an identifier, so PlayScene('greet') compiles silently into a reference to a variable named greet. Error rather than warning because there is no case in which a bare single quote is correct. Single quotes inside a double-quoted string, as in embedded action text, are allowed.",
+      "activation": {}
+    },
+    {
+      "id": "SCENE_PARAM_MISSING",
+      "scope": "general",
+      "severity": "warning",
+      "description": "A scene that declares parameters should be played with those parameters supplied. Binding is by name through a struct, so PlayScene(\"show_summary\") on a scene declaring \"summary\" leaves the placeholder unsubstituted. Warning rather than error because a scene and its parameters are content the author may still be editing.",
+      "activation": {}
+    },
+    {
+      "id": "SCENE_PARAM_UNKNOWN",
+      "scope": "general",
+      "severity": "warning",
+      "description": "A struct field passed to PlayScene should match a parameter the scene declares. An unmatched field is computed and then never used, which is usually a misspelled parameter name.",
+      "activation": {}
+    },
+    {
+      "id": "SCENE_ARG_NOT_STRUCT",
+      "scope": "general",
+      "severity": "warning",
+      "description": "Scene parameters bind by name, and ReactivePlayer.getSubstitutions ignores every argument that is not a struct. A bare value passed to a scene that declares parameters therefore supplies nothing at runtime despite looking like it does.",
       "activation": {}
     },
     {

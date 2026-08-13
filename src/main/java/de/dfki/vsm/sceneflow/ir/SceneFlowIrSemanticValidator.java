@@ -1,5 +1,13 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
+import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -23,13 +31,6 @@ public final class SceneFlowIrSemanticValidator {
     private static final Set<String> EDGE_TYPES = Set.of("EEDGE", "CEDGE", "PEDGE", "TEDGE", "FEDGE", "IEDGE");
     private static final Set<String> VARIABLE_TYPES = Set.of("Int", "Bool", "Float", "String", "Event");
     private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("\\b[A-Za-z_][A-Za-z0-9_]*\\b");
-    /**
-     * Matches a PlayScene whose scene name is a plain double-quoted literal, optionally followed by
-     * arguments. Deliberately does not match a bare variable or a concatenation such as
-     * {@code PlayScene("Topic_" + topic)}, because those names are only known at runtime.
-     */
-    private static final Pattern PLAY_SCENE_LITERAL = Pattern.compile(
-            "^PlayScene\\s*\\(\\s*\"([^\"]*)\"\\s*(?:,.*)?\\)$", Pattern.DOTALL);
     private static final Set<String> RESERVED_TOKENS = Set.of(
             "true", "false", "null", "and", "or", "not", "in", "if", "then", "else");
     private static final String RULE_EXIT_TARGET_OUTSIDE_SCOPE = "SUPERNODE_EXIT_TARGET_OUTSIDE_SCOPE";
@@ -61,6 +62,9 @@ public final class SceneFlowIrSemanticValidator {
             "VAR_REF_UNKNOWN",
             "SCENE_REF_UNKNOWN",
             "COMMAND_TEXT_INVALID_QUOTE",
+            "SCENE_PARAM_MISSING",
+            "SCENE_PARAM_UNKNOWN",
+            "SCENE_ARG_NOT_STRUCT",
             RULE_EXIT_TARGET_OUTSIDE_SCOPE,
             RULE_INTERNAL_LIVENESS_REQUIRED,
             "SUPERNODE_EXIT_TARGET_IN_SCOPE",
@@ -153,14 +157,126 @@ public final class SceneFlowIrSemanticValidator {
             if (sceneNames.isEmpty()) {
                 continue;
             }
-            final String literal = literalSceneNameIn(commandText);
-            if (literal == null || sceneNames.contains(literal)) {
+            final PlayScenesActivity play = playSceneIn(commandText);
+            if (play == null) {
                 continue;
             }
-            emitIssue(result, "SCENE_REF_UNKNOWN", path,
-                    "Unknown scene: \"" + literal + "\". The project declares "
-                            + sceneNames.size() + " scene(s).");
+            final String literal = literalSceneNameOf(play);
+            if (literal == null) {
+                // The name is a variable or built at runtime, so neither it nor the parameters it
+                // would need can be resolved here.
+                continue;
+            }
+            if (!sceneNames.contains(literal)) {
+                emitIssue(result, "SCENE_REF_UNKNOWN", path,
+                        "Unknown scene: \"" + literal + "\". The project declares "
+                                + sceneNames.size() + " scene(s).");
+                continue;
+            }
+            checkSceneArguments(play, literal, declaredParametersFrom(snapshot, literal), path, result);
         }
+    }
+
+    /**
+     * Compares the arguments of a PlayScene against the parameters its scene declares.
+     *
+     * <p>Binding is by name rather than by position: only a struct argument contributes anything, and
+     * {@code ReactivePlayer.getSubstitutions} silently ignores every argument that is not a struct.
+     * So {@code PlayScene("Address", username)} supplies nothing at all despite looking like it
+     * passes a value, and the scene's placeholder stays unsubstituted.
+     */
+    private void checkSceneArguments(
+            final PlayScenesActivity play,
+            final String sceneName,
+            final Set<String> declared,
+            final String path,
+            final SemanticValidationResult result) {
+        final Set<String> supplied = new LinkedHashSet<>();
+        boolean hasNonStructArgument = false;
+        for (Expression argument : play.getArgList()) {
+            if (argument instanceof StructExpression) {
+                for (Assignment field : ((StructExpression) argument).getExpList()) {
+                    if (field.getLeftExpression() instanceof SimpleVariable) {
+                        supplied.add(((SimpleVariable) field.getLeftExpression()).getName());
+                    }
+                }
+            } else {
+                hasNonStructArgument = true;
+            }
+        }
+
+        final Set<String> missing = new LinkedHashSet<>(declared);
+        missing.removeAll(supplied);
+        if (!missing.isEmpty()) {
+            emitIssue(result, "SCENE_PARAM_MISSING", path,
+                    "Scene \"" + sceneName + "\" declares parameter(s) " + missing
+                            + " that this call does not supply. Pass them by name in a struct, "
+                            + "for example PlayScene(\"" + sceneName + "\", { "
+                            + missing.iterator().next() + " = someVariable }).");
+        }
+
+        final Set<String> unexpected = new LinkedHashSet<>(supplied);
+        unexpected.removeAll(declared);
+        if (!unexpected.isEmpty()) {
+            emitIssue(result, "SCENE_PARAM_UNKNOWN", path,
+                    "Scene \"" + sceneName + "\" does not declare parameter(s) " + unexpected
+                            + ". The substitution would be computed and then never used, which is "
+                            + "usually a misspelled parameter name. Declared: " + declared + ".");
+        }
+
+        if (hasNonStructArgument && !declared.isEmpty()) {
+            emitIssue(result, "SCENE_ARG_NOT_STRUCT", path,
+                    "Scene \"" + sceneName + "\" is played with an argument that is not a struct. "
+                            + "Scene parameters bind by name, so a bare value is ignored at runtime. "
+                            + "Use { name = value }.");
+        }
+    }
+
+    /** Parses command text and returns the PlayScene it contains, or null for anything else. */
+    private PlayScenesActivity playSceneIn(final String commandText) {
+        if (commandText == null || commandText.isBlank()) {
+            return null;
+        }
+        final Command command;
+        try {
+            command = GlueParser.run(commandText);
+        } catch (Exception parseFailure) {
+            // Unparseable command text is the compiler's problem to report, not this rule's.
+            return null;
+        }
+        return command instanceof PlayScenesActivity ? (PlayScenesActivity) command : null;
+    }
+
+    /**
+     * The scene name when it is a plain literal, else null. A name held in a variable or built at
+     * runtime, such as {@code PlayScene("Topic_" + topic)}, is not knowable statically.
+     */
+    private String literalSceneNameOf(final PlayScenesActivity play) {
+        final Expression name = play.getArgument();
+        return name instanceof StringLiteral ? ((StringLiteral) name).getValue() : null;
+    }
+
+    private Set<String> declaredParametersFrom(final JSONObject snapshot, final String sceneName) {
+        final Set<String> parameters = new LinkedHashSet<>();
+        final JSONObject script = snapshot == null ? null : snapshot.optJSONObject("script");
+        final JSONArray scenes = script == null ? null : script.optJSONArray("scenes");
+        if (scenes == null) {
+            return parameters;
+        }
+        for (int i = 0; i < scenes.length(); i++) {
+            final JSONObject scene = scenes.optJSONObject(i);
+            if (scene == null || !sceneName.equals(scene.optString("name", ""))) {
+                continue;
+            }
+            final JSONArray declared = scene.optJSONArray("parameters");
+            for (int j = 0; declared != null && j < declared.length(); j++) {
+                final String parameter = declared.optString(j, "").trim();
+                if (!parameter.isEmpty()) {
+                    parameters.add(parameter);
+                }
+            }
+        }
+        return parameters;
     }
 
     /**
@@ -213,21 +329,6 @@ public final class SceneFlowIrSemanticValidator {
         return names;
     }
 
-    /**
-     * Extracts the scene name from a PlayScene command when, and only when, it is a plain quoted
-     * literal. Returns null for anything else, including a bare variable, a concatenation, and any
-     * command that is not a PlayScene.
-     */
-    private String literalSceneNameIn(final String commandText) {
-        if (commandText == null) {
-            return null;
-        }
-        final Matcher matcher = PLAY_SCENE_LITERAL.matcher(commandText.trim());
-        if (!matcher.matches()) {
-            return null;
-        }
-        return matcher.group(1);
-    }
 
     public JSONArray describeActiveRules(final JSONObject ir, final JSONObject snapshot) {
         final JSONArray out = new JSONArray();
