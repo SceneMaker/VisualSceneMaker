@@ -298,20 +298,36 @@ Ordered roughly by dependency:
 
 ---
 
-## 8. Open questions (for discussion before realisation)
+## 8. Decisions and open questions
 
-1. **Pattern naming & level cut.** Does the 3-level clustering in §3 match how you want to
-   present it to authors? (Alternative cut: 4 levels, splitting "reactive" from "multi-party
-   coordination".)
-2. **Assistant entry point.** One assistant panel, or two entry points (gallery button on the
+### Decided (2026-08-13)
+
+- **Q3 — LLM dependency: the assistant relies on the built-in LLM service.** No separate
+  deterministic-only fallback path is required. `plugins/llm` (`LlmExecutor`) and the existing
+  `POST /api/v1/llm/*` routes are the assistant's LLM channel. The deterministic core
+  (pattern selection, resource checking, IR compilation, validation) remains deterministic
+  regardless — the decision is that natural-language intent capture may be a hard dependency,
+  not that generation becomes free-form.
+- **Q5 — the catalogue lives in `core`.** It ships as a served resource out of `core`'s
+  resources (the same way `plugin-properties.json` and the tutorial shelf already do), so it is
+  versioned with the release and reachable from the web server without a doc-path dependency.
+  The `doc/` copies become generated/exported artifacts, not the source of truth.
+- **Q1 — the clustering goes to psychologists for review before it is frozen.** Review
+  instrument: `doc/pattern-review/sceneflow-pattern-review.html` — all 23 patterns in
+  author-facing language with a SIA-grounded example each, a 0–5 understandability rating per
+  item (0 = not understandable, 5 = completely understandable), optional per-item comments, and
+  CSV export for analysis. Ratings are the input for the final level cut and the pattern naming.
+
+### Still open
+
+1. **Assistant entry point.** One assistant panel, or two entry points (gallery button on the
    canvas toolbar + NL field in the existing generate panel)?
-3. **LLM dependency.** Should the assistant work fully without an LLM (gallery + forms only,
-   NL intent as optional enhancement)? Recommended: yes — deterministic path first, matching the
-   B1 wizard's "LLM optional" stance.
-4. **Turn-taking scope.** 3.8 needs event conventions across plugins (who emits
+2. **Turn-taking scope.** 3.8 needs event conventions across plugins (who emits
    `user_speaks`, `user_present`?). Standardise as a small "interaction events" spec, or keep
    per-project?
-5. **Where does the catalogue live?** Stays as repo doc (versioned with releases) vs. served
-   resource (updatable per deployment) — affects how tutorial content ships.
-6. **Evaluation.** Pattern coverage could be validated with the annotator/scenario corpus coming
-   for behavior placement — same authors, same scenarios. Plan a small authoring study?
+3. **Evaluation.** Beyond the understandability review above, pattern *coverage* could be
+   validated with the annotator/scenario corpus coming for behavior placement — same authors,
+   same scenarios. Plan a small authoring study?
+4. **Deployment scope.** `vsm-workspace-platform-plan.md` Decision 5 forbids self-serve project
+   creation for regular users, which limits "new project from pattern" to the local installer
+   unless that decision is revisited.

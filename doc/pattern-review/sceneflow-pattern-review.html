@@ -1,0 +1,1079 @@
+<title>Interaction Pattern Review — Understandability Rating</title>
+
+<style>
+  :root {
+    --paper: #EAEEF1;
+    --card: #FFFFFF;
+    --card-sunken: #F4F7F8;
+    --ink: #17212A;
+    --ink-soft: #56626C;
+    --ink-faint: #8794A0;
+    --rule: #CFD8DE;
+    --rule-soft: #E2E9ED;
+    --accent: #145C6B;
+    --accent-strong: #0E4550;
+    --accent-tint: #DCEAEE;
+    --on-accent: #FFFFFF;
+    --amber: #8A6524;
+    --amber-tint: #F5EBD8;
+    --focus: #2E93AC;
+    --shadow: 0 1px 2px rgba(23, 33, 42, .06), 0 4px 16px -8px rgba(23, 33, 42, .12);
+
+    --serif: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #10161A;
+      --card: #192126;
+      --card-sunken: #141C21;
+      --ink: #E3E9EC;
+      --ink-soft: #9BA8B1;
+      --ink-faint: #6E7C86;
+      --rule: #2A343A;
+      --rule-soft: #222B31;
+      --accent: #4FA6BA;
+      --accent-strong: #77C2D3;
+      --accent-tint: #17323A;
+      --on-accent: #0B1114;
+      --amber: #D3A863;
+      --amber-tint: #2E2618;
+      --focus: #6FC3D8;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 16px -8px rgba(0, 0, 0, .6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #10161A;
+    --card: #192126;
+    --card-sunken: #141C21;
+    --ink: #E3E9EC;
+    --ink-soft: #9BA8B1;
+    --ink-faint: #6E7C86;
+    --rule: #2A343A;
+    --rule-soft: #222B31;
+    --accent: #4FA6BA;
+    --accent-strong: #77C2D3;
+    --accent-tint: #17323A;
+    --on-accent: #0B1114;
+    --amber: #D3A863;
+    --amber-tint: #2E2618;
+    --focus: #6FC3D8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 16px -8px rgba(0, 0, 0, .6);
+  }
+
+  :root[data-theme="light"] {
+    --paper: #EAEEF1;
+    --card: #FFFFFF;
+    --card-sunken: #F4F7F8;
+    --ink: #17212A;
+    --ink-soft: #56626C;
+    --ink-faint: #8794A0;
+    --rule: #CFD8DE;
+    --rule-soft: #E2E9ED;
+    --accent: #145C6B;
+    --accent-strong: #0E4550;
+    --accent-tint: #DCEAEE;
+    --on-accent: #FFFFFF;
+    --amber: #8A6524;
+    --amber-tint: #F5EBD8;
+    --focus: #2E93AC;
+    --shadow: 0 1px 2px rgba(23, 33, 42, .06), 0 4px 16px -8px rgba(23, 33, 42, .12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- operations bar ---------- */
+
+  .bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.25rem;
+    padding: .75rem clamp(1rem, 4vw, 2.5rem);
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .bar__id {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-right: auto;
+  }
+
+  .meter {
+    display: flex;
+    align-items: center;
+    gap: .625rem;
+  }
+
+  .meter__count {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: .8125rem;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .meter__track {
+    width: clamp(80px, 18vw, 160px);
+    height: 5px;
+    border-radius: 3px;
+    background: var(--rule);
+    overflow: hidden;
+  }
+
+  .meter__fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    transition: width .3s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .meter__fill { transition: none; }
+  }
+
+  .bar__actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- controls ---------- */
+
+  .btn {
+    font-family: var(--sans);
+    font-size: .8125rem;
+    font-weight: 500;
+    padding: .5rem .875rem;
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+
+  .btn:hover { border-color: var(--ink-faint); }
+
+  /* On the dark ground the accent lightens, so its text flips to near-black.
+     --on-accent carries that choice so the media query and both data-theme
+     overrides stay in the token layer instead of fighting per-component. */
+  .btn--primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .btn--primary:hover {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+  }
+
+  .btn--quiet {
+    background: transparent;
+    border-color: transparent;
+    color: var(--ink-soft);
+  }
+
+  .btn--quiet:hover {
+    border-color: var(--rule);
+    color: var(--ink);
+  }
+
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: .4375rem;
+    font-size: .8125rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle input { margin: 0; accent-color: var(--accent); }
+
+  :where(button, input, textarea, a, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------- page frame ---------- */
+
+  main {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: clamp(1.75rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2.5rem) 6rem;
+  }
+
+  .lede {
+    max-width: 40rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .6875rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 .75rem;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.875rem, 4.5vw, 2.625rem);
+    line-height: 1.14;
+    letter-spacing: -.015em;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+  }
+
+  .lede p {
+    font-family: var(--serif);
+    font-size: 1.0625rem;
+    line-height: 1.62;
+    color: var(--ink-soft);
+    margin: 0 0 .875rem;
+  }
+
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- panels ---------- */
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    padding: clamp(1.125rem, 3vw, 1.75rem);
+    margin: 2.5rem 0 0;
+  }
+
+  .panel__title {
+    font-family: var(--sans);
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 1.125rem;
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1.125rem;
+  }
+
+  .field { display: flex; flex-direction: column; gap: .375rem; }
+
+  .field > span {
+    font-size: .8125rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .field > span em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--ink-faint);
+  }
+
+  input[type="text"], textarea {
+    font-family: var(--sans);
+    font-size: .9375rem;
+    color: var(--ink);
+    background: var(--card-sunken);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: .5rem .625rem;
+    width: 100%;
+  }
+
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--focus);
+    outline: none;
+  }
+
+  textarea { resize: vertical; min-height: 3.25rem; line-height: 1.5; }
+
+  .scale-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.5rem;
+    margin: 1.125rem 0 0;
+    padding-top: 1.125rem;
+    border-top: 1px solid var(--rule-soft);
+    font-size: .8125rem;
+    color: var(--ink-soft);
+  }
+
+  .scale-key b {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .saved-note {
+    font-size: .75rem;
+    color: var(--ink-faint);
+    margin: 1rem 0 0;
+  }
+
+  /* ---------- level sections ---------- */
+
+  .level { margin-top: 3.5rem; }
+
+  .level__head {
+    display: flex;
+    align-items: baseline;
+    gap: .75rem;
+    padding-bottom: .625rem;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .level__num {
+    font-family: var(--mono);
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .06em;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .level__name {
+    font-family: var(--serif);
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: -.01em;
+    margin: 0;
+  }
+
+  .level__note {
+    font-family: var(--serif);
+    font-size: .9375rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: .875rem 0 0;
+    max-width: 42rem;
+  }
+
+  .items { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
+
+  /* ---------- item cards ---------- */
+
+  .item {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rule);
+    border-radius: 5px;
+    padding: clamp(1rem, 2.5vw, 1.375rem);
+    box-shadow: var(--shadow);
+  }
+
+  .item[data-rated="yes"] { border-left-color: var(--accent); }
+
+  .item__head {
+    display: flex;
+    align-items: baseline;
+    gap: .625rem;
+    flex-wrap: wrap;
+  }
+
+  .item__id {
+    font-family: var(--mono);
+    font-size: .8125rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+
+  .item__name {
+    font-family: var(--serif);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -.005em;
+  }
+
+  .item__what {
+    font-family: var(--serif);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--ink);
+    margin: .625rem 0 0;
+  }
+
+  .item__example {
+    font-family: var(--serif);
+    font-size: .9375rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: .875rem 0 0;
+    padding: .0625rem 0 .0625rem .875rem;
+    border-left: 2px solid var(--accent-tint);
+  }
+
+  .item__example b {
+    font-family: var(--sans);
+    font-size: .6875rem;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: .25rem;
+  }
+
+  /* ---------- likert ---------- */
+
+  .rate {
+    margin: 1.25rem 0 0;
+    padding: 1rem 0 0;
+    border: 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .rate legend {
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0;
+    margin-bottom: .625rem;
+  }
+
+  .rate__row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+
+  .rate__end {
+    font-size: .75rem;
+    color: var(--ink-faint);
+    max-width: 8rem;
+    line-height: 1.35;
+  }
+
+  .rate__end--hi { text-align: right; }
+
+  .rate__boxes { display: flex; gap: .375rem; }
+
+  .rate__boxes label {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.375rem;
+    height: 2.375rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--card-sunken);
+    font-family: var(--mono);
+    font-size: .9375rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: border-color .12s, background .12s, color .12s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rate__boxes label { transition: none; }
+  }
+
+  .rate__boxes label:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+
+  .rate__boxes input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .rate__boxes input:checked + span {
+    position: absolute;
+    inset: -1px;
+    display: grid;
+    place-items: center;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 600;
+  }
+
+  .rate__boxes input:focus-visible + span,
+  .rate__boxes input:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .comment { margin: .875rem 0 0; }
+
+  .comment > span {
+    display: block;
+    font-size: .75rem;
+    color: var(--ink-faint);
+    margin-bottom: .3125rem;
+  }
+
+  /* ---------- filter state ---------- */
+
+  body.filter-unrated .item[data-rated="yes"] { display: none; }
+  body.filter-unrated .level[data-empty="yes"] { display: none; }
+
+  .empty-note {
+    display: none;
+    font-family: var(--serif);
+    font-size: 1rem;
+    color: var(--ink-soft);
+    background: var(--card);
+    border: 1px dashed var(--rule);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+
+  body.filter-unrated.all-rated .empty-note { display: block; }
+
+  /* ---------- closing ---------- */
+
+  .closing { margin-top: 3.5rem; }
+
+  .status {
+    font-size: .8125rem;
+    color: var(--amber);
+    background: var(--amber-tint);
+    border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+    border-radius: 4px;
+    padding: .625rem .75rem;
+    margin: 1.125rem 0 0;
+  }
+
+  .status[hidden] { display: none; }
+
+  footer {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 1.5rem clamp(1rem, 4vw, 2.5rem) 3rem;
+    border-top: 1px solid var(--rule);
+    font-size: .75rem;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  footer code { font-family: var(--mono); }
+</style>
+
+<div class="bar">
+  <span class="bar__id">Visual SceneMaker · Pattern Review v1</span>
+  <div class="meter">
+    <span class="meter__count" id="count">0 of 23 rated</span>
+    <div class="meter__track" role="progressbar" aria-labelledby="count" aria-valuemin="0" aria-valuemax="23" aria-valuenow="0">
+      <div class="meter__fill" id="fill"></div>
+    </div>
+  </div>
+  <div class="bar__actions">
+    <label class="toggle">
+      <input type="checkbox" id="filter">
+      Unrated only
+    </label>
+    <button class="btn btn--quiet" id="reset" type="button">Clear</button>
+    <button class="btn btn--primary" id="export" type="button">Export CSV</button>
+  </div>
+</div>
+
+<main>
+  <div class="lede">
+    <p class="eyebrow">Expert review · Understandability</p>
+    <h1>How clearly do these interaction patterns describe themselves?</h1>
+    <p>
+      We are building authoring support for <strong>Visual SceneMaker</strong>, the system used to
+      script how a socially interactive agent behaves and how it interacts with a person. Instead of
+      assembling every flow from scratch, authors should be able to start from ready-made
+      <strong>interaction patterns</strong> — recurring shapes of interaction such as
+      “ask and wait for an answer” or “remind while waiting”.
+    </p>
+    <p>
+      Below are <strong>23 candidate patterns</strong>, grouped into three levels of complexity.
+      Each one is described in one sentence and illustrated with a concrete example involving an
+      agent and a person.
+    </p>
+    <p>
+      Please rate, for each pattern, <strong>how understandable the description is</strong> —
+      not whether you find the pattern useful, and not whether you would need it in your own work.
+      We want to know where the wording, the naming, or the grouping fails to communicate.
+      Comments are optional but especially valuable where you rate something low.
+    </p>
+  </div>
+
+  <section class="panel" aria-labelledby="about-you">
+    <h2 class="panel__title" id="about-you">About you</h2>
+    <div class="fields">
+      <label class="field">
+        <span>Identifier <em>— initials or any code</em></span>
+        <input type="text" id="pid" autocomplete="off" placeholder="e.g. PG-01">
+      </label>
+      <label class="field">
+        <span>Professional background <em>— optional</em></span>
+        <input type="text" id="background" autocomplete="off" placeholder="e.g. clinical psychology, 8 yrs">
+      </label>
+    </div>
+    <div class="scale-key">
+      <span>Rating scale:</span>
+      <span><b>0</b> not understandable at all</span>
+      <span><b>5</b> completely understandable</span>
+    </div>
+    <p class="saved-note" id="saved-note">Your answers stay in this browser and are saved as you go. Nothing is sent anywhere — use <b>Export CSV</b> at the end and return the file.</p>
+  </section>
+
+  <div id="levels"></div>
+
+  <p class="empty-note">All 23 patterns are rated. Switch off “Unrated only” to review your answers, then export.</p>
+
+  <section class="panel closing" aria-labelledby="closing-title">
+    <h2 class="panel__title" id="closing-title">Anything else</h2>
+    <label class="field">
+      <span>General remarks on the set as a whole <em>— missing patterns, unclear grouping, naming</em></span>
+      <textarea id="general" rows="4" placeholder="Is anything missing? Do the three levels make sense to you? Would you name things differently?"></textarea>
+    </label>
+    <p class="status" id="status" hidden></p>
+  </section>
+</main>
+
+<footer>
+  <span>Visual SceneMaker — interaction pattern catalogue, review draft</span>
+  <span>Export writes one row per pattern to <code>.csv</code></span>
+</footer>
+
+<script>
+  const LEVELS = [
+    {
+      level: 1,
+      label: "Sequences",
+      marker: "Level 1",
+      note: "One thing after another. A single strand of activity: the agent works through steps in order, pauses, waits for the person, and takes different paths depending on what happened.",
+      items: [
+        {
+          id: "1.1",
+          name: "Fixed sequence",
+          what: "The agent works through a series of steps in a fixed order — each step begins only once the previous one has finished.",
+          example: "The agent greets the visitor, then explains what the session will be about, then asks the first question — always in that order."
+        },
+        {
+          id: "1.2",
+          name: "Timed pause",
+          what: "The agent pauses for a defined length of time before continuing. The length can be fixed, vary randomly within a range, or be taken from something the system already knows.",
+          example: "After explaining the exercise, the agent waits two seconds so the person has time to take it in. To feel less mechanical, the pause varies randomly between two and four seconds."
+        },
+        {
+          id: "1.3",
+          name: "Ask and wait for an answer",
+          what: "The agent asks something and then does nothing else until an answer arrives. The answer is remembered so it can be used later.",
+          example: "The agent asks for the person's first name and waits until they have spoken or typed it; from then on it addresses them by that name. The same shape applies when waiting for a slow service — for instance a language model composing a summary."
+        },
+        {
+          id: "1.4",
+          name: "Branch on a condition",
+          what: "What the agent does next depends on a condition — usually an earlier answer. Alternatives are checked in order, and if none applies a defined fallback is taken; optionally the fallback is taken once a set time has passed.",
+          example: "If the person reported sleeping badly, the agent asks three follow-up questions about sleep; otherwise it moves straight to the next topic. If no answer arrives within ten seconds, it moves on anyway."
+        },
+        {
+          id: "1.5",
+          name: "Vary by chance",
+          what: "The agent chooses between several alternatives at random, with adjustable probabilities.",
+          example: "To acknowledge an answer, the agent picks one of three variants at random — “I see”, “Thank you”, or a silent nod — so that repeated acknowledgements do not sound identical."
+        },
+        {
+          id: "1.6",
+          name: "Check again until it holds",
+          what: "The agent checks a condition over and over, with a short pause between checks, and continues only once it is met.",
+          example: "While the person fills in a questionnaire on the tablet, the agent checks twice a second whether they have finished, and continues the moment they have."
+        },
+        {
+          id: "1.7",
+          name: "Grouped sub-dialogue, resumable",
+          what: "Steps that belong together are grouped into one named unit and used as a single building block. If the conversation returns to that unit later, it can resume where it left off instead of starting over.",
+          example: "All sleep-related questions form one “sleep module”. If the person digresses and the agent comes back to the module afterwards, it continues at the question it had reached."
+        },
+        {
+          id: "1.8",
+          name: "Structured interview",
+          what: "A whole series of question-and-answer steps, each answer stored, ending in a summary. Individual questions can be skipped on the basis of earlier answers.",
+          example: "The agent works through eight intake questions, remembers every answer, skips the questions that do not apply, and finally reads back a summary for confirmation."
+        }
+      ]
+    },
+    {
+      level: 2,
+      label: "Parallel activity",
+      marker: "Level 2",
+      note: "Several things at the same time. Alongside the main strand, further strands run in parallel — as background, as accompaniment to a single step, or as something the flow has to wait for.",
+      items: [
+        {
+          id: "2.1",
+          name: "Start several things at once",
+          what: "At one point in the flow the agent sets several strands of activity going simultaneously; each then runs on its own.",
+          example: "As the agent begins its explanation, the room lighting dims and a diagram appears on the screen — all at the same moment."
+        },
+        {
+          id: "2.2",
+          name: "Continuous background activity",
+          what: "A strand of activity runs alongside the entire session from beginning to end, independent of where the conversation currently is.",
+          example: "Quiet background music plays throughout the session, and every answer is written to a log. Neither depends on which question the agent has reached."
+        },
+        {
+          id: "2.3",
+          name: "Time-based cue track",
+          what: "A strand in which things are triggered by elapsed time, independently of what the agent is saying or doing at that moment.",
+          example: "Five minutes into the session the background changes from daylight to evening; after ten minutes the music becomes quieter. The conversation is untouched by either."
+        },
+        {
+          id: "2.4",
+          name: "Idle behaviour that yields",
+          what: "While nothing more specific is called for, the agent shows small lifelike behaviours; these give way as soon as a more specific behaviour takes over, and resume afterwards.",
+          example: "Between questions the agent breathes, blinks and occasionally shifts posture. The moment it starts to speak, the idle behaviour yields to speech-accompanying gestures."
+        },
+        {
+          id: "2.5",
+          name: "Accompanying a single step",
+          what: "A secondary activity starts together with one step and finishes on its own; the main strand carries on regardless.",
+          example: "While the agent explains a breathing exercise, a matching animation plays beside it. The animation ends by itself, and the explanation runs to its end either way."
+        },
+        {
+          id: "2.6",
+          name: "Wait for several strands to finish",
+          what: "Several strands run in parallel and the flow continues only once all of them have finished — and continues once, not once per strand.",
+          example: "The person fills in a questionnaire while the camera is being calibrated. Only when both are done does the agent begin the main part — and it begins it a single time, not twice."
+        }
+      ]
+    },
+    {
+      level: 3,
+      label: "Reacting and coordinating",
+      marker: "Level 3",
+      note: "The flow responds to things as they happen. Activities are cut short and picked up again, interruptions are judged rather than simply obeyed, and speaking and listening are coordinated between person and agent.",
+      items: [
+        {
+          id: "3.1",
+          name: "React the moment something happens",
+          what: "When a defined event occurs, the agent reacts immediately, without waiting for its current activity to reach an end.",
+          example: "The moment the person presses the button, steps in front of the camera, or begins to speak, the agent responds — it does not first finish the sentence it had planned."
+        },
+        {
+          id: "3.2",
+          name: "Keep going until something happens",
+          what: "The agent sustains an activity until a defined event or condition occurs, then leaves it and continues elsewhere.",
+          example: "The agent waits, turned attentively towards the person, until they press “OK” — and only then moves on to the next topic."
+        },
+        {
+          id: "3.3",
+          name: "Remind while waiting",
+          what: "While waiting, the agent repeats a prompt at set intervals; the waiting ends when the awaited event finally occurs.",
+          example: "If the person does not press “OK”, the agent says every thirty seconds: “Take your time — just press OK when you are ready.”"
+        },
+        {
+          id: "3.4",
+          name: "Keep the waiting meaningful",
+          what: "Rather than only waiting, the agent fills the waiting time with activity that keeps the situation pleasant or socially appropriate.",
+          example: "While the person works through a long form, the agent plays quiet music, shows a picture, or makes the occasional light remark — until the form is done."
+        },
+        {
+          id: "3.5",
+          name: "Interrupt only when appropriate",
+          what: "An intended action is held back until interrupting appears acceptable, instead of being carried out at the first opportunity.",
+          example: "The agent wants to point out that time is running short, but the person is mid-sentence and visibly concentrating. It waits for a pause and only then speaks."
+        },
+        {
+          id: "3.6",
+          name: "Being interrupted mid-utterance",
+          what: "If the person acts while the agent is speaking, the agent breaks off, deals with what happened, and then either resumes at the point of interruption or moves on.",
+          example: "The person interjects a question while the agent is still explaining. The agent stops speaking at once, answers the question, and then picks its explanation up where it broke off."
+        },
+        {
+          id: "3.7",
+          name: "Act, suggest, or stay quiet",
+          what: "The agent decides how strongly to intervene — acting by itself, merely offering a suggestion, or doing nothing — depending on the situation and on how certain it is.",
+          example: "The agent notices that a question was skipped. If it is confident, it asks about it directly; if unsure, it offers a hint; if the person seems stressed, it says nothing at all."
+        },
+        {
+          id: "3.8",
+          name: "Taking turns, with listening behaviour",
+          what: "Speaking and listening alternate between the participants. Whoever does not hold the turn shows listening behaviour, and taking or yielding the turn changes the behaviour of both sides.",
+          example: "While the person describes their complaints, the agent looks at them, nods, and gives the occasional “mhm”. When it takes the turn itself, it switches to speaking behaviour — and the person becomes the listener."
+        },
+        {
+          id: "3.9",
+          name: "Escalate, then give up",
+          what: "If a hoped-for reaction does not come, the agent tries again, each attempt more insistent than the last, and stops after a set number of attempts.",
+          example: "No answer comes. First the agent asks again gently, then more clearly, then it offers to read the question aloud. After the third attempt it stops and notes the question as unanswered."
+        }
+      ]
+    }
+  ];
+
+  const ALL_ITEMS = LEVELS.flatMap(function (lv) {
+    return lv.items.map(function (it) {
+      return { level: lv.level, levelLabel: lv.label, id: it.id, name: it.name };
+    });
+  });
+
+  const TOTAL = ALL_ITEMS.length;
+  const STORE_KEY = "vsm.pattern-review.v1";
+
+  let state = { pid: "", background: "", general: "", ratings: {}, comments: {}, savedAt: "" };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      state = Object.assign(state, parsed);
+      state.ratings = parsed.ratings || {};
+      state.comments = parsed.comments || {};
+    } catch (err) {
+      /* corrupt or unavailable storage: start fresh rather than block the review */
+    }
+  }
+
+  function save() {
+    state.savedAt = new Date().toISOString();
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    } catch (err) {
+      note("Could not save to this browser — keep the tab open and export before closing it.");
+    }
+  }
+
+  function esc(text) {
+    return String(text).replace(/[&<>"]/g, function (ch) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch];
+    });
+  }
+
+  function render() {
+    const host = document.getElementById("levels");
+    host.innerHTML = LEVELS.map(function (lv) {
+      const items = lv.items.map(function (it) {
+        const boxes = [0, 1, 2, 3, 4, 5].map(function (value) {
+          const checked = String(state.ratings[it.id]) === String(value) ? " checked" : "";
+          return '<label><input type="radio" name="r-' + it.id + '" value="' + value +
+            '" data-item="' + it.id + '"' + checked + '><span>' + value + "</span></label>";
+        }).join("");
+
+        return '' +
+          '<article class="item" data-item="' + it.id + '" data-rated="' +
+              (state.ratings[it.id] === undefined ? "no" : "yes") + '">' +
+            '<div class="item__head">' +
+              '<span class="item__id">' + it.id + "</span>" +
+              '<h3 class="item__name">' + esc(it.name) + "</h3>" +
+            "</div>" +
+            '<p class="item__what">' + esc(it.what) + "</p>" +
+            '<p class="item__example"><b>In practice</b>' + esc(it.example) + "</p>" +
+            '<fieldset class="rate">' +
+              "<legend>Understandability of this description</legend>" +
+              '<div class="rate__row">' +
+                '<span class="rate__end">0 — not understandable</span>' +
+                '<div class="rate__boxes">' + boxes + "</div>" +
+                '<span class="rate__end rate__end--hi">5 — completely understandable</span>' +
+              "</div>" +
+            "</fieldset>" +
+            '<label class="comment">' +
+              "<span>Comment (optional) — what is unclear, or how would you put it?</span>" +
+              '<textarea rows="2" data-comment="' + it.id + '"></textarea>' +
+            "</label>" +
+          "</article>";
+      }).join("");
+
+      return '' +
+        '<section class="level" data-level="' + lv.level + '">' +
+          '<div class="level__head">' +
+            '<span class="level__num">' + lv.marker + "</span>" +
+            '<h2 class="level__name">' + esc(lv.label) + "</h2>" +
+          "</div>" +
+          '<p class="level__note">' + esc(lv.note) + "</p>" +
+          '<div class="items">' + items + "</div>" +
+        "</section>";
+    }).join("");
+
+    // Textarea values are assigned rather than inlined so stored text can never
+    // break out of the markup.
+    ALL_ITEMS.forEach(function (it) {
+      const box = host.querySelector('[data-comment="' + it.id + '"]');
+      if (box) box.value = state.comments[it.id] || "";
+    });
+
+    document.getElementById("pid").value = state.pid || "";
+    document.getElementById("background").value = state.background || "";
+    document.getElementById("general").value = state.general || "";
+
+    refresh();
+  }
+
+  function ratedCount() {
+    return ALL_ITEMS.filter(function (it) { return state.ratings[it.id] !== undefined; }).length;
+  }
+
+  function refresh() {
+    const done = ratedCount();
+
+    document.getElementById("count").textContent = done + " of " + TOTAL + " rated";
+    document.getElementById("fill").style.width = (done / TOTAL * 100) + "%";
+    document.querySelector(".meter__track").setAttribute("aria-valuenow", String(done));
+
+    ALL_ITEMS.forEach(function (it) {
+      const card = document.querySelector('.item[data-item="' + it.id + '"]');
+      if (card) card.dataset.rated = state.ratings[it.id] === undefined ? "no" : "yes";
+    });
+
+    LEVELS.forEach(function (lv) {
+      const section = document.querySelector('.level[data-level="' + lv.level + '"]');
+      const anyUnrated = lv.items.some(function (it) { return state.ratings[it.id] === undefined; });
+      if (section) section.dataset.empty = anyUnrated ? "no" : "yes";
+    });
+
+    document.body.classList.toggle("all-rated", done === TOTAL);
+
+    if (state.savedAt) {
+      const when = new Date(state.savedAt);
+      document.getElementById("saved-note").textContent =
+        "Saved in this browser at " + when.toLocaleTimeString() + ". Nothing is sent anywhere — " +
+        "use Export CSV at the end and return the file.";
+    }
+  }
+
+  function note(message) {
+    const el = document.getElementById("status");
+    el.textContent = message;
+    el.hidden = !message;
+  }
+
+  /* ---- CSV (RFC 4180: quote every text field, double interior quotes) ---- */
+
+  function csvField(value) {
+    return '"' + String(value === undefined || value === null ? "" : value).replace(/"/g, '""') + '"';
+  }
+
+  function buildCsv() {
+    const stamp = new Date().toISOString();
+    const header = [
+      "participant_id", "background", "level", "level_label", "item_id",
+      "pattern_label", "rating", "comment", "general_comment", "exported_at"
+    ].join(",");
+
+    const rows = ALL_ITEMS.map(function (it) {
+      const rating = state.ratings[it.id];
+      return [
+        csvField(state.pid),
+        csvField(state.background),
+        it.level,
+        csvField(it.levelLabel),
+        csvField(it.id),
+        csvField(it.name),
+        rating === undefined ? "" : rating,
+        csvField(state.comments[it.id] || ""),
+        csvField(state.general || ""),
+        csvField(stamp)
+      ].join(",");
+    });
+
+    // CRLF line endings and a BOM keep Excel from mangling the file or the umlauts.
+    return "\ufeff" + [header].concat(rows).join("\r\n") + "\r\n";
+  }
+
+  function exportCsv() {
+    const done = ratedCount();
+    const who = (state.pid || "anonymous").replace(/[^A-Za-z0-9._-]+/g, "-");
+    const day = new Date().toISOString().slice(0, 10);
+
+    const blob = new Blob([buildCsv()], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "sceneflow-pattern-review_" + who + "_" + day + ".csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+
+    note(done === TOTAL
+      ? "Exported all " + TOTAL + " patterns. Thank you — please return the downloaded file."
+      : "Exported " + TOTAL + " rows, of which " + (TOTAL - done) +
+        " have no rating yet. You can rate the rest and export again.");
+  }
+
+  /* ---- events ---- */
+
+  document.getElementById("levels").addEventListener("change", function (event) {
+    const id = event.target.dataset.item;
+    if (!id) return;
+    state.ratings[id] = Number(event.target.value);
+    save();
+    refresh();
+  });
+
+  document.getElementById("levels").addEventListener("input", function (event) {
+    const id = event.target.dataset.comment;
+    if (!id) return;
+    state.comments[id] = event.target.value;
+    save();
+  });
+
+  ["pid", "background", "general"].forEach(function (key) {
+    document.getElementById(key).addEventListener("input", function (event) {
+      state[key] = event.target.value;
+      save();
+      refresh();
+    });
+  });
+
+  document.getElementById("filter").addEventListener("change", function (event) {
+    document.body.classList.toggle("filter-unrated", event.target.checked);
+  });
+
+  document.getElementById("export").addEventListener("click", exportCsv);
+
+  document.getElementById("reset").addEventListener("click", function () {
+    if (!window.confirm("Clear all ratings and comments on this page? This cannot be undone.")) return;
+    state = { pid: "", background: "", general: "", ratings: {}, comments: {}, savedAt: "" };
+    try { localStorage.removeItem(STORE_KEY); } catch (err) { /* nothing to clear */ }
+    document.getElementById("saved-note").textContent =
+      "Your answers stay in this browser and are saved as you go. Nothing is sent anywhere — " +
+      "use Export CSV at the end and return the file.";
+    note("");
+    render();
+  });
+
+  load();
+  render();
+</script>
