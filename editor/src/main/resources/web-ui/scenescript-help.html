@@ -195,12 +195,13 @@
   <a href="#editing-commands">Editing inline commands</a>
   <a href="#suggested-positions">Suggested positions</a>
   <a href="#preview">SIA preview panel</a>
+  <a href="#detached-window">Detached script window</a>
 </nav>
 
 <main>
   <div class="title-row">
     <img src="/images/vsm_logo.svg" alt="Visual SceneMaker">
-    <h1>SceneScript Guide<span class="version-pill">v1.3 · 2026-08-10</span></h1>
+    <h1>SceneScript Guide<span class="version-pill">v1.4 · 2026-08-13</span></h1>
   </div>
   <p class="subtitle">How to write and edit dialogue scripts in Visual SceneMaker</p>
 
@@ -397,7 +398,38 @@ Bob: Let's begin.</pre>
     command text at your current position in the script editor.
   </p>
 
-  <footer>Visual SceneMaker — SceneScript authoring reference · v1.3 · 2026-08-10</footer>
+  <h2 id="detached-window">Detached script window</h2>
+  <p>
+    The script editor — together with its toolbar and the SIA preview panel — can be moved into a
+    browser window of its own, so the script can fill one monitor while the SceneFlow graph fills
+    another. The <strong>detach</strong> button (the arrow-out-of-a-box icon in the script toolbar,
+    next to the view-mode toggle) opens that window; the script area disappears from the main
+    window while it is detached, because the editor <em>moves</em> — it is never shown in two
+    places at once.
+  </p>
+  <ul>
+    <li><strong>The project must be stopped to detach.</strong> The button is disabled while a run
+      is in progress. Merging back works at any time, and a run can be started from the main
+      window while the script is detached.</li>
+    <li><strong>Nothing is lost in the move.</strong> Unsaved edits travel to the new window
+      exactly as they are — even mid-edit with unresolved script errors — and so does the undo
+      history, in both directions. Autosave keeps working in whichever window holds the editor.</li>
+    <li><strong>One detached window per project.</strong> Pressing detach again brings the
+      existing window to the front instead of opening a second one.</li>
+    <li><strong>Merging back:</strong> press <strong>Merge</strong> in the detached window's top
+      bar. Simply closing the detached window has the same effect — the script (with its edits and
+      undo history) returns to the main window.</li>
+    <li><strong>If the main window is closed</strong> while the script is detached, the detached
+      window turns itself into a full editor after a few seconds, so your work never ends up in a
+      window that leads nowhere.</li>
+  </ul>
+  <p>
+    The detached window remembers its own layout — view mode, editor height, and preview-panel
+    height are stored separately from the main window's, so a large "text view on the second
+    monitor" setup stays put across sessions.
+  </p>
+
+  <footer>Visual SceneMaker — SceneScript authoring reference · v1.4 · 2026-08-13</footer>
 </main>
 
 </div>
