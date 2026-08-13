@@ -50,10 +50,11 @@
   export let loaded = {};        // {[instanceName]: boolean}
   export let loadProgress = {};  // {[instanceName]: 0-100} — from vm.progress postMessage
   export let anySpeaking = false;
-  export let suspended = false;  // a real SceneFlow run is active — see CharacterPreviewPanel's
-                                  // original comment on why the iframe is torn down rather than
-                                  // just muted (two live engine sessions under one license break
-                                  // both, confirmed 2026-07-18)
+  export let suspended = false;  // a real SceneFlow run is active — the iframe is torn down
+                                  // rather than just muted, because two live engine sessions in
+                                  // one browser reliably break both (confirmed 2026-07-18; the
+                                  // reasoning predates this panel, from the old floating
+                                  // preview windows removed in e8ddbb08)
   export let height = 420;
   export let measuredMinHeight = 300; // bindable — reported up so the resize drag can clamp against it
   export let onLoad = null;       // (instanceName) => void

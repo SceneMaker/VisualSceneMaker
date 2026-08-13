@@ -57,6 +57,22 @@ public final class PresenceManager {
      * @return the (possibly new) {@link UserPresence} record
      */
     public synchronized UserPresence join(String userId, String displayName) {
+        return join(userId, displayName, false);
+    }
+
+    /**
+     * Registers a user as present in this session.  If the user is already
+     * present the existing record is returned unchanged.
+     *
+     * @param userId      stable identifier (WS session-id or future user token)
+     * @param displayName optional; derived from {@code userId} when {@code null}
+     * @param isView      {@code true} for an auxiliary window of an already-present
+     *                    user (e.g. the detached script editor) — rendered as a view
+     *                    rather than a peer, and given a neutral color instead of
+     *                    consuming a palette slot
+     * @return the (possibly new) {@link UserPresence} record
+     */
+    public synchronized UserPresence join(String userId, String displayName, boolean isView) {
         if (userId == null || userId.isBlank()) {
             throw new IllegalArgumentException("userId must not be blank");
         }
@@ -68,8 +84,10 @@ public final class PresenceManager {
         String resolvedName = (displayName != null && !displayName.isBlank())
                 ? displayName
                 : deriveDisplayName(userId);
-        String color = COLOR_PALETTE[colorIndex.getAndIncrement() % COLOR_PALETTE.length];
-        UserPresence presence = new UserPresence(userId, resolvedName, color);
+        String color = isView
+                ? "#7a7d81"
+                : COLOR_PALETTE[colorIndex.getAndIncrement() % COLOR_PALETTE.length];
+        UserPresence presence = new UserPresence(userId, resolvedName, color, isView);
         users.put(userId, presence);
         return presence;
     }

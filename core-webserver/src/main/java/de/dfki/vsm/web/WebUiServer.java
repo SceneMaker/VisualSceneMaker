@@ -9539,10 +9539,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ref.collaborationSession.subscribe(ctx);
             wsProjectSubscriptions.put(ctx.sessionId(), projectId);
 
-            // Presence: register user, broadcast presence.joined to others
+            // Presence: register user, broadcast presence.joined to others. A detached
+            // script window subscribes with view=true — it is the same author's second
+            // window, so it joins as a view rather than a peer (§4.4 of the detach doc).
             String displayName = params != null ? params.optString("displayName", null) : null;
+            boolean presenceView = params != null && params.optBoolean("view", false);
             String userId = ctx.sessionId();
-            UserPresence presence = ref.collaborationSession.getPresenceManager().join(userId, displayName);
+            UserPresence presence = ref.collaborationSession.getPresenceManager()
+                    .join(userId, displayName, presenceView);
             broadcastPresenceEvent(projectId, "presence.joined", presence, ref, ctx);
 
             boolean isOwner = clientToken != null && !clientToken.isBlank()

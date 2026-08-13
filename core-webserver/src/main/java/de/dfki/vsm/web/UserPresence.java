@@ -27,6 +27,15 @@ public final class UserPresence {
      */
     public final String color;
 
+    /**
+     * {@code true} for an auxiliary window of a user who is already present —
+     * e.g. the detached script editor window (doc/scenescript-separate-window.md
+     * §4.4). Views subscribe like any session (they receive broadcasts and are
+     * counted in {@code subscriberCount}) but UIs skip them when rendering
+     * peers, so a solo author does not appear as two collaborators.
+     */
+    public final boolean isView;
+
     /** Node the user is currently hovering or editing; {@code null} if none. */
     volatile String activeNodeId;
 
@@ -40,9 +49,14 @@ public final class UserPresence {
     volatile long lastSeen;
 
     UserPresence(String userId, String displayName, String color) {
+        this(userId, displayName, color, false);
+    }
+
+    UserPresence(String userId, String displayName, String color, boolean isView) {
         this.userId = userId;
         this.displayName = displayName != null ? displayName : userId;
         this.color = color != null ? color : "#7a7d81";
+        this.isView = isView;
         this.lastSeen = System.currentTimeMillis();
     }
 
@@ -53,6 +67,9 @@ public final class UserPresence {
         obj.put("displayName", displayName);
         obj.put("color", color);
         obj.put("lastSeen", lastSeen);
+        if (isView) {
+            obj.put("isView", true);
+        }
         if (activeNodeId != null) {
             obj.put("activeNodeId", activeNodeId);
         }

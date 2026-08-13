@@ -4011,13 +4011,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     peerPresence = new Map();
     myPresenceUserId = null;
     isSessionOwner = false;
-    sendCommand("Session.Subscribe", { projectId: selectedProjectId, clientToken: clientId }).then((result) => {
+    // A detached script window subscribes as a view (§4.4): same author, second window —
+    // the server marks its presence entry isView so no client renders it as a peer.
+    sendCommand("Session.Subscribe", { projectId: selectedProjectId, clientToken: clientId, view: isScriptWindow }).then((result) => {
       myPresenceUserId = result.myUserId || null;
       isSessionOwner = result.isOwner === true;
       const list = result.presence || [];
       const next = new Map();
       for (const p of list) {
-        if (p.userId && p.userId !== myPresenceUserId) {
+        if (p.userId && p.userId !== myPresenceUserId && !p.isView) {
           next.set(p.userId, p);
         }
       }
@@ -8846,7 +8848,8 @@ Sentence:
     // Presence events
     if (eventName === "presence.joined" || eventName === "presence.update") {
       const userId = payload.userId;
-      if (userId && userId !== myPresenceUserId) {
+      // Views (a peer's detached script window, §4.4) are not rendered as collaborators.
+      if (userId && userId !== myPresenceUserId && !payload.isView) {
         const next = new Map(peerPresence);
         next.set(userId, payload);
         peerPresence = next;
