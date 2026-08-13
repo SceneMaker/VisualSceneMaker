@@ -628,10 +628,24 @@
       <p>
         We are building authoring support for <strong>Visual SceneMaker</strong>, the system used
         to describe how a Socially Interactive Agent (SIA, right side) behaves and how it interacts
-        with a person. Today every flow has to be assembled from scratch. Instead, authors should be
-        able to start from ready-made <strong>interaction patterns</strong>, which are recurring
-        shapes of interaction such as &ldquo;ask and wait for an answer&rdquo; or &ldquo;remind
-        while waiting&rdquo;.
+        with a person. When you plan a session with such an agent, you decide two different things.
+        The first is what the agent says and shows, for example the wording of a question or a
+        picture on the screen. The second is how the session proceeds: what comes first, what
+        follows, how long the agent waits, what it does while it waits, and how it responds when the
+        person does something you did not plan for.
+      </p>
+      <p>
+        Visual SceneMaker keeps these two apart, and this review is about the second one. It comes
+        close to a session plan, in the way an interview schedule fixes the order of questions and
+        says which one to skip when. Two things make it more than a plan on paper. It runs by
+        itself, so timing is part of it. And it can respond while the session is under way, for
+        instance when the person starts speaking or turns away.
+      </p>
+      <p>
+        In Visual SceneMaker this is called the <strong>flow</strong>. Today every flow has to be
+        built from scratch. Instead, authors should be able to start from ready-made
+        <strong>interaction patterns</strong>, which are recurring shapes such as &ldquo;ask and
+        wait for an answer&rdquo; or &ldquo;remind while waiting&rdquo;.
       </p>
       <p>
         Below are <strong>23 candidate patterns</strong>, grouped into three levels of complexity.
@@ -701,7 +715,7 @@
       level: 1,
       label: "Sequences",
       marker: "Level 1",
-      note: "One thing after another. A single strand of activity, in which the agent works through steps in order, pauses, waits for the person, and takes different paths depending on what happened.",
+      note: "One thing after another. Everything happens in a single sequence: the agent works through steps in order, pauses, waits for the person, and takes different paths depending on what happened.",
       items: [
         {
           id: "1.1",
@@ -757,24 +771,24 @@
       level: 2,
       label: "Parallel activity",
       marker: "Level 2",
-      note: "Several things at the same time. Alongside the main strand, further strands run in parallel, either as background, as accompaniment to a single step, or as something the flow has to wait for.",
+      note: "Several things at the same time. Besides the steps of the conversation itself, other things run alongside it: continuously in the background, as accompaniment to a single step, or as something the session has to wait for before it goes on.",
       items: [
         {
           id: "2.1",
           name: "Start several things at once",
-          what: "At one point in the flow the agent sets several strands of activity going simultaneously. Each of them then runs on its own.",
+          what: "At one point in the session the agent starts several things at once. Each of them then continues on its own.",
           example: "As the agent begins its explanation, the room lighting dims and a diagram appears on the screen, all at the same moment."
         },
         {
           id: "2.2",
           name: "Continuous background activity",
-          what: "A strand of activity runs alongside the entire session from beginning to end, independently of where the conversation currently is.",
+          what: "Something runs alongside the entire session from beginning to end, independently of where the conversation currently is.",
           example: "Quiet background music plays throughout the session, and every answer is written to a log. Neither of them depends on which question the agent has reached."
         },
         {
           id: "2.3",
           name: "Time-based cue track",
-          what: "A strand in which things are triggered by elapsed time, independently of what the agent is saying or doing at that moment.",
+          what: "A series of events triggered by elapsed time, independently of what the agent is saying or doing at that moment.",
           example: "Five minutes into the session the background changes from daylight to evening. After ten minutes the music becomes quieter. The conversation is untouched by either."
         },
         {
@@ -786,13 +800,13 @@
         {
           id: "2.5",
           name: "Accompanying a single step",
-          what: "A secondary activity starts together with one step and finishes on its own. The main strand carries on regardless.",
+          what: "A secondary activity starts together with one step and finishes on its own. The conversation carries on regardless.",
           example: "While the agent explains a breathing exercise, a matching animation plays beside it. The animation ends by itself, and the explanation runs to its end either way."
         },
         {
           id: "2.6",
-          name: "Wait for several strands to finish",
-          what: "Several strands run in parallel and the flow continues only once all of them have finished. It then continues once, not once per strand.",
+          name: "Wait for several things to finish",
+          what: "Several things run at the same time, and the session continues only once all of them have finished. It then continues a single time, not once for each of them.",
           example: "The person fills in a questionnaire while the camera is being calibrated. Only when both are done does the agent begin the main part, and it begins it a single time rather than twice."
         }
       ]
@@ -801,7 +815,7 @@
       level: 3,
       label: "Reacting and coordinating",
       marker: "Level 3",
-      note: "The flow responds to things as they happen. Activities are cut short and picked up again, interruptions are judged rather than simply obeyed, and speaking and listening are coordinated between person and agent.",
+      note: "The agent responds to things as they happen. What it is doing can be cut short and picked up again, interruptions are judged rather than simply obeyed, and speaking and listening are coordinated between person and agent.",
       items: [
         {
           id: "3.1",
