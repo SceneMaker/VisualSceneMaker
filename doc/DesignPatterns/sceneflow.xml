@@ -725,6 +725,14 @@
         <IntLiteral value="2"/>
       </Eq>
     </CEdge>
+    <TEdge target="N44" start="" timeout="200">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="197" yPos="1033" ctrlXPos="274" ctrlYPos="965"/>
+          <ControlPoint xPos="133" yPos="1033" ctrlXPos="147" ctrlYPos="955"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
     <Graphics>
       <Position xPos="120" yPos="1020"/>
     </Graphics>
@@ -762,10 +770,10 @@
           <ControlPoint xPos="840" yPos="1515" ctrlXPos="773" ctrlYPos="1515"/>
         </Connection>
       </Graphics>
-      <Neq>
+      <Eq>
         <SimpleVariable name="event"/>
         <StringLiteral><![CDATA[OkayButtonPressed]]></StringLiteral>
-      </Neq>
+      </Eq>
     </IEdge>
     <Graphics>
       <Position xPos="570" yPos="1470"/>
