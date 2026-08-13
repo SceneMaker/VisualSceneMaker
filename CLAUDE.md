@@ -313,6 +313,8 @@ Additional architecture details are in `doc/`:
 - `scenemaker-ui-protocol.md` - UI event protocol specification
 - `scenemaker-web-ui-api.md` - REST/WebSocket API documentation
 - `scenemaker-web-ui-parity.md` - Web UI feature parity tracking
+- `socialsignal-plugin.md` - SocialSignalStream plugin: variables, actions, local testing, and the
+  open design question on switching signal groups off to save resources
 
 **User-facing in-app guides** (served statically, source in `editor/web-ui/public/`):
 - `scenescript-help.html` - SceneScript authoring guide (scenes/turns/commands/editing). Keep this

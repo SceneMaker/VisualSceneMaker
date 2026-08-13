@@ -181,6 +181,7 @@ dependencies {
     implementation project(":editor")
     implementation fileTree(dir: 'lib', include: "*.jar")
     implementation project(":plugins:heartflow")
+    implementation project(":plugins:socialsignal")
     implementation project(":plugins:alma")
     implementation project(":plugins:AndroidGui")
     implementation project(":plugins:email")

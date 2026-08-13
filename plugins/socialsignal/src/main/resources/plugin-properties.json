@@ -1,0 +1,751 @@
+{
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "c0f91c9fb98264d0",
+    "plugin": {
+        "id": "socialsignal",
+        "name": "Social Signal Stream",
+        "className": "de.dfki.vsm.xtension.socialsignal.SocialSignalExecutor",
+        "androidCompatible": false,
+        "description": "Real-time social-signal input from a webcam via the SocialSignalStream service. Streams head pose, mouth state, facial expression, gaze, blinks, nod/shake gestures, body lean, smile sub-classification (Duchenne, masking, contempt), eyebrow action units, hand-face self-touch and turn context into SceneFlow variables at up to 30 FPS.",
+        "tags": [
+            "camera",
+            "webcam",
+            "vision",
+            "mediapipe",
+            "head-pose",
+            "gaze",
+            "blink",
+            "nod",
+            "expression",
+            "smile",
+            "eyebrow",
+            "self-touch",
+            "lean",
+            "social-signal",
+            "nonverbal"
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            "processing"
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "sss_connected",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "sss_connected",
+                "description": "SceneFlow variable: WebSocket connection to SocialSignalStream is open (Bool)"
+            },
+            {
+                "name": "sss_streaming",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "sss_streaming",
+                "description": "SceneFlow variable: camera frames are arriving (Bool)"
+            },
+            {
+                "name": "sss_face_visible",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "sss_face_visible",
+                "description": "SceneFlow variable: a face is detected in the current frame (Bool)"
+            },
+            {
+                "name": "sss_head_pitch",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_head_pitch",
+                "description": "SceneFlow variable: head pitch in degrees, positive = nodding down (Float)"
+            },
+            {
+                "name": "sss_head_yaw",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_head_yaw",
+                "description": "SceneFlow variable: head yaw in degrees, positive = turning right (Float)"
+            },
+            {
+                "name": "sss_head_roll",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_head_roll",
+                "description": "SceneFlow variable: head roll in degrees, positive = tilting right (Float)"
+            },
+            {
+                "name": "sss_mouth_state",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_mouth_state",
+                "description": "SceneFlow variable: mouth state (String: open/closed/pressed)"
+            },
+            {
+                "name": "sss_mouth_openness",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_mouth_openness",
+                "description": "SceneFlow variable: continuous mouth openness 0-1 (Float)"
+            },
+            {
+                "name": "sss_expression",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_expression",
+                "description": "SceneFlow variable: facial expression, 7-class label (String)"
+            },
+            {
+                "name": "sss_expression_confidence",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_expression_confidence",
+                "description": "SceneFlow variable: expression confidence 0-1 (Float)"
+            },
+            {
+                "name": "sss_nod",
+                "type": "string",
+                "sceneflowtype": "Event(String)",
+                "default": "sss_nod",
+                "description": "SceneFlow variable: head-nod event (Event(String), value: nod)"
+            },
+            {
+                "name": "sss_shake",
+                "type": "string",
+                "sceneflowtype": "Event(String)",
+                "default": "sss_shake",
+                "description": "SceneFlow variable: head-shake event (Event(String), value: shake)"
+            },
+            {
+                "name": "sss_gaze_zone",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_gaze_zone",
+                "description": "SceneFlow variable: gaze zone (String: center/top_left/top_right/bot_left/bot_right)"
+            },
+            {
+                "name": "sss_gaze_x",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_gaze_x",
+                "description": "SceneFlow variable: normalised horizontal gaze, -1 left to 1 right (Float)"
+            },
+            {
+                "name": "sss_gaze_y",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_gaze_y",
+                "description": "SceneFlow variable: normalised vertical gaze, -1 down to 1 up (Float)"
+            },
+            {
+                "name": "sss_blink",
+                "type": "string",
+                "sceneflowtype": "Event(String)",
+                "default": "sss_blink",
+                "description": "SceneFlow variable: blink event (Event(String), value: blink)"
+            },
+            {
+                "name": "sss_blink_rate",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_blink_rate",
+                "description": "SceneFlow variable: blink rate in blinks per minute, 60 s window (Float)"
+            },
+            {
+                "name": "sss_lean_state",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_lean_state",
+                "description": "SceneFlow variable: body lean (String: neutral/forward/backward)"
+            },
+            {
+                "name": "sss_lean_angle",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_lean_angle",
+                "description": "SceneFlow variable: body lean angle in degrees (Float)"
+            },
+            {
+                "name": "sss_smile_type",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_smile_type",
+                "description": "SceneFlow variable: smile type (String: none/non_duchenne/duchenne)"
+            },
+            {
+                "name": "sss_smile_category",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_smile_category",
+                "description": "SceneFlow variable: smile category after Baenninger-Huber (String: none/enjoyment/non_duchenne/asymmetric/masking/miserable/dampened/contempt)"
+            },
+            {
+                "name": "sss_smile_asymmetry",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_smile_asymmetry",
+                "description": "SceneFlow variable: smile asymmetry, -1 left-dominant to 1 right-dominant (Float)"
+            },
+            {
+                "name": "sss_smile_contempt",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "sss_smile_contempt",
+                "description": "SceneFlow variable: unilateral contempt smile detected (Bool)"
+            },
+            {
+                "name": "sss_smile_onset_side",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_smile_onset_side",
+                "description": "SceneFlow variable: which hemiface started the smile (String: none/left/right/simultaneous)"
+            },
+            {
+                "name": "sss_smile_onset_delta",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_smile_onset_delta",
+                "description": "SceneFlow variable: ms between left and right smile onset, positive = right later (Float)"
+            },
+            {
+                "name": "sss_brow_inner_raise",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_brow_inner_raise",
+                "description": "SceneFlow variable: bilateral inner brow raise, AU1, 0-1 (Float)"
+            },
+            {
+                "name": "sss_brow_outer_left",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_brow_outer_left",
+                "description": "SceneFlow variable: left outer brow raise, AU2, 0-1 (Float)"
+            },
+            {
+                "name": "sss_brow_outer_right",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_brow_outer_right",
+                "description": "SceneFlow variable: right outer brow raise, AU2, 0-1 (Float)"
+            },
+            {
+                "name": "sss_brow_furrow_left",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_brow_furrow_left",
+                "description": "SceneFlow variable: left brow furrow, AU4, 0-1 (Float)"
+            },
+            {
+                "name": "sss_brow_furrow_right",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_brow_furrow_right",
+                "description": "SceneFlow variable: right brow furrow, AU4, 0-1 (Float)"
+            },
+            {
+                "name": "sss_brow_outer_asym",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_brow_outer_asym",
+                "description": "SceneFlow variable: outer brow asymmetry, right minus left (Float)"
+            },
+            {
+                "name": "sss_brow_inner_asym",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_brow_inner_asym",
+                "description": "SceneFlow variable: inner brow height difference, positive = left higher (Float)"
+            },
+            {
+                "name": "sss_hand_face_touch",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "sss_hand_face_touch",
+                "description": "SceneFlow variable: a hand is at the face (Bool)"
+            },
+            {
+                "name": "sss_hand_face_gesture",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_hand_face_gesture",
+                "description": "SceneFlow variable: self-touch gesture (String: none/hand_over_mouth/chin_rest/head_scratch/neck_touch/face_rub)"
+            },
+            {
+                "name": "sss_hand_face_hand",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_hand_face_hand",
+                "description": "SceneFlow variable: which hand touches the face (String: none/left/right/both)"
+            },
+            {
+                "name": "sss_hand_face_confidence",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_hand_face_confidence",
+                "description": "SceneFlow variable: self-touch confidence 0-1 (Float)"
+            },
+            {
+                "name": "sss_turn_state",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_turn_state",
+                "description": "SceneFlow variable: turn state (String: listening/speaking/system_turn/unknown)"
+            },
+            {
+                "name": "sss_speech_ratio",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_speech_ratio",
+                "description": "SceneFlow variable: voice-activity speech ratio 0-1 (Float)"
+            },
+            {
+                "name": "sss_vad_active",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "sss_vad_active",
+                "description": "SceneFlow variable: speech detected in the current audio chunk (Bool)"
+            },
+            {
+                "name": "sss_time_since_utterance",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "sss_time_since_utterance",
+                "description": "SceneFlow variable: seconds since the last recognised utterance, -1 = none yet (Float)"
+            },
+            {
+                "name": "sss_recording",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "sss_recording",
+                "description": "SceneFlow variable: a recording is running on the SocialSignalStream host (Bool)"
+            },
+            {
+                "name": "sss_recording_session",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "sss_recording_session",
+                "description": "SceneFlow variable: id of the current or last recording session (String)"
+            }
+        ],
+        "optional": [
+            {
+                "name": "ws_url",
+                "type": "string",
+                "default": "ws://localhost:7070/ws",
+                "description": "WebSocket URL of the SocialSignalStream feature stream"
+            },
+            {
+                "name": "http_url",
+                "type": "string",
+                "default": "",
+                "description": "Base URL of the SocialSignalStream REST API used by the start and calibrate_gaze actions. Empty = derived from ws_url."
+            },
+            {
+                "name": "auto_start",
+                "type": "string",
+                "default": "false",
+                "description": "If true, start the camera pipeline on connect (POST /start) so no browser interaction is needed"
+            },
+            {
+                "name": "device_index",
+                "type": "string",
+                "default": "0",
+                "description": "Camera device index used by auto_start and by the start action"
+            },
+            {
+                "name": "capture_width",
+                "type": "string",
+                "default": "640",
+                "description": "Capture width in pixels used by auto_start and by the start action"
+            },
+            {
+                "name": "capture_height",
+                "type": "string",
+                "default": "480",
+                "description": "Capture height in pixels used by auto_start and by the start action"
+            },
+            {
+                "name": "reconnect_delay_ms",
+                "type": "string",
+                "default": "2000",
+                "description": "Reconnect delay in ms after connection loss"
+            },
+            {
+                "name": "update_interval_ms",
+                "type": "string",
+                "default": "100",
+                "description": "Minimum interval in ms between updates of the continuous signals. Nod, shake and blink events are exempt and always fire on the frame they occur. Lower = more responsive, higher = less interpreter load."
+            },
+            {
+                "name": "angle_deadband",
+                "type": "string",
+                "default": "0.5",
+                "description": "Minimum change in degrees before an angle variable (head pose, lean, blink rate) is rewritten"
+            },
+            {
+                "name": "score_deadband",
+                "type": "string",
+                "default": "0.02",
+                "description": "Minimum change before a normalised 0-1 variable (gaze, blendshape scores, confidences) is rewritten"
+            },
+            {
+                "name": "write_when_invalid",
+                "type": "string",
+                "default": "false",
+                "description": "If true, keep writing feature variables while no face is detected. Default false: only sss_face_visible is updated, so the last measured values are held instead of falling back to defaults."
+            },
+            {
+                "name": "variable_timeout_ms",
+                "type": "string",
+                "default": "20000",
+                "description": "How long after launch the plugin keeps looking for a missing SceneFlow variable before switching that signal off for the run"
+            },
+            {
+                "name": "stream_timeout_ms",
+                "type": "string",
+                "default": "1500",
+                "description": "Time in ms without a frame after which sss_streaming is set to false"
+            }
+        ]
+    },
+    "commands": [
+        {
+            "name": "start",
+            "type": "action",
+            "summary": "Start the SocialSignalStream camera pipeline",
+            "description": "Selects a capture device and starts the pipeline (POST /start), the same step the SocialSignalStream browser UI performs. Without it the service idles and no frames arrive. Not needed when auto_start is enabled.",
+            "params": [
+                {
+                    "name": "device_index",
+                    "type": "string",
+                    "required": false,
+                    "description": "Camera index; defaults to the device_index plugin setting"
+                },
+                {
+                    "name": "width",
+                    "type": "string",
+                    "required": false,
+                    "description": "Capture width in pixels; defaults to the capture_width plugin setting"
+                },
+                {
+                    "name": "height",
+                    "type": "string",
+                    "required": false,
+                    "description": "Capture height in pixels; defaults to the capture_height plugin setting"
+                }
+            ]
+        },
+        {
+            "name": "calibrate_gaze",
+            "type": "action",
+            "summary": "Calibrate the gaze centre on the current head position",
+            "description": "Collects ~2 s of samples and takes them as the neutral gaze direction, which removes the head-pitch baseline from gaze_x/gaze_y. Trigger it while the person looks straight at the camera, for example during a welcome scene.",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "patch",
+            "type": "action",
+            "summary": "Change a SocialSignalStream setting at runtime",
+            "description": "Sends a hot config patch over the feature WebSocket, applied without restarting the service. Use the dotted key from the SocialSignalStream config, for example key='mouth.mar_open_threshold' value='0.35' or key='nod.min_amplitude_deg' value='4.0'.",
+            "params": [
+                {
+                    "name": "key",
+                    "type": "string",
+                    "required": true,
+                    "description": "Dotted config key, e.g. mouth.mar_open_threshold"
+                },
+                {
+                    "name": "value",
+                    "type": "string",
+                    "required": true,
+                    "description": "New value. Numbers and true/false are sent as such, everything else as text."
+                }
+            ]
+        },
+        {
+            "name": "recording_start",
+            "type": "action",
+            "summary": "Start recording video and features on the SocialSignalStream host",
+            "description": "Writes the session video plus a features.csv on the machine running SocialSignalStream. Nothing is transferred to VSM; the flow only receives the session id in sss_recording_session, which is what you use later to match a run against its recording. By default the session is a marked one, which also writes a prompts.csv on the recording clock and makes the mark action usable.",
+            "params": [
+                {
+                    "name": "marks",
+                    "type": "string",
+                    "required": false,
+                    "description": "true (default) records a marked session that the mark action can stamp into. Set false for a plain recording."
+                },
+                {
+                    "name": "scenarios",
+                    "type": "string",
+                    "required": false,
+                    "description": "Comma-separated scenario ids from the SocialSignalStream scenario list, when the session follows a predefined sequence. Leave empty to mark with your own ids."
+                },
+                {
+                    "name": "lang",
+                    "type": "string",
+                    "required": false,
+                    "description": "Session language code, en or de (default en). Only used for a marked session."
+                }
+            ]
+        },
+        {
+            "name": "recording_stop",
+            "type": "action",
+            "summary": "Stop the running recording and encode it",
+            "description": "Closes the session files and starts encoding the video on the SocialSignalStream host. Encoding continues in the background there, so the flow does not wait for it.",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "mark",
+            "type": "action",
+            "summary": "Stamp a moment into the running recording",
+            "description": "Adds a row to the recording's prompts.csv with start and end times on the recording clock, so what the agent was doing lines up with the measured signals when the session is reviewed. Requires a session started with marks enabled. Each mark ends the previous one, so the timeline is a sequence of intervals rather than points.",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string",
+                    "required": true,
+                    "description": "Identifier of what is happening now, e.g. the node or scene name"
+                },
+                {
+                    "name": "type",
+                    "type": "string",
+                    "required": false,
+                    "description": "Kind of moment, e.g. question, instruction, pause"
+                },
+                {
+                    "name": "label",
+                    "type": "string",
+                    "required": false,
+                    "description": "Behaviour expected here, used to pre-fill labels at review time (default none)"
+                },
+                {
+                    "name": "text",
+                    "type": "string",
+                    "required": false,
+                    "description": "What was said or shown, for context in the review UI"
+                }
+            ]
+        }
+    ],
+    "variables": {
+        "writes": [
+            {
+                "var": "sss_connected",
+                "type": "Bool",
+                "description": "True while the WebSocket to SocialSignalStream is open"
+            },
+            {
+                "var": "sss_streaming",
+                "type": "Bool",
+                "description": "True while camera frames are arriving; false once the pipeline stops"
+            },
+            {
+                "var": "sss_face_visible",
+                "type": "Bool",
+                "description": "True while a face is detected; the other signals hold their last value when false"
+            },
+            {
+                "var": "sss_head_pitch",
+                "type": "Float",
+                "description": "Head pitch in degrees, positive = nodding down"
+            },
+            {
+                "var": "sss_head_yaw",
+                "type": "Float",
+                "description": "Head yaw in degrees, positive = turning right"
+            },
+            {
+                "var": "sss_head_roll",
+                "type": "Float",
+                "description": "Head roll in degrees, positive = tilting right"
+            },
+            {
+                "var": "sss_mouth_state",
+                "type": "String",
+                "description": "open, closed or pressed"
+            },
+            {
+                "var": "sss_mouth_openness",
+                "type": "Float",
+                "description": "Continuous mouth openness 0-1"
+            },
+            {
+                "var": "sss_expression",
+                "type": "String",
+                "description": "Facial expression, 7-class label (neutral, happy, sad, angry, surprise, fear, disgust)"
+            },
+            {
+                "var": "sss_expression_confidence",
+                "type": "Float",
+                "description": "Confidence of the expression label, 0-1"
+            },
+            {
+                "var": "sss_nod",
+                "type": "Event(String)",
+                "description": "Fires once per detected head nod. Value: nod"
+            },
+            {
+                "var": "sss_shake",
+                "type": "Event(String)",
+                "description": "Fires once per detected head shake. Value: shake"
+            },
+            {
+                "var": "sss_gaze_zone",
+                "type": "String",
+                "description": "center, top_left, top_right, bot_left or bot_right"
+            },
+            {
+                "var": "sss_gaze_x",
+                "type": "Float",
+                "description": "Normalised horizontal gaze, -1 left to 1 right"
+            },
+            {
+                "var": "sss_gaze_y",
+                "type": "Float",
+                "description": "Normalised vertical gaze, -1 down to 1 up"
+            },
+            {
+                "var": "sss_blink",
+                "type": "Event(String)",
+                "description": "Fires once per blink, at the moment the eyes reopen. Value: blink"
+            },
+            {
+                "var": "sss_blink_rate",
+                "type": "Float",
+                "description": "Blink rate in blinks per minute over a 60 s window"
+            },
+            {
+                "var": "sss_lean_state",
+                "type": "String",
+                "description": "neutral, forward or backward"
+            },
+            {
+                "var": "sss_lean_angle",
+                "type": "Float",
+                "description": "Body lean angle in degrees from vertical"
+            },
+            {
+                "var": "sss_smile_type",
+                "type": "String",
+                "description": "none, non_duchenne or duchenne"
+            },
+            {
+                "var": "sss_smile_category",
+                "type": "String",
+                "description": "Smile category: none, enjoyment, non_duchenne, asymmetric, masking, miserable, dampened, contempt"
+            },
+            {
+                "var": "sss_smile_asymmetry",
+                "type": "Float",
+                "description": "Smile asymmetry, -1 left-dominant to 1 right-dominant"
+            },
+            {
+                "var": "sss_smile_contempt",
+                "type": "Bool",
+                "description": "True for a unilateral smile with one hemiface far stronger than the other"
+            },
+            {
+                "var": "sss_smile_onset_side",
+                "type": "String",
+                "description": "Which hemiface started the smile: none, left, right or simultaneous"
+            },
+            {
+                "var": "sss_smile_onset_delta",
+                "type": "Float",
+                "description": "Milliseconds between left and right smile onset, positive = right later"
+            },
+            {
+                "var": "sss_brow_inner_raise",
+                "type": "Float",
+                "description": "Bilateral inner brow raise (AU1), 0-1"
+            },
+            {
+                "var": "sss_brow_outer_left",
+                "type": "Float",
+                "description": "Left outer brow raise (AU2), 0-1"
+            },
+            {
+                "var": "sss_brow_outer_right",
+                "type": "Float",
+                "description": "Right outer brow raise (AU2), 0-1"
+            },
+            {
+                "var": "sss_brow_furrow_left",
+                "type": "Float",
+                "description": "Left brow furrow (AU4), 0-1"
+            },
+            {
+                "var": "sss_brow_furrow_right",
+                "type": "Float",
+                "description": "Right brow furrow (AU4), 0-1"
+            },
+            {
+                "var": "sss_brow_outer_asym",
+                "type": "Float",
+                "description": "Outer brow asymmetry, right minus left; positive = right dominant"
+            },
+            {
+                "var": "sss_brow_inner_asym",
+                "type": "Float",
+                "description": "Inner brow height difference; positive = left brow higher"
+            },
+            {
+                "var": "sss_hand_face_touch",
+                "type": "Bool",
+                "description": "True while a hand is at the face"
+            },
+            {
+                "var": "sss_hand_face_gesture",
+                "type": "String",
+                "description": "none, hand_over_mouth, chin_rest, head_scratch, neck_touch or face_rub"
+            },
+            {
+                "var": "sss_hand_face_hand",
+                "type": "String",
+                "description": "none, left, right or both"
+            },
+            {
+                "var": "sss_hand_face_confidence",
+                "type": "Float",
+                "description": "Self-touch confidence 0-1, proximity weighted by duration"
+            },
+            {
+                "var": "sss_turn_state",
+                "type": "String",
+                "description": "listening, speaking, system_turn or unknown"
+            },
+            {
+                "var": "sss_speech_ratio",
+                "type": "Float",
+                "description": "Voice-activity speech ratio 0-1"
+            },
+            {
+                "var": "sss_vad_active",
+                "type": "Bool",
+                "description": "True while speech is detected in the current audio chunk"
+            },
+            {
+                "var": "sss_time_since_utterance",
+                "type": "Float",
+                "description": "Seconds since the last recognised utterance, -1 until the first one. A running clock, written about twice a second."
+            },
+            {
+                "var": "sss_recording",
+                "type": "Bool",
+                "description": "True between a successful recording_start and recording_stop"
+            },
+            {
+                "var": "sss_recording_session",
+                "type": "String",
+                "description": "Session id of the current or last recording, for matching the flow log against the recorded files"
+            }
+        ]
+    }
+}
