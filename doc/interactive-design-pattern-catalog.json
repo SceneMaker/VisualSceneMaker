@@ -1,6 +1,6 @@
 {
-  "catalogVersion": "1.0",
-  "updatedAt": "2026-02-24",
+  "catalogVersion": "1.1",
+  "updatedAt": "2026-08-13",
   "purpose": "Scientific grounding and executable mapping for constrained activity modeling in SceneFlow generation.",
   "metaModel": {
     "name": "ConstrainedActivityModel",
@@ -59,6 +59,40 @@
     ]
   },
   "patternLibrary": [
+    {
+      "id": "sequence",
+      "label": "Fixed sequence",
+      "level": 1,
+      "humanDescription": "The agent works through a series of steps in a fixed order. Each step begins only once the previous one has finished.",
+      "status": "implemented",
+      "layer": "executable_pattern",
+      "mapsToTemplateSource": "template-sequence",
+      "sceneFlowMapping": {
+        "steps": "one create_node per step, each carrying the command that step performs",
+        "ordering": "EEDGE from each step to the next",
+        "entry": "the first step is marked as a start node",
+        "completion": "the final step has no outgoing edge and therefore ends the sequence"
+      },
+      "runtimeSemantics": "The bare EEDGE chain delivers step-after-step ordering only because a step blocks. Playing a scene blocks the node until the scene has finished. A plugin action blocks only until execute() returns, so a fire-and-forget action overlaps the next step and needs a completion handshake instead. See doc/patterns/1.1-fixed-sequence.md section 2.",
+      "selection": "Not selected through supportsMeta. The template library matches step markers such as \"first\", \"then\" and \"finally\" in the situation text directly, because selectPattern currently keys off constrainedActivity.kind and cannot express a non-constrained-activity pattern. Generalising that selection axis is still open.",
+      "scientificSources": [
+        {
+          "type": "paper",
+          "title": "Workflow Patterns",
+          "authors": [
+            "W. M. P. van der Aalst",
+            "A. H. M. ter Hofstede",
+            "B. Kiepuszewski",
+            "A. P. Barros"
+          ],
+          "year": 2003,
+          "venue": "Distributed and Parallel Databases",
+          "doi": "10.1023/A:1022883727209",
+          "url": "https://doi.org/10.1023/A:1022883727209",
+          "relevance": "Sequence is control-flow pattern 1, the base case from which the other control-flow patterns are composed."
+        }
+      ]
+    },
     {
       "id": "constrained_activity_base",
       "label": "Constrained Activity Base",

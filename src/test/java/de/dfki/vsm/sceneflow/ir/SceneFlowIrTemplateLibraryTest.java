@@ -1,5 +1,6 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SceneFlowIrTemplateLibraryTest {
@@ -177,5 +179,151 @@ class SceneFlowIrTemplateLibraryTest {
         assertTrue(promptResolution.optDouble("confidence", 1.0) < 0.8);
         assertTrue(promptResolution.optJSONArray("ambiguities").length() >= 1);
         assertEquals("reminder", promptResolution.optString("activityKind"));
+    }
+
+    @Test
+    void sequenceSituationProducesAChainRatherThanAWaitSupernode() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
+                "first greet the visitor, then explain the study, then ask for consent", snapshot);
+
+        JSONObject sequence = candidateFromSource(candidates, "template-sequence");
+        assertNotNull(sequence, "A described sequence must produce a sequence candidate");
+
+        // Before this template existed the same situation matched no predicate and fell into the
+        // unconditional fallback, which produced an unrelated constrained-activity wait supernode.
+        assertNull(candidateFromSource(candidates, "template-constrained-activity"),
+                "A sequence situation must no longer fall back to the wait template");
+
+        assertEquals(3, sequence.getJSONObject("metadata").getInt("stepCount"));
+        assertEquals(3, countOps(sequence, "create_node"));
+        assertEquals(2, countOps(sequence, "create_edge"));
+        assertEquals(3, countOps(sequence, "add_node_command"));
+    }
+
+    @Test
+    void sequenceStepsAreChainedWithEpsilonEdgesInOrder() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
+                "first greet, then explain, then close", snapshot), "template-sequence");
+
+        JSONArray ops = sequence.getJSONArray("operations");
+        List<String> nodeIds = new java.util.ArrayList<>();
+        List<String> hops = new java.util.ArrayList<>();
+        boolean firstIsStartNode = false;
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if ("create_node".equals(op.optString("op"))) {
+                if (nodeIds.isEmpty()) {
+                    firstIsStartNode = op.optBoolean("isStartNode", false);
+                }
+                nodeIds.add(op.getString("nodeId"));
+                assertNotNull(op.optJSONObject("position"),
+                        "Every step must carry a position: the compiler has no fallback layout");
+            } else if ("create_edge".equals(op.optString("op"))) {
+                assertEquals("EEDGE", op.getString("edgeType"));
+                hops.add(op.getString("sourceNodeId") + ">" + op.getString("targetNodeId"));
+            }
+        }
+        assertTrue(firstIsStartNode, "The sequence has to start somewhere");
+        assertEquals(List.of(nodeIds.get(0) + ">" + nodeIds.get(1),
+                nodeIds.get(1) + ">" + nodeIds.get(2)), hops);
+    }
+
+    @Test
+    void sequenceReusesExistingScenesAndReportsTheOnesToAuthor() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        // DesignPatterns declares exactly one scene, "Welcome".
+        JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
+                "first welcome, then explain the study", snapshot), "template-sequence");
+
+        List<String> commands = commandTexts(sequence);
+        assertEquals("PlayScene(\"Welcome\")", commands.get(0),
+                "An existing scene must be reused rather than a near-duplicate invented");
+        assertTrue(commands.get(1).startsWith("PlayScene(\""));
+
+        List<Object> toAuthor = sequence.getJSONObject("metadata")
+                .getJSONArray("scenesToAuthor").toList();
+        assertEquals(1, toAuthor.size(), "Only the second scene is missing, was: " + toAuthor);
+    }
+
+    @Test
+    void sceneNamesAreDoubleQuotedBecauseSingleQuotesSilentlyBecomeVariables() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
+                "first greet, then close", snapshot), "template-sequence");
+
+        for (String command : commandTexts(sequence)) {
+            assertFalse(command.contains("'"), "Command text must not use single quotes: " + command);
+            assertTrue(command.contains("\""), "Scene name must be double quoted: " + command);
+        }
+    }
+
+    @Test
+    void prosePassingNoStepsIsNotTreatedAsASequence() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
+                "the agent should greet the visitor", snapshot);
+        assertNull(candidateFromSource(candidates, "template-sequence"),
+                "A single instruction is not a sequence");
+    }
+
+    @Test
+    void generatedStepIdsDoNotCollideWithNodesAlreadyInTheProject() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
+                "first greet, then explain, then close", snapshot), "template-sequence");
+
+        java.util.Set<String> existing = new java.util.HashSet<>();
+        JSONArray nodes = snapshot.getJSONObject("flow").getJSONArray("nodes");
+        for (int i = 0; i < nodes.length(); i++) {
+            existing.add(nodes.getJSONObject(i).getString("id"));
+        }
+        JSONArray ops = sequence.getJSONArray("operations");
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if ("create_node".equals(op.optString("op"))) {
+                assertFalse(existing.contains(op.getString("nodeId")),
+                        "Generated id collides with an existing node: " + op.getString("nodeId"));
+            }
+        }
+    }
+
+    private JSONObject candidateFromSource(final List<JSONObject> candidates, final String source) {
+        for (JSONObject candidate : candidates) {
+            if (source.equals(candidate.optJSONObject("metadata").optString("source"))) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private int countOps(final JSONObject candidate, final String op) {
+        int count = 0;
+        JSONArray ops = candidate.getJSONArray("operations");
+        for (int i = 0; i < ops.length(); i++) {
+            if (op.equals(ops.getJSONObject(i).optString("op"))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private List<String> commandTexts(final JSONObject candidate) {
+        List<String> out = new java.util.ArrayList<>();
+        JSONArray ops = candidate.getJSONArray("operations");
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if ("add_node_command".equals(op.optString("op"))) {
+                out.add(op.getString("commandText"));
+            }
+        }
+        return out;
     }
 }

@@ -54,6 +54,14 @@ public final class SceneFlowIrTemplateLibrary {
         if (looksLikeCommandOnCondition(lower, eventVar)) {
             candidates.add(commandOnConditionTemplate(prompt, rootId, eventVar));
         }
+        // Offered before the blanket fallback. A situation such as "first greet the visitor, then
+        // explain the study" used to fall through to the constrained-activity template and produce
+        // an unrelated wait supernode, because no predicate matched and the fallback is
+        // unconditional.
+        final List<SequenceStep> steps = splitIntoSteps(prompt, snapshot);
+        if (steps.size() >= 2) {
+            candidates.add(sequenceTemplate(new SequenceSpec(prompt, rootId, steps), snapshot));
+        }
         if (candidates.isEmpty()) {
             final String fallbackPrompt = prompt.isEmpty() ? "Wait for event" : prompt;
             final ConstrainedActivitySpec spec = constrainedActivitySpec(
@@ -250,6 +258,234 @@ public final class SceneFlowIrTemplateLibrary {
                                 .put("sourceNodeId", nodeId)
                                 .put("targetNodeId", nodeId)
                                 .put("payload", new JSONObject().put("conditionText", eventVar + " != \"\""))));
+    }
+
+    /**
+     * Connectives that mark a step boundary in a described sequence. Ordered longest first so that
+     * "and then" wins over "then".
+     */
+    private static final Pattern STEP_SEPARATOR = Pattern.compile(
+            "\\s*(?:[;.]|\\b(?:and\\s+then|after\\s+that|after\\s+which|afterwards|finally|lastly"
+                    + "|then|next)\\b)\\s*",
+            Pattern.CASE_INSENSITIVE);
+
+    /** A leading ordinal on the first step carries no content of its own. */
+    private static final Pattern LEADING_ORDINAL = Pattern.compile(
+            "^(?:first(?:ly)?|to\\s+start(?:\\s+with)?|begin\\s+by|start\\s+by)\\b[,:]?\\s*",
+            Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern LEADING_FILLER = Pattern.compile(
+            "^(?:the\\s+agent\\s+should|the\\s+agent|it\\s+should|please|i\\s+want\\s+(?:to|the\\s+agent\\s+to))"
+                    + "\\b[,:]?\\s*",
+            Pattern.CASE_INSENSITIVE);
+
+    private static final Set<String> NAME_STOPWORDS = Set.of(
+            "the", "a", "an", "to", "for", "of", "and", "with", "that", "this", "then", "some", "any");
+
+    /**
+     * Splits a described situation into ordered steps.
+     *
+     * <p>Returns fewer than two steps when the text does not describe a sequence, which is how the
+     * caller decides whether this template applies at all.
+     */
+    private List<SequenceStep> splitIntoSteps(final String prompt, final JSONObject snapshot) {
+        final List<SequenceStep> steps = new ArrayList<>();
+        if (prompt == null || prompt.isBlank()) {
+            return steps;
+        }
+        final String withoutFiller = LEADING_FILLER.matcher(prompt.trim()).replaceFirst("");
+        final String[] chunks = STEP_SEPARATOR.split(withoutFiller);
+
+        // Seeded with the project's existing node ids so a derived name cannot collide with a node
+        // that is already there, which the validator would otherwise report as NODE_DUPLICATE. Also
+        // seeded with existing node *names*, because the derived id doubles as the display name and
+        // two nodes showing the same name on the canvas is needlessly confusing.
+        final Set<String> usedIds = new LinkedHashSet<>(snapshotNodeIds(snapshot, resolveRootId(snapshot)));
+        usedIds.addAll(snapshotNodeNames(snapshot));
+        final Set<String> sceneNames = sceneNames(snapshot);
+        for (final String rawChunk : chunks) {
+            final String chunk = LEADING_ORDINAL.matcher(rawChunk.trim()).replaceFirst("").trim();
+            if (chunk.length() < 2) {
+                continue;
+            }
+            final String nodeId = uniqueNodeId(pascalCase(chunk), usedIds);
+            steps.add(new SequenceStep(chunk, nodeId, resolveSceneName(chunk, sceneNames)));
+        }
+        return steps;
+    }
+
+    /**
+     * Picks the scene a step should play. An existing scene whose name matches the step wins;
+     * otherwise a name is derived and the scene has to be authored, which the caller records as an
+     * assumption and {@code SCENE_REF_UNKNOWN} then reports.
+     */
+    private String resolveSceneName(final String stepText, final Set<String> sceneNames) {
+        final String derived = snakeCase(stepText);
+        for (final String candidate : sceneNames) {
+            if (candidate.equalsIgnoreCase(derived) || candidate.equalsIgnoreCase(pascalCase(stepText))) {
+                return candidate;
+            }
+        }
+        // A shorter derived form catches "greet the visitor" against a scene simply called "greet".
+        final String head = snakeCase(firstWords(stepText, 1));
+        for (final String candidate : sceneNames) {
+            if (candidate.equalsIgnoreCase(head)) {
+                return candidate;
+            }
+        }
+        return derived;
+    }
+
+    private Set<String> snapshotNodeNames(final JSONObject snapshot) {
+        final Set<String> names = new LinkedHashSet<>();
+        final JSONObject flow = snapshot == null ? null : snapshot.optJSONObject("flow");
+        final JSONArray nodes = flow == null ? null : flow.optJSONArray("nodes");
+        for (int i = 0; nodes != null && i < nodes.length(); i++) {
+            final JSONObject node = nodes.optJSONObject(i);
+            final String name = node == null ? "" : node.optString("name", "").trim();
+            if (!name.isEmpty()) {
+                names.add(name);
+            }
+        }
+        return names;
+    }
+
+    private Set<String> sceneNames(final JSONObject snapshot) {
+        final Set<String> names = new LinkedHashSet<>();
+        final JSONObject script = snapshot == null ? null : snapshot.optJSONObject("script");
+        final JSONArray scenes = script == null ? null : script.optJSONArray("scenes");
+        for (int i = 0; scenes != null && i < scenes.length(); i++) {
+            final JSONObject scene = scenes.optJSONObject(i);
+            final String name = scene == null ? "" : scene.optString("name", "").trim();
+            if (!name.isEmpty()) {
+                names.add(name);
+            }
+        }
+        return names;
+    }
+
+    private JSONObject sequenceTemplate(final SequenceSpec spec, final JSONObject snapshot) {
+        final JSONArray operations = new JSONArray();
+        final Set<String> sceneNames = sceneNames(snapshot);
+        final List<String> scenesToAuthor = new ArrayList<>();
+
+        for (int i = 0; i < spec.steps().size(); i++) {
+            final SequenceStep step = spec.steps().get(i);
+
+            final JSONObject createNode = new JSONObject()
+                    .put("op", "create_node")
+                    .put("opId", "sequence-step-" + (i + 1))
+                    .put("reason", "Step " + (i + 1) + " of " + spec.steps().size() + ": " + step.text())
+                    .put("parentSuperNodeId", spec.rootId())
+                    .put("nodeId", step.nodeId())
+                    .put("name", step.nodeId())
+                    .put("comment", step.text())
+                    // Emitted here rather than left to the pipeline, because the compiler has no
+                    // fallback layout and a chain should read left to right.
+                    .put("position", new JSONObject()
+                            .put("x", 120 + i * 320)
+                            .put("y", 340));
+            if (i == 0) {
+                createNode.put("isStartNode", true);
+            }
+            operations.put(createNode);
+
+            operations.put(new JSONObject()
+                    .put("op", "add_node_command")
+                    .put("opId", "sequence-step-" + (i + 1) + "-command")
+                    .put("reason", "What step " + (i + 1) + " does.")
+                    .put("nodeId", step.nodeId())
+                    // Double quotes are required: a single-quoted name is lexed as an identifier and
+                    // silently becomes a variable reference.
+                    .put("commandText", "PlayScene(\"" + step.sceneName() + "\")"));
+
+            if (!sceneNames.contains(step.sceneName())) {
+                scenesToAuthor.add(step.sceneName());
+            }
+
+            if (i > 0) {
+                final SequenceStep previous = spec.steps().get(i - 1);
+                operations.put(new JSONObject()
+                        .put("op", "create_edge")
+                        .put("opId", "sequence-edge-" + i)
+                        .put("reason", "Continue to step " + (i + 1) + " once step " + i + " has finished.")
+                        .put("edgeId", "Seq" + previous.nodeId() + "To" + step.nodeId())
+                        .put("edgeType", "EEDGE")
+                        .put("sourceNodeId", previous.nodeId())
+                        .put("targetNodeId", step.nodeId()));
+            }
+        }
+
+        final JSONArray assumptions = new JSONArray()
+                .put("Steps are chained with EEDGE, which gives true step-after-step ordering because "
+                        + "playing a scene blocks the node until the scene has finished. A step that "
+                        + "runs a fire-and-forget plugin action instead would overlap the next step "
+                        + "and needs a completion handshake.")
+                .put("The first step is marked as a start node, so the sequence begins when the "
+                        + "project starts. Attach it to an existing node instead if it should run "
+                        + "at a particular point.")
+                .put("The final step has no outgoing edge and therefore ends the sequence.");
+        if (!scenesToAuthor.isEmpty()) {
+            assumptions.put("These scenes do not exist yet and have to be authored: "
+                    + String.join(", ", scenesToAuthor) + ".");
+        }
+
+        return new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("metadata", metadata("template-sequence", spec.situation())
+                        .put("stepCount", spec.steps().size())
+                        .put("steps", new JSONArray(spec.steps().stream()
+                                .map(step -> new JSONObject()
+                                        .put("text", step.text())
+                                        .put("nodeId", step.nodeId())
+                                        .put("scene", step.sceneName()))
+                                .toList()))
+                        .put("scenesToAuthor", new JSONArray(scenesToAuthor)))
+                .put("assumptions", assumptions)
+                .put("operations", operations);
+    }
+
+    private String firstWords(final String text, final int count) {
+        final String[] words = text.trim().split("\\s+");
+        final StringBuilder out = new StringBuilder();
+        int taken = 0;
+        for (final String word : words) {
+            final String cleaned = word.replaceAll("[^A-Za-z0-9]", "");
+            if (cleaned.isEmpty() || NAME_STOPWORDS.contains(cleaned.toLowerCase(Locale.ROOT))) {
+                continue;
+            }
+            out.append(out.length() == 0 ? "" : " ").append(cleaned);
+            if (++taken == count) {
+                break;
+            }
+        }
+        return out.length() == 0 ? text.trim() : out.toString();
+    }
+
+    private String pascalCase(final String text) {
+        final StringBuilder out = new StringBuilder();
+        for (final String word : firstWords(text, 3).split("\\s+")) {
+            if (word.isEmpty()) {
+                continue;
+            }
+            out.append(Character.toUpperCase(word.charAt(0)))
+                    .append(word.substring(1).toLowerCase(Locale.ROOT));
+        }
+        return out.length() == 0 ? "Step" : out.toString();
+    }
+
+    private String snakeCase(final String text) {
+        return firstWords(text, 3).toLowerCase(Locale.ROOT).replaceAll("\\s+", "_");
+    }
+
+    private String uniqueNodeId(final String base, final Set<String> used) {
+        String candidate = base;
+        int suffix = 2;
+        while (!used.add(candidate)) {
+            candidate = base + suffix++;
+        }
+        return candidate;
     }
 
     private JSONObject metadata(final String source, final String situation) {
@@ -669,6 +905,13 @@ public final class SceneFlowIrTemplateLibrary {
             List<String> promptResolutionAmbiguities,
             String selectedPatternId,
             String selectionReason) {
+    }
+
+    /** One step of a described sequence, with the node it becomes and the scene it plays. */
+    private record SequenceStep(String text, String nodeId, String sceneName) {
+    }
+
+    private record SequenceSpec(String situation, String rootId, List<SequenceStep> steps) {
     }
 
     private record ConstraintResolution(List<String> resolved, List<String> unresolved) {
