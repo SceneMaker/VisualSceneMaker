@@ -4,7 +4,7 @@
   import { EditorView, keymap, Decoration, WidgetType, dropCursor } from "@codemirror/view";
   import { indentUnit } from "@codemirror/language";
   import { lintGutter, setDiagnostics } from "@codemirror/lint";
-  import { indentWithTab } from "@codemirror/commands";
+  import { indentWithTab, historyField } from "@codemirror/commands";
   import { basicSetup } from "codemirror";
   import { sceneScript } from "./sceneScriptLanguage";
   import { sceneScriptHighlighting, sceneScriptTheme } from "./sceneScriptTheme";
@@ -721,7 +721,7 @@
     view.dispatch(setDiagnostics(view.state, merged));
   }
 
-  function buildState(docText) {
+  function buildExtensions() {
     const updateListener = EditorView.updateListener.of((update) => {
       if (!update.docChanged || suppress) return;
       const text = update.state.doc.toString();
@@ -847,10 +847,50 @@
       EditorState.readOnly.of(readOnly),
       EditorView.editable.of(!readOnly)
     ];
+    return extensions;
+  }
+
+  function buildState(docText) {
     return EditorState.create({
       doc: docText || "",
-      extensions
+      extensions: buildExtensions()
     });
+  }
+
+  // Detached-window hand-over (doc/scenescript-separate-window.md §3.2): the undo history must
+  // survive a detach/merge, so the whole editor state — doc, selection and history — is
+  // serialised on the sending side and rebuilt on the receiving side. historyField is CM6's
+  // designated hook for exactly this.
+  export function getStateSnapshot() {
+    if (!view) return null;
+    try {
+      return view.state.toJSON({ history: historyField });
+    } catch {
+      return null;
+    }
+  }
+
+  // Returns true when the snapshot was applied. On a malformed payload the caller falls back
+  // to plain-text hand-over (draft without history) rather than losing the draft.
+  export function restoreStateSnapshot(snapshot) {
+    if (!view || !snapshot || typeof snapshot.doc !== "string") return false;
+    try {
+      const state = EditorState.fromJSON(
+        snapshot,
+        { extensions: buildExtensions() },
+        { history: historyField }
+      );
+      suppress = true;
+      try {
+        view.setState(state);
+      } finally {
+        suppress = false;
+      }
+      refreshDiagnostics(snapshot.doc);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   function mountEditor() {

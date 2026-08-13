@@ -699,7 +699,7 @@
   function loadSiaPanelPrefs(projectId) {
     if (!projectId) return { height: SIA_PANEL_DEFAULT_HEIGHT };
     try {
-      const parsed = JSON.parse(localStorage.getItem(SIA_PANEL_STORAGE_KEY_PREFIX + projectId) || '{}');
+      const parsed = JSON.parse(localStorage.getItem(SIA_PANEL_STORAGE_KEY_PREFIX + projectId + VIEW_PREF_LS_SUFFIX) || '{}');
       return { height: parsed.height || SIA_PANEL_DEFAULT_HEIGHT };
     } catch {
       return { height: SIA_PANEL_DEFAULT_HEIGHT };
@@ -709,15 +709,15 @@
   async function fetchSiaPanelPrefsFromServer(projectId) {
     if (!projectId) return null;
     const data = await fetchUiPrefs(projectId);
-    const prefs = data?.siaPanel;
+    const prefs = data?.[viewPrefName("siaPanel")];
     return prefs && typeof prefs === 'object' ? prefs : null;
   }
 
   function persistSiaPanelPrefs(projectId, prefs) {
     if (!projectId) return;
-    localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + projectId, JSON.stringify(prefs));
+    localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + projectId + VIEW_PREF_LS_SUFFIX, JSON.stringify(prefs));
     invalidateUiPrefsCache(projectId);
-    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { siaPanel: prefs } }).catch(() => {});
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { [viewPrefName("siaPanel")]: prefs } }).catch(() => {});
   }
 
   function persistSiaPanelState() {
@@ -727,7 +727,7 @@
   // Script editor's own resizable height (M13j) — same load/persist shape as the SIA panel's.
   function loadScriptEditorHeight(projectId) {
     if (!projectId) return SCRIPT_EDITOR_DEFAULT_HEIGHT;
-    const raw = localStorage.getItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId);
+    const raw = localStorage.getItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId + VIEW_PREF_LS_SUFFIX);
     const parsed = raw ? Number(raw) : NaN;
     return Number.isFinite(parsed) && parsed > 0 ? parsed : SCRIPT_EDITOR_DEFAULT_HEIGHT;
   }
@@ -735,15 +735,15 @@
   async function fetchScriptEditorHeightFromServer(projectId) {
     if (!projectId) return null;
     const data = await fetchUiPrefs(projectId);
-    const height = Number(data?.scriptEditorHeight);
+    const height = Number(data?.[viewPrefName("scriptEditorHeight")]);
     return Number.isFinite(height) && height > 0 ? height : null;
   }
 
   function persistScriptEditorHeight(projectId, heightPx) {
     if (!projectId) return;
-    localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId, String(heightPx));
+    localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId + VIEW_PREF_LS_SUFFIX, String(heightPx));
     invalidateUiPrefsCache(projectId);
-    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { scriptEditorHeight: heightPx } }).catch(() => {});
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { [viewPrefName("scriptEditorHeight")]: heightPx } }).catch(() => {});
   }
 
   // Script view mode (code / annotated / text) — same load/persist shape as the heights above.
@@ -751,22 +751,22 @@
   // stays in for a whole session, so resetting it on every reload would be a constant annoyance.
   function loadScriptViewMode(projectId) {
     if (!projectId) return "annotated";
-    const raw = localStorage.getItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + projectId);
+    const raw = localStorage.getItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + projectId + VIEW_PREF_LS_SUFFIX);
     return SCRIPT_VIEW_MODES.includes(raw) ? raw : "annotated";
   }
 
   async function fetchScriptViewModeFromServer(projectId) {
     if (!projectId) return null;
     const data = await fetchUiPrefs(projectId);
-    const mode = data?.scriptViewMode;
+    const mode = data?.[viewPrefName("scriptViewMode")];
     return SCRIPT_VIEW_MODES.includes(mode) ? mode : null;
   }
 
   function persistScriptViewMode(projectId, mode) {
     if (!projectId) return;
-    localStorage.setItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + projectId, mode);
+    localStorage.setItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + projectId + VIEW_PREF_LS_SUFFIX, mode);
     invalidateUiPrefsCache(projectId);
-    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { scriptViewMode: mode } }).catch(() => {});
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { [viewPrefName("scriptViewMode")]: mode } }).catch(() => {});
   }
 
   // SceneFlow panel height — same load/persist shape as the script editor's, except null is a
@@ -1484,6 +1484,20 @@
   let selectedProjectId = _urlSessionParam || localStorage.getItem("vsm_project_id") || "";
   // Track whether this page load is a URL-based session join (invite link)
   let joiningViaUrl = !!_urlSessionParam;
+  // Detached script window (doc/scenescript-separate-window.md): ?view=script makes this window
+  // render only the scene script editor with its SIA preview plus a minimal top row (§3.3).
+  // Everything else — session join, WS connection, data loading — runs exactly as in a main
+  // window; only what is RENDERED differs.
+  const isScriptWindow =
+    new URLSearchParams(window.location.search).get("view") === "script";
+  // Per-view preference keys (§3.2a): the detached script window remembers its own view mode,
+  // editor height and SIA panel height — a window that exists to be larger and read differently
+  // must not inherit (or overwrite) the inline layout's sizing. Same storage (localStorage +
+  // server ui-prefs, whose PUT merges keys), distinct key names per view.
+  const VIEW_PREF_LS_SUFFIX = isScriptWindow ? "@detached" : "";
+  function viewPrefName(base) {
+    return isScriptWindow ? `${base}Detached` : base;
+  }
   let recent = [];
   let recentLoaded = false;
   let recentLoading = false;
@@ -2968,6 +2982,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: {
     const canAutoApply =
       showEditor &&
+      // Only the window that currently renders the script editor auto-applies — while the
+      // script is detached, the main window's mirrored draft must not race the detached
+      // window's own auto-apply (doc/scenescript-separate-window.md §4.3).
+      scriptAreaVisible &&
       wsConnected &&
       !!selectedProjectId &&
       scriptDirty &&
@@ -3453,6 +3471,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: remoteSaveActsAsExport = remoteSaveHovered && shiftDown;
   $: autoSaveReady =
     autoSaveEnabled &&
+    // Project autosave runs in the main window only — a detached script window would otherwise
+    // run this same loop against the same project (its script edits reach the server through
+    // script auto-apply regardless).
+    !isScriptWindow &&
     showEditor &&
     !!selectedProjectId &&
     !projectRequiresSaveAs &&
@@ -3476,7 +3498,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     if (typeof document !== "undefined") {
       const status = wsConnected ? "connected" : "offline";
       const projectLabel = showEditor && selectedProject?.name ? ` — ${selectedProject.name}` : "";
-      document.title = `Visual SceneMaker Web ${projectLabel} (${status})`;
+      document.title = isScriptWindow
+        ? `Scene Script${projectLabel} (${status})`
+        : `Visual SceneMaker Web ${projectLabel} (${status})`;
     }
   }
   $: scriptScenesLive = buildSceneGroupsFromScript(scriptDraft || "");
@@ -3560,7 +3584,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     fetchSiaPanelPrefsFromServer(_siaPid).then((serverPrefs) => {
       if (serverPrefs && selectedProjectId === _siaPid) {
         siaPanelHeight = serverPrefs.height || SIA_PANEL_DEFAULT_HEIGHT;
-        localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + _siaPid, JSON.stringify(serverPrefs));
+        localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + _siaPid + VIEW_PREF_LS_SUFFIX, JSON.stringify(serverPrefs));
       }
     });
     scriptEditorHeight = loadScriptEditorHeight(selectedProjectId);
@@ -3568,7 +3592,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     fetchScriptEditorHeightFromServer(_scriptEditorPid).then((serverHeight) => {
       if (serverHeight && selectedProjectId === _scriptEditorPid) {
         scriptEditorHeight = serverHeight;
-        localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + _scriptEditorPid, String(serverHeight));
+        localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + _scriptEditorPid + VIEW_PREF_LS_SUFFIX, String(serverHeight));
       }
     });
     scriptViewMode = loadScriptViewMode(selectedProjectId);
@@ -3576,7 +3600,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     fetchScriptViewModeFromServer(_scriptViewModePid).then((serverMode) => {
       if (serverMode && selectedProjectId === _scriptViewModePid) {
         scriptViewMode = serverMode;
-        localStorage.setItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + _scriptViewModePid, serverMode);
+        localStorage.setItem(SCRIPT_VIEW_MODE_STORAGE_KEY_PREFIX + _scriptViewModePid + VIEW_PREF_LS_SUFFIX, serverMode);
       }
     });
     sceneFlowPanelHeight = loadSceneFlowPanelHeight(selectedProjectId);
@@ -4135,7 +4159,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       showTokenSection = false;
       if (joiningViaUrl) {
         joiningViaUrl = false;
-        window.history.replaceState({}, "", window.location.pathname);
+        // Keep the detached script window's URL intact (?session + ?view=script) so a reload
+        // brings back a script window on the same project, not a second full editor.
+        if (!isScriptWindow) {
+          window.history.replaceState({}, "", window.location.pathname);
+        }
       }
       if (selectedProjectId) {
         lastConfigProjectId = selectedProjectId;
@@ -8288,6 +8316,180 @@ Sentence:
         }));
       } catch (e) {}
     }, 100);
+  }
+
+  // --- Detached script window (doc/scenescript-separate-window.md §3) ------------------------
+  // The script editor is MOVED between windows, never duplicated: the main window stops
+  // rendering `.scenescript` before the detached window shows it, and a merge reverses that.
+  // Script DATA keeps loading in the main window either way — the blocks panel's SCENES list
+  // is driven by scriptScenes/scriptScenesLive (§2.1), so only rendering is gated, never loading.
+  let scriptDetached = false;        // main window: script area currently lives in a detached window
+  let detachedScriptWindow = null;   // main window: window.open handle, reused to focus (§3.1)
+  let pendingDetachHandoff = null;   // main window: payload captured at detach, sent on child "ready"
+  let scriptHandoffPending = null;   // receiving window: payload waiting for the editor to mount
+  let scriptMergeAckTimer = null;    // detached window: merge is only final once the main window acks
+  let scriptMergeError = "";
+  let scriptDetachChannel = null;
+  let scriptDetachChannelPid = null;
+  $: scriptAreaVisible = isScriptWindow || !scriptDetached;
+  // Detach is only offered while the project is not running (§3.1); merging back stays
+  // available during a run.
+  $: canDetachScript =
+    !!selectedProjectId && wsConnected && runtimeState === "stopped" && !scriptDetached;
+
+  $: ensureScriptDetachChannel(selectedProjectId);
+
+  function ensureScriptDetachChannel(pid) {
+    if (pid === scriptDetachChannelPid) return;
+    if (scriptDetachChannel) {
+      try { scriptDetachChannel.close(); } catch (_) {}
+      scriptDetachChannel = null;
+    }
+    scriptDetachChannelPid = pid;
+    if (!pid || typeof BroadcastChannel === "undefined") return;
+    // Same-origin, per-project channel: carries the draft + undo history directly between the
+    // two windows (§3.2) — nothing has to be saved first, so it works mid-parse-error too.
+    scriptDetachChannel = new BroadcastChannel(`vsm-script-window:${pid}`);
+    scriptDetachChannel.onmessage = (event) => handleScriptWindowMessage(event?.data);
+    if (isScriptWindow) {
+      // Announce ourselves — the main window answers with the draft/history handoff.
+      scriptDetachChannel.postMessage({ type: "script-window-ready" });
+    }
+  }
+
+  function buildScriptHandoffPayload() {
+    return {
+      draft: scriptDraft,
+      cmState: scriptEditorRef?.getStateSnapshot() || null,
+      siaPanelOpen,
+      siaLoadedNames: Object.keys(siaLoaded).filter((name) => siaLoaded[name])
+    };
+  }
+
+  // Shared by both directions — the receiving window's ScriptEditor mounts fresh behind its
+  // {#if}, so the payload waits in scriptHandoffPending until both the editor ref and the
+  // initial /script load exist (the first script.snapshot would otherwise overwrite a draft
+  // applied too early, see applyScriptSnapshot's hasDirtyDraft gate).
+  function applyPendingScriptHandoff() {
+    const payload = scriptHandoffPending;
+    if (!payload || !scriptEditorRef || !scriptLoaded) return;
+    if (!scriptEditorRef.getStateSnapshot()) {
+      // Editor component exists but its CodeMirror view hasn't mounted yet — retry shortly,
+      // keeping the payload pending.
+      setTimeout(applyPendingScriptHandoff, 50);
+      return;
+    }
+    scriptHandoffPending = null;
+    // Restore the full editor state (doc + selection + undo history) FIRST, then assign the
+    // draft: once the view's doc already equals scriptDraft, ScriptEditor's value-sync
+    // reactive is a no-op instead of a history-flattening full-doc replace. On a malformed
+    // snapshot restoreStateSnapshot returns false and the plain-text assignment below still
+    // carries the draft — undo history is lost, the text never is.
+    if (payload.cmState) {
+      scriptEditorRef.restoreStateSnapshot(payload.cmState);
+    }
+    if (typeof payload.draft === "string") {
+      scriptDraft = payload.draft;
+    }
+    scheduleScriptDiagnostics();
+    scheduleScriptLive();
+    // Every transition reloads the SIA preview (§3.1): the fresh iframes in this window redo
+    // the full engine load for whatever was loaded before the move — cheap, and it removes
+    // any question about engine state surviving the move.
+    siaPanelOpen = !!payload.siaPanelOpen;
+    for (const name of payload.siaLoadedNames || []) {
+      loadSiaAgent(name);
+    }
+  }
+
+  $: if (scriptHandoffPending && scriptEditorRef && scriptLoaded) {
+    applyPendingScriptHandoff();
+  }
+
+  function detachedScriptWindowUrl() {
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.hash = "";
+    url.searchParams.set("session", selectedProjectId);
+    url.searchParams.set("view", "script");
+    return url.toString();
+  }
+
+  function detachScriptEditor() {
+    if (!canDetachScript || isScriptWindow) return;
+    // At most one detached script window per client (§3.1): re-pressing detach focuses it.
+    if (detachedScriptWindow && !detachedScriptWindow.closed) {
+      try { detachedScriptWindow.focus(); } catch (_) {}
+      return;
+    }
+    // Capture draft + undo history while the editor still exists in this window.
+    const payload = buildScriptHandoffPayload();
+    let win = null;
+    try {
+      // Named target: even a stale handle (e.g. after this window reloaded) reuses the same
+      // window instead of spawning a second one.
+      win = window.open(detachedScriptWindowUrl(), `vsm-script-editor-${selectedProjectId}`);
+    } catch (_) {
+      win = null;
+    }
+    if (!win) return; // popup blocked — nothing was torn down yet, the click just does nothing
+    detachedScriptWindow = win;
+    pendingDetachHandoff = payload;
+    // Hide before the child renders, so the editor never exists in two windows at once (§3.1).
+    scriptDetached = true;
+  }
+
+  function focusDetachedScriptWindow() {
+    if (detachedScriptWindow && !detachedScriptWindow.closed) {
+      try { detachedScriptWindow.focus(); } catch (_) {}
+    }
+  }
+
+  // Detached window: hand everything back and close. Closing waits for the main window's ack —
+  // silently discarding the draft because the main window is gone would be data loss.
+  function mergeScriptEditor() {
+    if (!isScriptWindow || !scriptDetachChannel) return;
+    scriptMergeError = "";
+    scriptDetachChannel.postMessage({ type: "script-merge", ...buildScriptHandoffPayload() });
+    if (scriptMergeAckTimer) clearTimeout(scriptMergeAckTimer);
+    scriptMergeAckTimer = setTimeout(() => {
+      scriptMergeAckTimer = null;
+      scriptMergeError =
+        "The main editor window did not respond — is it still open? Nothing was lost; keep working here or try again.";
+    }, 2000);
+  }
+
+  function handleScriptWindowMessage(msg) {
+    if (!msg || typeof msg !== "object") return;
+    if (isScriptWindow) {
+      if (msg.type === "script-handoff") {
+        scriptHandoffPending = msg;
+      } else if (msg.type === "script-merge-ack") {
+        if (scriptMergeAckTimer) {
+          clearTimeout(scriptMergeAckTimer);
+          scriptMergeAckTimer = null;
+        }
+        window.close();
+      }
+      return;
+    }
+    // Main-window side.
+    if (msg.type === "script-window-ready" && scriptDetached) {
+      // Fresh child: send the payload captured at detach. A child that was reloaded (F5) gets
+      // the live draft instead — the main window mirrors it via script.live while its own
+      // draft stays clean — without undo history, which did not survive the reload anyway.
+      const payload = pendingDetachHandoff || buildScriptHandoffPayload();
+      pendingDetachHandoff = null;
+      scriptDetachChannel?.postMessage({ type: "script-handoff", ...payload });
+      return;
+    }
+    if (msg.type === "script-merge") {
+      scriptDetached = false;
+      detachedScriptWindow = null;
+      pendingDetachHandoff = null;
+      scriptHandoffPending = msg;
+      scriptDetachChannel?.postMessage({ type: "script-merge-ack" });
+    }
   }
 
   async function runScriptAutoApply() {
@@ -16037,6 +16239,60 @@ Sentence:
 
     {#if showEditor}
     <section class="panel sceneflow-panel">
+      {#if isScriptWindow}
+        <!-- Detached script window: minimal top row (doc/scenescript-separate-window.md §3.3) —
+             project name, dirty/saved state, Merge and Save. Deliberately absent: node/edge
+             tools, canvas toggles, runtime controls, breadcrumbs. -->
+        <div class="script-window-topbar">
+          <h2 class="script-window-title">
+            <span class="project-name-accent">{selectedProject?.name || ""}{headerDirty ? " *" : ""}</span>
+            <span class="script-window-topbar-tag">Scene Script</span>
+          </h2>
+          <div class="script-window-topbar-right">
+            {#if autoSaving || autoSaveStatus}
+              <span
+                class={`autosave-status ${autoSaving ? "saving" : ""} ${autoSaveStatus.includes("failed") ? "error" : ""}`}
+                aria-live="polite"
+              >
+                {autoSaveStatus}
+              </span>
+            {/if}
+            {#if scriptMergeError}
+              <span class="error script-window-merge-error">{scriptMergeError}</span>
+            {/if}
+            <button
+              type="button"
+              class="ghost panel-save"
+              on:click={mergeScriptEditor}
+              disabled={!selectedProject}
+              title="Merge the script editor back into the main window"
+            >
+              Merge
+            </button>
+            {#if isSessionOwner}
+              <button
+                type="button"
+                class="ghost panel-save"
+                on:click={handlePrimarySaveClick}
+                disabled={!selectedProject || projectSaving || projectExporting}
+                title={saveButtonActsAsSaveAs ? "Save As" : "Save"}
+              >
+                {saveButtonActsAsSaveAs ? "Save As" : "Save"}
+              </button>
+            {:else if selectedProject}
+              <button
+                type="button"
+                class="ghost panel-save"
+                on:click={handleRemoteSaveClick}
+                disabled={!selectedProject || projectSaving || projectExporting}
+                title={remoteSaveActsAsExport ? "Export a local copy" : "Save changes back to the server"}
+              >
+                {remoteSaveActsAsExport ? "Export" : "Save Remote"}
+              </button>
+            {/if}
+          </div>
+        </div>
+      {:else}
       <div class="sceneflow-controls-panel">
         <header class="panel-title">
           <h2>
@@ -16405,7 +16661,11 @@ Sentence:
         {/if}
         </div>
       </div>
-      {#if !selectedProject}
+      {/if}
+      {#if isScriptWindow}
+        <!-- No SceneFlow canvas in the detached script window (§3.3). The graph data still
+             loads in this window's app instance; only rendering is omitted. -->
+      {:else if !selectedProject}
         <p class="muted">Select a project to view the SceneFlow graph.</p>
       {:else if sceneFlow}
         <div
@@ -18148,7 +18408,7 @@ Sentence:
       {:else}
         <p class="muted">No SceneFlow data loaded yet.</p>
       {/if}
-      {#if selectedProject}
+      {#if selectedProject && scriptAreaVisible}
         <div class="scenescript" bind:this={scenescriptEl}>
           <div class="script-sticky-header">
           {#if siaPanelOpen && previewCapableAgents.length > 0}
@@ -18274,6 +18534,22 @@ Sentence:
                 </svg>
               {/if}
             </button>
+            {#if !isScriptWindow}
+              <button
+                type="button"
+                class="panel-save script-detach-toggle"
+                on:click={detachScriptEditor}
+                disabled={!canDetachScript}
+                title={runtimeState !== "stopped"
+                  ? "Stop the project to detach the script editor"
+                  : "Open the script editor in its own window"}
+                aria-label="Detach the script editor into its own window"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+              </button>
+            {/if}
             <button
               type="button"
               class="panel-save script-help-toggle"
@@ -18667,8 +18943,17 @@ Sentence:
             </details>
           {/if}
         </div>
+      {:else if selectedProject && scriptDetached}
+        <!-- The script area moved to the detached window; script DATA still loads here for the
+             blocks panel's SCENES list (§2.1). -->
+        <div class="script-detached-placeholder">
+          <span class="muted">The scene script is being edited in its own window.</span>
+          <button type="button" class="ghost" on:click={focusDetachedScriptWindow}>
+            Show window
+          </button>
+        </div>
       {/if}
-      {#if sceneFlowError || runtimeError || edgeCreateMode || sceneFlowLoading}
+      {#if !isScriptWindow && (sceneFlowError || runtimeError || edgeCreateMode || sceneFlowLoading)}
         <div class="sceneflow-status">
           <div class="sceneflow-status-left">
             {#if sceneFlowError}

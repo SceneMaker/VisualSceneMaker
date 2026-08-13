@@ -2581,6 +2581,66 @@ a.export-link {
   margin-top: 0.75rem;
 }
 
+/* Detached script window's minimal top row (doc/scenescript-separate-window.md §3.3) — same
+   sticky treatment and tones as .sceneflow-controls-panel, which it replaces in that window. */
+.script-window-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: #e7e1d8;
+  border: 1px dashed var(--stroke);
+  border-bottom: 1px solid #c0b8ae;
+  box-shadow: 0 3px 8px rgba(28, 27, 21, 0.10);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+}
+
+.script-window-title {
+  margin: 0;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.script-window-topbar-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #6b675f);
+}
+
+.script-window-topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.script-window-merge-error {
+  font-size: 0.8rem;
+  max-width: 26rem;
+}
+
+/* Shown in the main window while the script area lives in the detached window. */
+.script-detached-placeholder {
+  background: #e7e1d8;
+  border: 1px dashed var(--stroke);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* M13i: groups the SIA panel + script toolbar as one block above the script editor. Was
    position:sticky with a bind:clientHeight-driven calc() height on .script-editor, but that
    combination caused a severe performance issue (reported 2026-07-20 — the page became
