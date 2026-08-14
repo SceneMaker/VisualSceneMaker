@@ -1,737 +1,711 @@
 {
-    "snapshotVersion": "1.1",
-    "generatedAt": "2026-08-13T18:25:05+02:00",
-    "source": "/Users/gebhard/Code/Repo/VisualSceneMaker/doc/DesignPatterns",
-    "project": {
-        "name": "DesignPatterns",
-        "androidProject": false,
-        "plugins": [
-            {
-                "name": "TimerExecutor",
-                "className": "de.dfki.vsm.xtension.timer.TimerExecutor",
-                "type": "device",
-                "load": true
-            }
-        ],
-        "agents": [
-            {
-                "name": "timer",
-                "device": "TimerExecutor",
-                "features": [
-                    
-                ]
-            }
-        ]
-    },
-    "script": {
-        "scenes": [
-            {
-                "name": "Welcome",
-                "languages": [
-                    "de"
-                ],
-                "speakers": [
-                    "Anne"
-                ],
-                "turnCount": 1,
-                "wordCount": 5,
-                "parameters": [
-                    
-                ],
-                "referencedAgents": [
-                    
-                ],
-                "inlineCommands": [
-                    
-                ]
-            }
-        ],
-        "sections": [
-            
-        ]
-    },
-    "flow": {
-        "rootId": "SceneFlow",
-        "startNodeIds": [
-            "S3",
-            "S5",
-            "N3",
-            "N7",
-            "N41",
-            "N9",
-            "N20",
-            "N31",
-            "N23",
-            "N12",
-            "N33",
-            "N44",
-            "N46",
-            "N26",
-            "N19"
-        ],
-        "variables": [
-            {
-                "name": "event",
-                "type": "Event(*, 10)",
-                "scope": "global",
-                "ownerNodeId": "SceneFlow"
-            },
-            {
-                "name": "state",
-                "type": "Bool",
-                "scope": "global",
-                "ownerNodeId": "SceneFlow"
-            },
-            {
-                "name": "timeout",
-                "type": "Int",
-                "scope": "global",
-                "ownerNodeId": "SceneFlow"
-            },
-            {
-                "name": "cnt",
-                "type": "Int",
-                "scope": "global",
-                "ownerNodeId": "SceneFlow"
-            },
-            {
-                "name": "time",
-                "type": "Int",
-                "scope": "global",
-                "ownerNodeId": "SceneFlow"
-            }
-        ],
-        "allowedEdgeTypes": [
-            "EEDGE",
-            "CEDGE",
-            "PEDGE",
-            "TEDGE",
-            "FEDGE",
-            "IEDGE"
-        ],
-        "nodes": [
-            {
-                "id": "N1",
-                "name": "React",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N3",
-                "name": "Proceed randomly",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N4",
-                "name": "Option 1",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N5",
-                "name": "Option 2",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N6",
-                "name": "Option 3",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N7",
-                "name": "OKAY: react realized with a time loop",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N8",
-                "name": "React",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N9",
-                "name": "Lauch separate states parallel",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N10",
-                "name": "Action 1",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N11",
-                "name": "Action 2",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N12",
-                "name": "If then else",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N13",
-                "name": "Case1",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N14",
-                "name": "Case2",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N15",
-                "name": "Case3",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N16",
-                "name": "Case2",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N17",
-                "name": "Case1",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N18",
-                "name": "Case3",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N19",
-                "name": "If, then or else within a timeframe",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N20",
-                "name": "Wait a bit; absolute time",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N21",
-                "name": "After waiting, do something",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N22",
-                "name": "After waiting do something",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N23",
-                "name": "Wait a bit; variable time",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N24",
-                "name": "Action 3",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N26",
-                "name": "State in which actions are executed",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N31",
-                "name": "First",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N32",
-                "name": "Second",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N33",
-                "name": "First",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N36",
-                "name": "BAD: react directly if a variable changed",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N37",
-                "name": "React",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N41",
-                "name": "Node N41",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N42",
-                "name": "Node N42",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N43",
-                "name": "Case 1",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N44",
-                "name": "if then else, wait 200ms, check again",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N45",
-                "name": "Case 2",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N46",
-                "name": "GOOD: Minimal flow to react for a variable change",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N47",
-                "name": "React",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "S3",
-                "name": "State that groups states that are connected",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": true,
-                "isHistoryNode": false,
-                "startNodeIds": [
-                    "N28"
-                ],
-                "commandCount": 0
-            },
-            {
-                "id": "N27",
-                "name": "History",
-                "parentSuperNodeId": "S3",
-                "isSuperNode": false,
-                "isHistoryNode": true,
-                "commandCount": 0
-            },
-            {
-                "id": "N28",
-                "name": "Prepare",
-                "parentSuperNodeId": "S3",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N29",
-                "name": "Execute",
-                "parentSuperNodeId": "S3",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N30",
-                "name": "End",
-                "parentSuperNodeId": "S3",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "S4",
-                "name": "Second",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": true,
-                "isHistoryNode": false,
-                "startNodeIds": [
-                    "N39"
-                ],
-                "commandCount": 0
-            },
-            {
-                "id": "N35",
-                "name": "History",
-                "parentSuperNodeId": "S4",
-                "isSuperNode": false,
-                "isHistoryNode": true,
-                "commandCount": 0
-            },
-            {
-                "id": "N38",
-                "name": "Execute",
-                "parentSuperNodeId": "S4",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N39",
-                "name": "Prepare",
-                "parentSuperNodeId": "S4",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "N40",
-                "name": "End",
-                "parentSuperNodeId": "S4",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            },
-            {
-                "id": "S5",
-                "name": "GOOD: Interrupt and react immediately",
-                "parentSuperNodeId": "SceneFlow",
-                "isSuperNode": true,
-                "isHistoryNode": false,
-                "startNodeIds": [
-                    "N49"
-                ],
-                "commandCount": 0
-            },
-            {
-                "id": "N48",
-                "name": "History",
-                "parentSuperNodeId": "S5",
-                "isSuperNode": false,
-                "isHistoryNode": true,
-                "commandCount": 0
-            },
-            {
-                "id": "N49",
-                "name": "Node N49",
-                "parentSuperNodeId": "S5",
-                "isSuperNode": false,
-                "isHistoryNode": false,
-                "commandCount": 0
-            }
-        ],
-        "edges": [
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N1",
-                "targetNodeId": "S5"
-            },
-            {
-                "type": "PEDGE",
-                "sourceNodeId": "N3",
-                "targetNodeId": "N4",
-                "probability": 33
-            },
-            {
-                "type": "PEDGE",
-                "sourceNodeId": "N3",
-                "targetNodeId": "N5",
-                "probability": 33
-            },
-            {
-                "type": "PEDGE",
-                "sourceNodeId": "N3",
-                "targetNodeId": "N6",
-                "probability": 33
-            },
-            {
-                "type": "PEDGE",
-                "sourceNodeId": "N3",
-                "targetNodeId": "N3",
-                "probability": 1
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N7",
-                "targetNodeId": "N8",
-                "conditionText": "state"
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N7",
-                "targetNodeId": "N7",
-                "timeoutMs": 1000
-            },
-            {
-                "type": "FEDGE",
-                "sourceNodeId": "N9",
-                "targetNodeId": "N10"
-            },
-            {
-                "type": "FEDGE",
-                "sourceNodeId": "N9",
-                "targetNodeId": "N11"
-            },
-            {
-                "type": "FEDGE",
-                "sourceNodeId": "N9",
-                "targetNodeId": "N24"
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N12",
-                "targetNodeId": "N15"
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N12",
-                "targetNodeId": "N13",
-                "conditionText": "cnt == 1"
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N12",
-                "targetNodeId": "N14",
-                "conditionText": "cnt == 2"
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N19",
-                "targetNodeId": "N17",
-                "conditionText": "cnt == 10"
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N19",
-                "targetNodeId": "N16",
-                "conditionText": "cnt == 3"
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N19",
-                "targetNodeId": "N18",
-                "timeoutMs": 1000
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N20",
-                "targetNodeId": "N21",
-                "timeoutMs": 1000
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N21",
-                "targetNodeId": "N20"
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N22",
-                "targetNodeId": "N23"
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N23",
-                "targetNodeId": "N22",
-                "timeoutMs": 1000
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N31",
-                "targetNodeId": "N32"
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N33",
-                "targetNodeId": "S4"
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N36",
-                "targetNodeId": "N36"
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N36",
-                "targetNodeId": "N37",
-                "conditionText": "state"
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N41",
-                "targetNodeId": "N42",
-                "timeoutMs": 200
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N42",
-                "targetNodeId": "N41"
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N44",
-                "targetNodeId": "N43",
-                "conditionText": "cnt == 10"
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N44",
-                "targetNodeId": "N45",
-                "conditionText": "cnt == 2"
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N44",
-                "targetNodeId": "N44",
-                "timeoutMs": 200
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N46",
-                "targetNodeId": "N46",
-                "timeoutMs": 1000
-            },
-            {
-                "type": "IEDGE",
-                "sourceNodeId": "N46",
-                "targetNodeId": "N47",
-                "conditionText": "event == \"OkayButtonPressed\""
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N47",
-                "targetNodeId": "N46"
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N28",
-                "targetNodeId": "N29"
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N29",
-                "targetNodeId": "N30"
-            },
-            {
-                "type": "CEDGE",
-                "sourceNodeId": "N38",
-                "targetNodeId": "N40",
-                "conditionText": "state"
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N38",
-                "targetNodeId": "N38",
-                "timeoutMs": 1000
-            },
-            {
-                "type": "EEDGE",
-                "sourceNodeId": "N39",
-                "targetNodeId": "N38"
-            },
-            {
-                "type": "IEDGE",
-                "sourceNodeId": "S5",
-                "targetNodeId": "N1",
-                "conditionText": "event == \"OkayButtonPressed\""
-            },
-            {
-                "type": "TEDGE",
-                "sourceNodeId": "N49",
-                "targetNodeId": "N49",
-                "timeoutMs": 1000
-            }
-        ]
-    }
+  "generatedAt": "2026-08-14T22:04:26+02:00",
+  "project": {
+    "androidProject": false,
+    "plugins": [{
+      "load": true,
+      "name": "TimerExecutor",
+      "className": "de.dfki.vsm.xtension.timer.TimerExecutor",
+      "type": "device"
+    }],
+    "name": "DesignPatterns",
+    "agents": [{
+      "features": [],
+      "name": "timer",
+      "device": "TimerExecutor"
+    }]
+  },
+  "snapshotVersion": "1.1",
+  "source": "/Users/gebhard/Code/Repo/VisualSceneMaker/doc/DesignPatterns",
+  "script": {
+    "scenes": [{
+      "inlineCommands": [],
+      "languages": ["de"],
+      "wordCount": 5,
+      "speakers": ["Anne"],
+      "name": "Welcome",
+      "turnCount": 1,
+      "referencedAgents": [],
+      "parameters": []
+    }],
+    "sections": []
+  },
+  "flow": {
+    "startNodeIds": [
+      "N12",
+      "N19",
+      "N20",
+      "N23",
+      "N26",
+      "N3",
+      "N31",
+      "N33",
+      "N41",
+      "N44",
+      "N46",
+      "N7",
+      "N9",
+      "S3",
+      "S5"
+    ],
+    "variables": [
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "event",
+        "type": "Event(*, 10)"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "state",
+        "type": "Bool"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "timeout",
+        "type": "Int"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "cnt",
+        "type": "Int"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "time",
+        "type": "Int"
+      }
+    ],
+    "nodes": [
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "React",
+        "commandCount": 0,
+        "id": "N1",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Proceed randomly",
+        "commandCount": 0,
+        "id": "N3",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Option 1",
+        "commandCount": 0,
+        "id": "N4",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Option 2",
+        "commandCount": 0,
+        "id": "N5",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Option 3",
+        "commandCount": 0,
+        "id": "N6",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "OKAY: react realized with a time loop",
+        "commandCount": 0,
+        "id": "N7",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "React",
+        "commandCount": 0,
+        "id": "N8",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Lauch separate states parallel",
+        "commandCount": 0,
+        "id": "N9",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Action 1",
+        "commandCount": 0,
+        "id": "N10",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Action 2",
+        "commandCount": 0,
+        "id": "N11",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "If then else",
+        "commandCount": 0,
+        "id": "N12",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Case1",
+        "commandCount": 0,
+        "id": "N13",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Case2",
+        "commandCount": 0,
+        "id": "N14",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Case3",
+        "commandCount": 0,
+        "id": "N15",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Case2",
+        "commandCount": 0,
+        "id": "N16",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Case1",
+        "commandCount": 0,
+        "id": "N17",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Case3",
+        "commandCount": 0,
+        "id": "N18",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "If, then or else within a timeframe",
+        "commandCount": 0,
+        "id": "N19",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Wait a bit; absolute time",
+        "commandCount": 0,
+        "id": "N20",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "After waiting, do something",
+        "commandCount": 0,
+        "id": "N21",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "After waiting do something",
+        "commandCount": 0,
+        "id": "N22",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Wait a bit; variable time",
+        "commandCount": 0,
+        "id": "N23",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Action 3",
+        "commandCount": 0,
+        "id": "N24",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "State in which actions are executed",
+        "commandCount": 2,
+        "id": "N26",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "First",
+        "commandCount": 0,
+        "id": "N31",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Second",
+        "commandCount": 0,
+        "id": "N32",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "First",
+        "commandCount": 0,
+        "id": "N33",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "BAD: react directly if a variable changed",
+        "commandCount": 0,
+        "id": "N36",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "React",
+        "commandCount": 0,
+        "id": "N37",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Node N41",
+        "commandCount": 1,
+        "id": "N41",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Node N42",
+        "commandCount": 2,
+        "id": "N42",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Case 1",
+        "commandCount": 0,
+        "id": "N43",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "if then else, wait 200ms, check again",
+        "commandCount": 0,
+        "id": "N44",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Case 2",
+        "commandCount": 0,
+        "id": "N45",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "GOOD: Minimal flow to react for a variable change",
+        "commandCount": 0,
+        "id": "N46",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "React",
+        "commandCount": 0,
+        "id": "N47",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": true,
+        "startNodeIds": ["N28"],
+        "isHistoryNode": false,
+        "name": "State that groups states that are connected",
+        "commandCount": 0,
+        "id": "S3",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": true,
+        "name": "History",
+        "commandCount": 0,
+        "id": "N27",
+        "parentSuperNodeId": "S3"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Prepare",
+        "commandCount": 0,
+        "id": "N28",
+        "parentSuperNodeId": "S3"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Execute",
+        "commandCount": 0,
+        "id": "N29",
+        "parentSuperNodeId": "S3"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "End",
+        "commandCount": 0,
+        "id": "N30",
+        "parentSuperNodeId": "S3"
+      },
+      {
+        "isSuperNode": true,
+        "startNodeIds": ["N39"],
+        "isHistoryNode": false,
+        "name": "Second",
+        "commandCount": 0,
+        "id": "S4",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": true,
+        "name": "History",
+        "commandCount": 0,
+        "id": "N35",
+        "parentSuperNodeId": "S4"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Execute",
+        "commandCount": 0,
+        "id": "N38",
+        "parentSuperNodeId": "S4"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Prepare",
+        "commandCount": 0,
+        "id": "N39",
+        "parentSuperNodeId": "S4"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "End",
+        "commandCount": 0,
+        "id": "N40",
+        "parentSuperNodeId": "S4"
+      },
+      {
+        "isSuperNode": true,
+        "startNodeIds": ["N49"],
+        "isHistoryNode": false,
+        "name": "GOOD: Interrupt and react immediately",
+        "commandCount": 0,
+        "id": "S5",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": true,
+        "name": "History",
+        "commandCount": 0,
+        "id": "N48",
+        "parentSuperNodeId": "S5"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Node N49",
+        "commandCount": 0,
+        "id": "N49",
+        "parentSuperNodeId": "S5"
+      }
+    ],
+    "allowedEdgeTypes": [
+      "EEDGE",
+      "CEDGE",
+      "PEDGE",
+      "TEDGE",
+      "FEDGE",
+      "IEDGE"
+    ],
+    "rootId": "SceneFlow",
+    "edges": [
+      {
+        "sourceNodeId": "N1",
+        "type": "EEDGE",
+        "targetNodeId": "S5"
+      },
+      {
+        "probability": 33,
+        "sourceNodeId": "N3",
+        "type": "PEDGE",
+        "targetNodeId": "N4"
+      },
+      {
+        "probability": 33,
+        "sourceNodeId": "N3",
+        "type": "PEDGE",
+        "targetNodeId": "N5"
+      },
+      {
+        "probability": 33,
+        "sourceNodeId": "N3",
+        "type": "PEDGE",
+        "targetNodeId": "N6"
+      },
+      {
+        "probability": 1,
+        "sourceNodeId": "N3",
+        "type": "PEDGE",
+        "targetNodeId": "N3"
+      },
+      {
+        "sourceNodeId": "N7",
+        "conditionText": "state",
+        "type": "CEDGE",
+        "targetNodeId": "N8"
+      },
+      {
+        "timeoutMs": 1000,
+        "sourceNodeId": "N7",
+        "type": "TEDGE",
+        "targetNodeId": "N7"
+      },
+      {
+        "sourceNodeId": "N9",
+        "type": "FEDGE",
+        "targetNodeId": "N10"
+      },
+      {
+        "sourceNodeId": "N9",
+        "type": "FEDGE",
+        "targetNodeId": "N11"
+      },
+      {
+        "sourceNodeId": "N9",
+        "type": "FEDGE",
+        "targetNodeId": "N24"
+      },
+      {
+        "sourceNodeId": "N12",
+        "conditionText": "cnt == 1",
+        "type": "CEDGE",
+        "targetNodeId": "N13"
+      },
+      {
+        "sourceNodeId": "N12",
+        "conditionText": "cnt == 2",
+        "type": "CEDGE",
+        "targetNodeId": "N14"
+      },
+      {
+        "sourceNodeId": "N12",
+        "type": "EEDGE",
+        "targetNodeId": "N15"
+      },
+      {
+        "sourceNodeId": "N19",
+        "conditionText": "cnt == 10",
+        "type": "CEDGE",
+        "targetNodeId": "N17"
+      },
+      {
+        "sourceNodeId": "N19",
+        "conditionText": "cnt == 3",
+        "type": "CEDGE",
+        "targetNodeId": "N16"
+      },
+      {
+        "timeoutMs": 1000,
+        "sourceNodeId": "N19",
+        "type": "TEDGE",
+        "targetNodeId": "N18"
+      },
+      {
+        "timeoutMs": 1000,
+        "sourceNodeId": "N20",
+        "type": "TEDGE",
+        "targetNodeId": "N21"
+      },
+      {
+        "sourceNodeId": "N21",
+        "type": "EEDGE",
+        "targetNodeId": "N20"
+      },
+      {
+        "sourceNodeId": "N22",
+        "type": "EEDGE",
+        "targetNodeId": "N23"
+      },
+      {
+        "timeoutMs": 1000,
+        "sourceNodeId": "N23",
+        "type": "TEDGE",
+        "targetNodeId": "N22"
+      },
+      {
+        "sourceNodeId": "N31",
+        "type": "EEDGE",
+        "targetNodeId": "N32"
+      },
+      {
+        "sourceNodeId": "N33",
+        "type": "EEDGE",
+        "targetNodeId": "S4"
+      },
+      {
+        "sourceNodeId": "N36",
+        "conditionText": "state",
+        "type": "CEDGE",
+        "targetNodeId": "N37"
+      },
+      {
+        "sourceNodeId": "N36",
+        "type": "EEDGE",
+        "targetNodeId": "N36"
+      },
+      {
+        "timeoutMs": 200,
+        "sourceNodeId": "N41",
+        "type": "TEDGE",
+        "targetNodeId": "N42"
+      },
+      {
+        "sourceNodeId": "N42",
+        "type": "EEDGE",
+        "targetNodeId": "N41"
+      },
+      {
+        "sourceNodeId": "N44",
+        "conditionText": "cnt == 10",
+        "type": "CEDGE",
+        "targetNodeId": "N43"
+      },
+      {
+        "sourceNodeId": "N44",
+        "conditionText": "cnt == 2",
+        "type": "CEDGE",
+        "targetNodeId": "N45"
+      },
+      {
+        "timeoutMs": 200,
+        "sourceNodeId": "N44",
+        "type": "TEDGE",
+        "targetNodeId": "N44"
+      },
+      {
+        "sourceNodeId": "N46",
+        "conditionText": "event == \"OkayButtonPressed\"",
+        "type": "IEDGE",
+        "targetNodeId": "N47"
+      },
+      {
+        "timeoutMs": 1000,
+        "sourceNodeId": "N46",
+        "type": "TEDGE",
+        "targetNodeId": "N46"
+      },
+      {
+        "sourceNodeId": "N47",
+        "type": "EEDGE",
+        "targetNodeId": "N46"
+      },
+      {
+        "sourceNodeId": "N28",
+        "type": "EEDGE",
+        "targetNodeId": "N29"
+      },
+      {
+        "sourceNodeId": "N29",
+        "type": "EEDGE",
+        "targetNodeId": "N30"
+      },
+      {
+        "sourceNodeId": "N38",
+        "conditionText": "state",
+        "type": "CEDGE",
+        "targetNodeId": "N40"
+      },
+      {
+        "timeoutMs": 1000,
+        "sourceNodeId": "N38",
+        "type": "TEDGE",
+        "targetNodeId": "N38"
+      },
+      {
+        "sourceNodeId": "N39",
+        "type": "EEDGE",
+        "targetNodeId": "N38"
+      },
+      {
+        "sourceNodeId": "S5",
+        "conditionText": "event == \"OkayButtonPressed\"",
+        "type": "IEDGE",
+        "targetNodeId": "N1"
+      },
+      {
+        "timeoutMs": 1000,
+        "sourceNodeId": "N49",
+        "type": "TEDGE",
+        "targetNodeId": "N49"
+      }
+    ]
+  }
 }

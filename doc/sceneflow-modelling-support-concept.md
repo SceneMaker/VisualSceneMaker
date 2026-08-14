@@ -260,14 +260,18 @@ the elements, the assistant **guides the author to build them** and *verifies* e
 
 Ordered roughly by dependency:
 
-1. **Live capability snapshot service.** Still a build-time artifact rather than a service: needs a
-   REST endpoint (`GET /api/v1/projects/{pid}/capabilities`) refreshed on edit, and the generator
-   moved out of inline Groovy in `build.gradle` into a class the server can call.
-   *Partly done 2026-08-13:* the **scene inventory** is now emitted as a top-level `script` section
-   (scene group name, language variants, speakers, turn and word counts, parameters, referenced
-   agents, inline commands), snapshot version `1.1`. Still missing: **per-agent plugin command
-   inventories and screens with their variable bindings**, both listed as intended in
-   `llm-supported-flow-generation.md` and never delivered.
+1. ~~**Live capability snapshot service.**~~ *(done 2026-08-14.)* `CapabilitySnapshotBuilder` in
+   `core-webserver` builds the snapshot from the loaded model, and `GET /api/v1/projects/{pid}/capabilities`
+   serves it in both server modes. It replaced 392 lines of inline Groovy in `build.gradle`, which
+   re-parsed the project XML; `generateCapabilitySnapshot` now calls the same class, so a build-time
+   snapshot and a served one cannot drift. The snapshot carries the **scene inventory** as a
+   top-level `script` section (scene group name, language variants, speakers, turn and word counts,
+   parameters, referenced agents, inline commands) at version `1.1`.
+
+   Still missing from the snapshot: **per-agent plugin command inventories and screens with their
+   variable bindings**, both listed as intended in `llm-supported-flow-generation.md` and never
+   delivered. Note also that node positions are absent, which is why a generated patch cannot avoid
+   overlapping existing nodes (see `patterns/1.1-fixed-sequence.md` §6).
 2. **Move/expose the IR pipeline.** `de.dfki.vsm.sceneflow.ir` lives in the root `src/` module
    with CLI entry points only. It must become reachable from the web server and get REST/WS routes
    for: situation → candidates, candidate → preview explanation, candidate → apply.
@@ -335,8 +339,16 @@ cheap to fix once someone is in the relevant file. Semantics findings live separ
 - **The capability snapshot fixture had never validated against its own schema.** The schema pinned
   variable `type` to a five-value enum while the generator emits parameterised Event types such as
   `Event(*, 10)`. Nothing ever ran a schema validator over it. Fixed 2026-08-13 by relaxing the type
-  to a pattern and adding a key-parity check inside `generateCapabilitySnapshot`, which now fails
+  to a pattern and adding a key-parity check, which now runs inside `CapabilitySnapshotCli` and fails
   rather than emitting a snapshot the schema would reject.
+- **Every snapshot ever generated reported zero commands for every node.** The Groovy counted
+  `<Command>` elements, which the XML never contains: the real children are `PlayAction`, `PlayScene`
+  and `Assignment`. A consumer asking whether a node does anything always got no. Fixed by reading
+  the model, 2026-08-14.
+- **The authored order of start nodes is not recoverable from the model.** `SuperNode` holds them in
+  a `HashMap`, so the order in `project.xml` is lost on load. The Groovy generator appeared to
+  preserve it only because it read the XML text; a snapshot of a live project never could. Start node
+  ids are therefore sorted, which is the only deterministic option.
 - **`doc/DesignPatterns` contains a scene that cannot play.** Scene `Welcome` has speaker `Anne`,
   but the project declares only the `timer` agent, so the speaker resolves to nothing. It is
   harmless today because no node plays that scene, and it is a useful test case for the resource

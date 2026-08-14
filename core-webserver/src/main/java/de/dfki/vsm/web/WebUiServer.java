@@ -3073,6 +3073,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/preferences", this::handlePreferences);
         mApp.get(API_PREFIX + "/devices", this::handleDevices);
         mApp.get(API_PREFIX + "/projects/{pid}/config", this::handleEditorConfig);
+        mApp.get(API_PREFIX + "/projects/{pid}/capabilities", this::handleCapabilitySnapshot);
         mApp.get(API_PREFIX + "/projects/{pid}/project-config", this::handleProjectConfig);
         mApp.get(API_PREFIX + "/projects/{pid}/project-config/keys", this::handleProjectConfigKeys);
         mApp.get(API_PREFIX + "/projects/{pid}/validate/vars", this::handleProjectVariableValidation);
@@ -5037,6 +5038,28 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         writeJson(ctx, response);
+    }
+
+    /**
+     * Describes what a project offers: its plugins and agents, the scenes its script declares, and
+     * the shape of its flow. This is the context an authoring assistant needs before it can propose
+     * a change, and the same document the SceneFlow IR pipeline validates generated flows against.
+     *
+     * <p>Read-only, so it is served in both server modes.
+     */
+    private void handleCapabilitySnapshot(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404).result("Project not found");
+            return;
+        }
+        try {
+            writeJson(ctx, CapabilitySnapshotBuilder.build(ref.runtimeProject, pid));
+        } catch (RuntimeException exc) {
+            sLogger.failure("Cannot build capability snapshot for " + pid + ": " + exc.getMessage());
+            ctx.status(500).result("Cannot build capability snapshot: " + exc.getMessage());
+        }
     }
 
     private void handleProjectConfig(Context ctx) {

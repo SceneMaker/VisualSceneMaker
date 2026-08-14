@@ -195,6 +195,8 @@ VisualSceneMaker/
 - `GET /api/v1/info` - Server info (includes `mode` field)
 - `GET /api/v1/projects` - List active projects
 - `GET /api/v1/projects/{pid}/sceneflow` - Get SceneFlow graph snapshot
+- `GET /api/v1/projects/{pid}/capabilities` - Capability snapshot: plugins, agents, scenes, flow shape
+  (built by `CapabilitySnapshotBuilder`; the contract is `doc/capability-snapshot.schema.json`)
 - `GET /api/v1/projects/{pid}/runtime` - Get runtime state
 
 **Editor-only endpoints** (FULL_EDITOR mode):
@@ -288,6 +290,11 @@ mLogger.failure("Error message");
 ### Web Server
 - `core/src/main/java/de/dfki/vsm/web/WebUiServer.java` - Unified Javalin server (FULL_EDITOR + RUNTIME_ONLY modes)
 - `core/src/main/java/de/dfki/vsm/web/SceneFlowSnapshotBuilder.java` - Shared snapshot JSON builder
+- `core-webserver/src/main/java/de/dfki/vsm/web/CapabilitySnapshotBuilder.java` - Capability snapshot
+  (what a project offers: plugins, agents, scenes, flow shape). Used by both the REST endpoint and
+  `./gradlew generateCapabilitySnapshot`, so build-time and served snapshots cannot drift. Build it
+  from a loaded project, or from a directory via `buildFromDirectory`, which uses
+  `parseForInformation` so that describing a project never launches its plugins.
 - `core/src/main/java/de/dfki/vsm/ui/protocol/UiEventBridge.java` - Domain → UI event translation
 
 ### Model Layer
