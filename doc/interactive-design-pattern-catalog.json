@@ -1,6 +1,6 @@
 {
-  "catalogVersion": "1.1",
-  "updatedAt": "2026-08-13",
+  "catalogVersion": "1.2",
+  "updatedAt": "2026-08-14",
   "purpose": "Scientific grounding and executable mapping for constrained activity modeling in SceneFlow generation.",
   "metaModel": {
     "name": "ConstrainedActivityModel",
@@ -73,8 +73,12 @@
         "entry": "the first step is marked as a start node",
         "completion": "the final step has no outgoing edge and therefore ends the sequence"
       },
+      "supportsMeta": {
+        "situation.shape": [
+          "sequence"
+        ]
+      },
       "runtimeSemantics": "The bare EEDGE chain delivers step-after-step ordering only because a step blocks. Playing a scene blocks the node until the scene has finished. A plugin action blocks only until execute() returns, so a fire-and-forget action overlaps the next step and needs a completion handshake instead. See doc/patterns/1.1-fixed-sequence.md section 2.",
-      "selection": "Not selected through supportsMeta. The template library matches step markers such as \"first\", \"then\" and \"finally\" in the situation text directly, because selectPattern currently keys off constrainedActivity.kind and cannot express a non-constrained-activity pattern. Generalising that selection axis is still open.",
       "scientificSources": [
         {
           "type": "paper",
@@ -236,7 +240,8 @@
           "url": "https://doi.org/10.1145/1357054.1357072",
           "relevance": "Demonstrates interruption costs (stress/pressure), guiding conservative reminder scheduling."
         }
-      ]
+      ],
+      "fallbackTo": "constrained_activity_base"
     },
     {
       "id": "mixed_initiative_prompting",
@@ -287,7 +292,8 @@
           "url": "https://doi.org/10.1109/5254.796083",
           "relevance": "Provides taxonomy and evaluation framing for mixed-initiative decision points."
         }
-      ]
+      ],
+      "fallbackTo": "constrained_activity_base"
     },
     {
       "id": "socially_assistive_engagement_while_waiting",
@@ -340,7 +346,8 @@
           "url": "https://doi.org/10.1186/1743-0003-4-5",
           "relevance": "Evidence that socially assistive, non-contact interventions can support adherence and engagement."
         }
-      ]
+      ],
+      "fallbackTo": "constrained_activity_base"
     }
   ],
   "integrationHints": {
@@ -357,5 +364,6 @@
       "no illegal cross-supernode node-edge target",
       "constraint variable exists or is created according to output mode"
     ]
-  }
+  },
+  "selectionContract": "Pattern selection matches supportsMeta against the meta a template resolved. Only array values are criteria; a scalar documents where a value comes from and is never matched. A criterion whose key the template did not resolve is ignored, a resolved value outside the declared list rejects the pattern, and a pattern must match at least one criterion. Implemented patterns win over planned ones, then higher specificity, then the order in this file. When only planned patterns match, fallbackTo decides where to land."
 }

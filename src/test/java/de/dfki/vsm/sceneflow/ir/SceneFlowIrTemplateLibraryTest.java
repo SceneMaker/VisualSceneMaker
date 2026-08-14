@@ -360,4 +360,121 @@ class SceneFlowIrTemplateLibraryTest {
             assertTrue(all.contains(marker), "Hints must mention " + marker + ": " + all);
         }
     }
+
+    // ---- catalogue-driven selection ----
+
+    private Path catalogWith(final String patternLibraryEntries) throws Exception {
+        Path catalog = Files.createTempFile("pattern-catalog", ".json");
+        Files.writeString(catalog, "{\"catalogVersion\":\"test\",\"patternLibrary\":["
+                + patternLibraryEntries + "]}");
+        return catalog;
+    }
+
+    private static String entry(final String id, final String status, final String supportsMeta,
+                                final String fallbackTo) {
+        return "{\"id\":\"" + id + "\",\"status\":\"" + status + "\""
+                + (supportsMeta == null ? "" : ",\"supportsMeta\":" + supportsMeta)
+                + (fallbackTo == null ? "" : ",\"fallbackTo\":\"" + fallbackTo + "\"")
+                + "}";
+    }
+
+    /** The pattern constraining more of what the template resolved is the better description of it. */
+    @Test
+    void moreSpecificPatternWinsWhenBothMatch() throws Exception {
+        Path catalog = catalogWith(String.join(",",
+                entry("broad", "implemented", "{\"a\":[\"1\"]}", null),
+                entry("specific", "implemented", "{\"a\":[\"1\"],\"b\":[\"2\"]}", null)));
+
+        var selection = new SceneFlowIrTemplateLibrary(catalog)
+                .selectPattern(java.util.Map.of("a", "1", "b", "2"));
+        assertEquals("specific", selection.patternId());
+    }
+
+    /** A criterion the template did not resolve says nothing, so it must not disqualify a pattern. */
+    @Test
+    void criterionForAnUnresolvedKeyIsIgnored() throws Exception {
+        Path catalog = catalogWith(entry("p", "implemented", "{\"a\":[\"1\"],\"unknown\":[\"x\"]}", null));
+
+        var selection = new SceneFlowIrTemplateLibrary(catalog)
+                .selectPattern(java.util.Map.of("a", "1"));
+        assertEquals("p", selection.patternId());
+    }
+
+    /** A resolved value outside the declared list is a genuine mismatch, unlike an absent key. */
+    @Test
+    void resolvedValueOutsideTheDeclaredListRejectsThePattern() throws Exception {
+        Path catalog = catalogWith(entry("p", "implemented", "{\"a\":[\"1\"]}", null));
+
+        var selection = new SceneFlowIrTemplateLibrary(catalog)
+                .selectPattern(java.util.Map.of("a", "999"));
+        assertEquals("", selection.patternId(), selection.reason());
+    }
+
+    /** Without this, any pattern would match anything by simply constraining an unrelated axis. */
+    @Test
+    void patternMatchingNoCriterionAtAllIsNotSelected() throws Exception {
+        Path catalog = catalogWith(entry("unrelated", "implemented", "{\"other\":[\"x\"]}", null));
+
+        var selection = new SceneFlowIrTemplateLibrary(catalog)
+                .selectPattern(java.util.Map.of("a", "1"));
+        assertEquals("", selection.patternId(), selection.reason());
+    }
+
+    @Test
+    void implementedPatternBeatsAMoreSpecificPlannedOne() throws Exception {
+        Path catalog = catalogWith(String.join(",",
+                entry("built", "implemented", "{\"a\":[\"1\"]}", null),
+                entry("notBuiltYet", "planned", "{\"a\":[\"1\"],\"b\":[\"2\"]}", null)));
+
+        var selection = new SceneFlowIrTemplateLibrary(catalog)
+                .selectPattern(java.util.Map.of("a", "1", "b", "2"));
+        assertEquals("built", selection.patternId());
+    }
+
+    /** Which implemented pattern to land on is the catalogue's decision, not the code's. */
+    @Test
+    void plannedOnlyMatchFollowsTheCatalogueDeclaredFallback() throws Exception {
+        Path catalog = catalogWith(String.join(",",
+                entry("base", "implemented", "{\"a\":[\"other\"]}", null),
+                entry("notBuiltYet", "planned", "{\"a\":[\"1\"]}", "base")));
+
+        var selection = new SceneFlowIrTemplateLibrary(catalog)
+                .selectPattern(java.util.Map.of("a", "1"));
+        assertEquals("base", selection.patternId());
+        assertTrue(selection.reason().contains("planned"), selection.reason());
+    }
+
+    @Test
+    void plannedMatchWithoutAFallbackIsReportedAsItself() throws Exception {
+        Path catalog = catalogWith(entry("notBuiltYet", "planned", "{\"a\":[\"1\"]}", null));
+
+        var selection = new SceneFlowIrTemplateLibrary(catalog)
+                .selectPattern(java.util.Map.of("a", "1"));
+        assertEquals("notBuiltYet", selection.patternId());
+        assertTrue(selection.reason().contains("no implemented fallback"), selection.reason());
+    }
+
+    /** A scalar documents where a value comes from; only arrays are things to match against. */
+    @Test
+    void scalarSupportsMetaValuesAreNotTreatedAsCriteria() throws Exception {
+        Path catalog = catalogWith(
+                entry("p", "implemented", "{\"a\":[\"1\"],\"note\":\"parsed_from_text_or_default\"}", null));
+
+        var selection = new SceneFlowIrTemplateLibrary(catalog)
+                .selectPattern(java.util.Map.of("a", "1", "note", "anything"));
+        assertEquals("p", selection.patternId(),
+                "A scalar must neither constrain nor reject: " + selection.reason());
+    }
+
+    @Test
+    void sequenceCandidateIsAttributedToTheSequenceCatalogueEntry() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
+                "first greet, then explain, then close", snapshot), "template-sequence");
+
+        assertEquals("sequence", sequence.getJSONObject("metadata")
+                .getJSONObject("interactiveDesignPattern").getString("selectedPatternId"),
+                "The sequence template must be attributed through the catalogue like every other");
+    }
 }

@@ -8,9 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -440,10 +442,21 @@ public final class SceneFlowIrTemplateLibrary {
                     + String.join(", ", scenesToAuthor) + ".");
         }
 
+        // Attributed through the same catalogue selection as every other template, so the pipeline
+        // report can name the pattern this realises and surface its scientific sources.
+        final PatternSelection selection = selectPattern(Map.of("situation.shape", "sequence"));
+
         return new JSONObject()
                 .put("irVersion", "1.0")
                 .put("mode", "patch")
                 .put("metadata", metadata("template-sequence", spec.situation())
+                        .put("interactiveDesignPattern", new JSONObject()
+                                .put("selectedPatternId", selection.patternId())
+                                .put("selectionReason", selection.reason())
+                                .put("resolvedMeta", new JSONObject()
+                                        .put("situation", new JSONObject().put("shape", "sequence"))
+                                        .put("sequence", new JSONObject()
+                                                .put("stepCount", spec.steps().size()))))
                         .put("stepCount", spec.steps().size())
                         .put("steps", new JSONArray(spec.steps().stream()
                                 .map(step -> new JSONObject()
@@ -545,7 +558,8 @@ public final class SceneFlowIrTemplateLibrary {
         final int intervalMs = extractPolicyIntervalMs(situation);
         final PromptResolution promptResolution = resolvePromptToMetaModel(situation);
         final ActivityType activityType = inferActivityType(promptResolution.activityKind());
-        final PatternSelection selection = selectPattern(promptResolution.activityKind());
+        final PatternSelection selection = selectPattern(
+                Map.of("constrainedActivity.kind", promptResolution.activityKind()));
         final String constraintVariable = resolveConstraintVariable(eventVar, snapshot);
         return new ConstrainedActivitySpec(
                 situation,
@@ -729,25 +743,86 @@ public final class SceneFlowIrTemplateLibrary {
         return new PromptResolution(activityKind, interruptibility, confidence, ambiguities);
     }
 
-    private PatternSelection selectPattern(final String activityKind) {
+    /**
+     * Chooses the catalogue pattern a candidate realises, matching declared criteria against the meta
+     * the template resolved.
+     *
+     * <p>Matching is per criterion. A key the template did not resolve is ignored, so a pattern that
+     * constrains an axis this template knows nothing about is still eligible. A key that was resolved
+     * to a value the pattern does not list rejects it outright. A pattern must match at least one
+     * criterion, which is what stops an unrelated pattern from matching vacuously.
+     *
+     * <p>Implemented patterns win over planned ones; among equals, the pattern that matched more
+     * criteria wins, then catalogue order. When only planned patterns match, the catalogue's own
+     * {@code fallbackTo} decides where to land, so no pattern id is hardcoded here.
+     */
+    // Package-private for tests: production only ever resolves one criterion today, so
+    // multi-criterion matching has no other seam to exercise it through.
+    PatternSelection selectPattern(final Map<String, String> resolvedMeta) {
+        final List<CatalogPattern> matches = new ArrayList<>();
+        final Map<String, Integer> specificity = new LinkedHashMap<>();
         for (CatalogPattern pattern : catalogPatterns) {
-            if (!pattern.implemented()) {
+            int matched = 0;
+            boolean rejected = false;
+            for (Map.Entry<String, List<String>> criterion : pattern.criteria().entrySet()) {
+                final String resolved = resolvedMeta.get(criterion.getKey());
+                if (resolved == null || resolved.isBlank()) {
+                    continue;
+                }
+                if (criterion.getValue().contains(resolved)) {
+                    matched++;
+                } else {
+                    rejected = true;
+                    break;
+                }
+            }
+            if (!rejected && matched > 0) {
+                matches.add(pattern);
+                specificity.put(pattern.id(), matched);
+            }
+        }
+        if (matches.isEmpty()) {
+            return new PatternSelection("", "no catalog pattern declares criteria matching " + resolvedMeta);
+        }
+
+        CatalogPattern best = null;
+        for (CatalogPattern candidate : matches) {
+            if (best == null) {
+                best = candidate;
                 continue;
             }
-            if (pattern.supportedKinds().contains(activityKind)) {
-                return new PatternSelection(
-                        pattern.id(),
-                        "selected from catalog via constrainedActivity.kind=" + activityKind);
+            final boolean betterStatus = candidate.implemented() && !best.implemented();
+            final boolean sameStatus = candidate.implemented() == best.implemented();
+            if (betterStatus || (sameStatus && specificity.get(candidate.id()) > specificity.get(best.id()))) {
+                best = candidate;
             }
+        }
+
+        if (best.implemented()) {
+            return new PatternSelection(best.id(),
+                    "selected from catalog on " + specificity.get(best.id()) + " matching criterion(s) of "
+                            + resolvedMeta);
+        }
+        final CatalogPattern fallback = patternById(best.fallbackTo());
+        if (fallback != null && fallback.implemented()) {
+            return new PatternSelection(fallback.id(),
+                    "closest match " + best.id() + " is planned rather than implemented, so the catalog's "
+                            + "declared fallback was used");
+        }
+        return new PatternSelection(best.id(),
+                "only a planned pattern matches and it declares no implemented fallback");
+    }
+
+    private CatalogPattern patternById(final String id) {
+        if (id == null || id.isBlank()) {
+            return null;
         }
         for (CatalogPattern pattern : catalogPatterns) {
-            if (pattern.implemented() && "constrained_activity_base".equals(pattern.id())) {
-                return new PatternSelection(
-                        pattern.id(),
-                        "fallback to base catalog pattern; no implemented match for constrainedActivity.kind=" + activityKind);
+            if (id.equals(pattern.id())) {
+                return pattern;
             }
         }
-        return new PatternSelection("constrained_activity_base", "hardcoded fallback; catalog base pattern unavailable");
+        return null;
     }
 
     private int extractPolicyIntervalMs(final String situation) {
@@ -864,21 +939,30 @@ public final class SceneFlowIrTemplateLibrary {
                             }
                             final boolean implemented = "implemented".equalsIgnoreCase(p.optString("status", ""));
                             final JSONObject supportsMeta = p.optJSONObject("supportsMeta");
-                            final List<String> kinds = new ArrayList<>();
+                            final Map<String, List<String>> criteria = new LinkedHashMap<>();
                             if (supportsMeta != null) {
-                                final Object rawKinds = supportsMeta.opt("constrainedActivity.kind");
-                                if (rawKinds instanceof JSONArray arr) {
-                                    for (int j = 0; j < arr.length(); j++) {
-                                        final String kind = arr.optString(j, "").trim();
-                                        if (!kind.isBlank()) {
-                                            kinds.add(kind);
+                                for (String key : supportsMeta.keySet()) {
+                                    // Only arrays are constraints. A scalar such as
+                                    // "parsed_from_text_or_default" documents where a value comes from
+                                    // and is not something to match against.
+                                    final Object raw = supportsMeta.opt(key);
+                                    if (!(raw instanceof JSONArray values)) {
+                                        continue;
+                                    }
+                                    final List<String> allowed = new ArrayList<>();
+                                    for (int j = 0; j < values.length(); j++) {
+                                        final String value = values.optString(j, "").trim();
+                                        if (!value.isBlank()) {
+                                            allowed.add(value);
                                         }
                                     }
-                                } else if (rawKinds instanceof String str && !str.isBlank()) {
-                                    kinds.add(str.trim());
+                                    if (!allowed.isEmpty()) {
+                                        criteria.put(key, allowed);
+                                    }
                                 }
                             }
-                            parsed.add(new CatalogPattern(id, implemented, kinds));
+                            parsed.add(new CatalogPattern(
+                                    id, implemented, criteria, p.optString("fallbackTo", "").trim()));
                         }
                         if (!parsed.isEmpty()) {
                             return parsed;
@@ -894,8 +978,10 @@ public final class SceneFlowIrTemplateLibrary {
 
     private List<CatalogPattern> fallbackCatalogPatterns() {
         return List.of(
-                new CatalogPattern("periodic_reminder_while_waiting", true, List.of("reminder")),
-                new CatalogPattern("constrained_activity_base", true, List.of("minimal_liveness"))
+                new CatalogPattern("periodic_reminder_while_waiting", true,
+                        Map.of("constrainedActivity.kind", List.of("reminder")), ""),
+                new CatalogPattern("constrained_activity_base", true,
+                        Map.of("constrainedActivity.kind", List.of("minimal_liveness")), "")
         );
     }
 
@@ -934,9 +1020,13 @@ public final class SceneFlowIrTemplateLibrary {
             List<String> ambiguities) {
     }
 
-    private record PatternSelection(String patternId, String reason) {
+    record PatternSelection(String patternId, String reason) {
     }
 
-    private record CatalogPattern(String id, boolean implemented, List<String> supportedKinds) {
+    private record CatalogPattern(
+            String id,
+            boolean implemented,
+            Map<String, List<String>> criteria,
+            String fallbackTo) {
     }
 }
