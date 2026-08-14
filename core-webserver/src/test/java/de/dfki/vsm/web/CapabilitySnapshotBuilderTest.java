@@ -122,6 +122,34 @@ class CapabilitySnapshotBuilderTest {
     }
 
     /**
+     * Reading a project must leave it byte for byte as it was.
+     *
+     * <p>A project.xml carrying no uuid normally has a generated one written back on load, so
+     * snapshotting a directory used to modify it. Anyone running this over a corpus of other
+     * people's projects would have left a modified file in every one of them.
+     */
+    @Test
+    void readingAProjectDoesNotModifyItOnDisk() throws Exception {
+        Path source = REPO_ROOT.resolve("doc/IntakeInterview");
+        Path copy = Files.createTempDirectory("snapshot-readonly");
+        try (var entries = Files.list(source)) {
+            for (Path entry : entries.filter(Files::isRegularFile).toList()) {
+                Files.copy(entry, copy.resolve(entry.getFileName()));
+            }
+        }
+        // The fixture projects already carry a uuid, so remove it to recreate the case that writes.
+        Path projectXml = copy.resolve("project.xml");
+        Files.writeString(projectXml,
+                Files.readString(projectXml).replaceAll(" uuid=\"[^\"]*\"", ""));
+        String before = Files.readString(projectXml);
+
+        CapabilitySnapshotBuilder.buildFromDirectory(copy);
+
+        assertEquals(before, Files.readString(projectXml),
+                "Describing a project must not write a uuid back into it");
+    }
+
+    /**
      * Describing a project must not start its devices. parse() ends with loadRunTimePlugins(), which
      * is why the builder uses parseForInformation() instead.
      */

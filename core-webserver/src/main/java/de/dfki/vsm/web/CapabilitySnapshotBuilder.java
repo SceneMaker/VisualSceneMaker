@@ -85,15 +85,18 @@ public final class CapabilitySnapshotBuilder {
     /**
      * Loads a project from disk and snapshots it.
      *
-     * <p>Uses {@code parseForInformation} rather than {@code parse}: the latter ends with
-     * {@code loadRunTimePlugins()}, which would start real devices merely to describe a project. A
-     * snapshot is a read of what a project offers and must never have side effects.
+     * <p>A snapshot is a read of what a project offers, so this must leave the directory untouched.
+     * Two things would otherwise change it. {@code parse} ends with {@code loadRunTimePlugins()} and
+     * would start real devices merely to describe a project, so {@code parseForInformation} is used
+     * instead. And a project.xml carrying no uuid normally has a generated one written back on load,
+     * which would dirty every project a caller reads, so that is switched off here.
      */
     public static JSONObject buildFromDirectory(final Path projectDirectory) {
         if (projectDirectory == null || !Files.isDirectory(projectDirectory)) {
             throw new IllegalArgumentException("Not a project directory: " + projectDirectory);
         }
         final RunTimeProject project = new RunTimeProject();
+        project.setPersistGeneratedUUID(false);
         if (!project.parseForInformation(projectDirectory.toAbsolutePath().toString())) {
             throw new IllegalStateException("Cannot read project for information: " + projectDirectory);
         }
