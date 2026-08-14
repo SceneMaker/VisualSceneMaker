@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -68,6 +69,14 @@ public final class SceneFlowNarrativeExplainer {
             patterns.put(waitPattern);
             summary.put(waitPattern.optString("description", ""));
         }
+        // Chains are detected before the per-node pass so their hops can be suppressed there: a
+        // three-step sequence should read as one finding, not as two unrelated transitions.
+        final Set<String> sequencedHopSources = new LinkedHashSet<>();
+        for (JSONObject chain : detectSequenceChains(flow, nodeById, effectiveStyle, sequencedHopSources)) {
+            patterns.put(chain);
+            summary.put(chain.optString("description", ""));
+        }
+
         for (BasicNode node : collectBasicNodes(flow)) {
             final JSONObject interruptWaitPattern = detectNodeInterruptWaitPattern(node, nodeById, effectiveStyle);
             if (interruptWaitPattern != null) {
@@ -107,6 +116,10 @@ public final class SceneFlowNarrativeExplainer {
                 summary.put(conditionalChoicePattern.optString("description", ""));
             }
 
+            if (sequencedHopSources.contains(node.getId())) {
+                // Already narrated as one step of a sequence.
+                continue;
+            }
             final JSONObject unconditionalTransitionPattern = detectUnconditionalTransitionPattern(node, nodeById, effectiveStyle);
             if (unconditionalTransitionPattern != null) {
                 patterns.put(unconditionalTransitionPattern);
@@ -490,6 +503,160 @@ public final class SceneFlowNarrativeExplainer {
                         .put("nodeId", node.getId())
                         .put("nodeName", node.getName())
                         .put("conditionalBranches", branches));
+    }
+
+    /**
+     * Finds maximal runs of nodes joined by unconditional edges, so that a sequence reads as one
+     * finding rather than as a scatter of separate transitions.
+     *
+     * <p>A run continues from one node to the next only when the step is unambiguous: the node's
+     * default edge is an epsilon edge, the node carries no other outgoing edge that could divert
+     * the flow, and the target is reachable from nowhere else. A node with a guard, a fork or an
+     * interrupt therefore ends the run rather than extending it, because what follows it is no
+     * longer simply "the next step".
+     *
+     * <p>Runs of two nodes are left to {@code unconditional_transition}. One hop is a transition;
+     * three nodes in a row are a sequence.
+     *
+     * @param sequencedHopSources collects every node whose hop this subsumes, so the caller can
+     *                            suppress the per-hop finding
+     */
+    private List<JSONObject> detectSequenceChains(
+            final SceneFlow flow,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style,
+            final Set<String> sequencedHopSources) {
+        final List<JSONObject> chains = new ArrayList<>();
+        final Map<String, Integer> inDegree = countIncomingEdges(flow);
+        final Set<String> consumed = new LinkedHashSet<>();
+
+        for (BasicNode node : collectBasicNodes(flow)) {
+            if (consumed.contains(node.getId())) {
+                continue;
+            }
+            final List<BasicNode> run = walkChainFrom(node, nodeById, inDegree, consumed);
+            if (run.size() < 3) {
+                continue;
+            }
+            for (int i = 0; i < run.size(); i++) {
+                consumed.add(run.get(i).getId());
+                if (i < run.size() - 1) {
+                    sequencedHopSources.add(run.get(i).getId());
+                }
+            }
+            chains.add(describeChain(run, style));
+        }
+        return chains;
+    }
+
+    private List<BasicNode> walkChainFrom(
+            final BasicNode head,
+            final Map<String, BasicNode> nodeById,
+            final Map<String, Integer> inDegree,
+            final Set<String> consumed) {
+        final List<BasicNode> run = new ArrayList<>();
+        final Set<String> visited = new LinkedHashSet<>();
+        BasicNode current = head;
+        while (current != null && visited.add(current.getId())) {
+            run.add(current);
+            final BasicNode next = nextChainStep(current, nodeById, inDegree);
+            if (next == null || consumed.contains(next.getId()) || visited.contains(next.getId())) {
+                break;
+            }
+            current = next;
+        }
+        return run;
+    }
+
+    /** The single unambiguous successor of a step, or null when the flow could go elsewhere. */
+    private BasicNode nextChainStep(
+            final BasicNode node,
+            final Map<String, BasicNode> nodeById,
+            final Map<String, Integer> inDegree) {
+        if (node == null || node instanceof SuperNode) {
+            return null;
+        }
+        if (!isEmpty(node.getCEdgeList()) || !isEmpty(node.getPEdgeList())
+                || !isEmpty(node.getFEdgeList()) || !isEmpty(node.getIEdgeList())) {
+            return null;
+        }
+        if (!(node.getDedge() instanceof EpsilonEdge epsilonEdge)) {
+            return null;
+        }
+        final String targetId = epsilonEdge.getTargetUnid();
+        if (targetId == null || targetId.isBlank() || targetId.equals(node.getId())) {
+            return null;
+        }
+        final BasicNode target = nodeById.get(targetId);
+        if (target == null || target instanceof SuperNode) {
+            return null;
+        }
+        if (inDegree.getOrDefault(targetId, 0) != 1) {
+            // Something else also leads here, so this is a meeting point rather than a next step.
+            return null;
+        }
+        return target;
+    }
+
+    private boolean isEmpty(final List<?> list) {
+        return list == null || list.isEmpty();
+    }
+
+    private Map<String, Integer> countIncomingEdges(final SuperNode root) {
+        final Map<String, Integer> inDegree = new LinkedHashMap<>();
+        for (BasicNode node : collectBasicNodes(root)) {
+            for (AbstractEdge edge : node.getEdgeList()) {
+                final String targetId = edge == null ? null : edge.getTargetUnid();
+                if (targetId != null && !targetId.isBlank()) {
+                    inDegree.merge(targetId, 1, Integer::sum);
+                }
+            }
+        }
+        for (SuperNode superNode : collectSuperNodes(root)) {
+            for (AbstractEdge edge : superNode.getEdgeList()) {
+                final String targetId = edge == null ? null : edge.getTargetUnid();
+                if (targetId != null && !targetId.isBlank()) {
+                    inDegree.merge(targetId, 1, Integer::sum);
+                }
+            }
+        }
+        return inDegree;
+    }
+
+    private JSONObject describeChain(final List<BasicNode> run, final NarrativeStyle style) {
+        final JSONArray steps = new JSONArray();
+        final List<String> stepLabels = new ArrayList<>();
+        for (BasicNode step : run) {
+            steps.put(new JSONObject()
+                    .put("nodeId", step.getId())
+                    .put("nodeName", nonBlank(step.getName(), step.getId())));
+            stepLabels.add(label(null, step.getName(), step.getId(), style));
+        }
+
+        final String description = "A sequence of " + run.size() + " steps runs in a fixed order: "
+                + joinWithThen(stepLabels) + ". Each step begins once the previous one has finished, "
+                + "and the steps are joined by " + edgeLabel("EEDGE", style) + "s.";
+
+        return new JSONObject()
+                .put("patternType", "sequence")
+                .put("description", description)
+                .put("evidence", new JSONObject()
+                        .put("stepCount", run.size())
+                        .put("firstNodeId", run.get(0).getId())
+                        .put("lastNodeId", run.get(run.size() - 1).getId())
+                        .put("edgeType", "EEDGE")
+                        .put("steps", steps));
+    }
+
+    private String joinWithThen(final List<String> parts) {
+        final StringBuilder out = new StringBuilder();
+        for (int i = 0; i < parts.size(); i++) {
+            if (i > 0) {
+                out.append(i == 1 ? ", then " : ", then ");
+            }
+            out.append(parts.get(i));
+        }
+        return out.toString();
     }
 
     private JSONObject detectUnconditionalTransitionPattern(

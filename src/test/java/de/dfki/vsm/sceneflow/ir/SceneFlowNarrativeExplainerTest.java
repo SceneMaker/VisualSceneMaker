@@ -12,6 +12,8 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SceneFlowNarrativeExplainerTest {
@@ -234,5 +236,129 @@ class SceneFlowNarrativeExplainerTest {
             }
         }
         return false;
+    }
+
+    private static final String CHAIN_HEADER =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<SceneFlow id=\"SceneFlow\" name=\"SceneFlow\" comment=\"\" hideLocalVar=\"false\" "
+            + "hideGlobalVar=\"false\" modifDate=\"\" start=\"N1;\" context=\"\" package=\"\" "
+            + "xmlns=\"xml.sceneflow.dfki.de\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+            + "xsi:schemaLocation=\"xml.sceneflow.dfki.de res/xsd/sceneflow.xsd\">\n"
+            + "<Define></Define><Declare>"
+            + "<VariableDefinition type=\"Bool\" name =\"ready\"><BoolLiteral value=\"false\"/></VariableDefinition>"
+            + "</Declare><Commands></Commands>\n";
+
+    private static String node(final String id, final String name, final String body) {
+        return "<Node id=\"" + id + "\" name=\"" + name + "\" history=\"false\">"
+                + "<Define></Define><Declare></Declare><Commands></Commands>" + body + "</Node>\n";
+    }
+
+    private JSONObject explainFlow(final String nodes) throws Exception {
+        Path file = Files.createTempFile("sceneflow-chain", ".xml");
+        Files.writeString(file, CHAIN_HEADER + nodes + "</SceneFlow>\n");
+        return new SceneFlowNarrativeExplainer().explain(file);
+    }
+
+    private JSONObject firstPatternOfType(final JSONObject report, final String type) {
+        JSONArray patterns = report.getJSONArray("patterns");
+        for (int i = 0; i < patterns.length(); i++) {
+            if (type.equals(patterns.getJSONObject(i).optString("patternType"))) {
+                return patterns.getJSONObject(i);
+            }
+        }
+        return null;
+    }
+
+    private int countPatternsOfType(final JSONObject report, final String type) {
+        int count = 0;
+        JSONArray patterns = report.getJSONArray("patterns");
+        for (int i = 0; i < patterns.length(); i++) {
+            if (type.equals(patterns.getJSONObject(i).optString("patternType"))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    @Test
+    void threeStepChainIsOneSequenceAndItsHopsAreNotReportedSeparately() throws Exception {
+        JSONObject report = explainFlow(
+                node("N1", "Greet", "<EEdge target=\"N2\" start=\"\"></EEdge>")
+                + node("N2", "Explain", "<EEdge target=\"N3\" start=\"\"></EEdge>")
+                + node("N3", "Close", ""));
+
+        JSONObject sequence = firstPatternOfType(report, "sequence");
+        assertNotNull(sequence, "A three-node chain must be recognised as one sequence");
+        assertEquals(3, sequence.getJSONObject("evidence").getInt("stepCount"));
+        assertEquals(0, countPatternsOfType(report, "unconditional_transition"),
+                "The two hops are subsumed by the sequence and must not be reported again");
+    }
+
+    /** The description is what an author reads in a preview, so it must not be phrased as mechanics. */
+    @Test
+    void sequenceIsDescribedInStepsRatherThanEdges() throws Exception {
+        JSONObject report = explainFlow(
+                node("N1", "Greet", "<EEdge target=\"N2\" start=\"\"></EEdge>")
+                + node("N2", "Explain", "<EEdge target=\"N3\" start=\"\"></EEdge>")
+                + node("N3", "Close", ""));
+
+        String description = firstPatternOfType(report, "sequence").getString("description");
+        assertTrue(description.contains("\"Greet\", then \"Explain\", then \"Close\""), description);
+        assertFalse(description.contains("EEDGE"), "Reader-friendly output must not expose edge codes");
+    }
+
+    /** One hop is a transition. Three nodes in a row are a sequence. */
+    @Test
+    void twoNodeChainRemainsAnUnconditionalTransition() throws Exception {
+        JSONObject report = explainFlow(
+                node("N1", "First", "<EEdge target=\"N2\" start=\"\"></EEdge>")
+                + node("N2", "Second", ""));
+
+        assertNull(firstPatternOfType(report, "sequence"));
+        assertEquals(1, countPatternsOfType(report, "unconditional_transition"));
+    }
+
+    /**
+     * A step that can divert the flow is not simply followed by "the next step", so the run ends
+     * there. This is what separates a plain sequence from a chain that waits or branches midway.
+     */
+    @Test
+    void chainStopsAtAStepThatCanDivertTheFlow() throws Exception {
+        JSONObject report = explainFlow(
+                node("N1", "Prepare", "<EEdge target=\"N2\" start=\"\"></EEdge>")
+                + node("N2", "Execute",
+                        "<CEdge target=\"N3\" start=\"\"><SimpleVariable name=\"ready\"/></CEdge>"
+                        + "<TEdge target=\"N2\" start=\"\" timeout=\"1000\"></TEdge>")
+                + node("N3", "End", ""));
+
+        assertNull(firstPatternOfType(report, "sequence"),
+                "A guarded middle step means this is not a plain sequence");
+    }
+
+    /** A node reachable from elsewhere is a meeting point rather than the next step of one run. */
+    @Test
+    void chainStopsWhereAnotherPathJoins() throws Exception {
+        JSONObject report = explainFlow(
+                node("N1", "First", "<EEdge target=\"N2\" start=\"\"></EEdge>")
+                + node("N2", "Second", "<EEdge target=\"N3\" start=\"\"></EEdge>")
+                + node("N3", "Shared", "")
+                + node("N4", "Other", "<EEdge target=\"N3\" start=\"\"></EEdge>"));
+
+        assertNull(firstPatternOfType(report, "sequence"),
+                "N3 is reachable from N2 and N4, so the run must not absorb it");
+    }
+
+    @Test
+    void technicalAudienceStillNamesTheEdgeTypeForASequence() throws Exception {
+        Path file = Files.createTempFile("sceneflow-chain-tech", ".xml");
+        Files.writeString(file, CHAIN_HEADER
+                + node("N1", "Greet", "<EEdge target=\"N2\" start=\"\"></EEdge>")
+                + node("N2", "Explain", "<EEdge target=\"N3\" start=\"\"></EEdge>")
+                + node("N3", "Close", "")
+                + "</SceneFlow>\n");
+
+        JSONObject report = new SceneFlowNarrativeExplainer()
+                .explain(file, new SceneFlowNarrativeExplainer.NarrativeStyle(false, "technical"));
+        assertTrue(firstPatternOfType(report, "sequence").getString("description").contains("EEDGE"));
     }
 }
