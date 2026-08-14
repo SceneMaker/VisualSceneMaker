@@ -11,6 +11,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SceneFlowSituationPipelineTest {
@@ -389,5 +390,30 @@ class SceneFlowSituationPipelineTest {
         assertEquals("semantic_rejected", attempt.optString("status"));
         assertTrue(attempt.getJSONArray("semanticIssues").toString().contains("UNRESOLVED_CONSTRAINT_LABEL"));
         assertTrue(attempt.getJSONObject("constraintResolution").getJSONArray("unresolvedLabels").length() >= 1);
+    }
+
+    @Test
+    void unrecognisedSituationIsReportedAsNoPatternMatchedRatherThanFailed() throws Exception {
+        Path outXml = Files.createTempFile("pipeline-nomatch", ".xml");
+        Path report = Files.createTempFile("pipeline-nomatch-report", ".json");
+
+        JSONObject result = new SceneFlowSituationPipeline().run(
+                Path.of("doc/capability-snapshot.designpatterns.json"),
+                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                outXml,
+                report,
+                "make the avatar happy",
+                null,
+                null);
+
+        assertEquals("no_pattern_matched", result.optString("status"),
+                "A miss must be distinguishable from candidates that were tried and rejected");
+        assertEquals(0, result.optInt("attemptCount"), "Nothing should have been attempted");
+        assertTrue(result.isNull("chosenTemplate"));
+
+        JSONObject noMatch = result.optJSONObject("noMatch");
+        assertNotNull(noMatch, "A miss must explain itself");
+        assertTrue(noMatch.getJSONArray("recognisedSituations").length() > 0,
+                "A miss must say what would be recognised");
     }
 }

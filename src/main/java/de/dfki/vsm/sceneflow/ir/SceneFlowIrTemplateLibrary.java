@@ -62,13 +62,23 @@ public final class SceneFlowIrTemplateLibrary {
         if (steps.size() >= 2) {
             candidates.add(sequenceTemplate(new SequenceSpec(prompt, rootId, steps), snapshot));
         }
-        if (candidates.isEmpty()) {
-            final String fallbackPrompt = prompt.isEmpty() ? "Wait for event" : prompt;
-            final ConstrainedActivitySpec spec = constrainedActivitySpec(
-                    fallbackPrompt, rootId, eventVar, snapshot, mode);
-            candidates.add(constrainedActivityTemplate(spec, snapshot));
-        }
+        // Deliberately no blanket fallback. A situation this library does not recognise returns an
+        // empty list so the caller can report an honest miss, rather than being answered with a
+        // constrained-activity wait template that has nothing to do with what was asked. Callers
+        // explain the miss with recognisedSituationHints().
         return candidates;
+    }
+
+    /**
+     * What this library recognises, phrased for whoever has to act on a miss. Kept next to the
+     * predicates above so the two cannot drift apart.
+     */
+    public static List<String> recognisedSituationHints() {
+        return List.of(
+                "Waiting for something to happen: mention waiting, until, or a button being pressed.",
+                "Retrying after a delay: mention retry, or timeout together with again.",
+                "Acting on a condition: mention if or when.",
+                "A sequence of steps: mention first, then, after that, or finally.");
     }
 
     private boolean looksLikeWaitForEvent(final String lower) {

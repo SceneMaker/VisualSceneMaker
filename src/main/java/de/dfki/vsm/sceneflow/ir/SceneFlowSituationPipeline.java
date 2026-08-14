@@ -298,6 +298,18 @@ public final class SceneFlowSituationPipeline {
             report.put("assumptions", chosen.optJSONArray("assumptions") == null
                     ? new JSONArray()
                     : chosen.optJSONArray("assumptions"));
+        } else if (candidates.isEmpty()) {
+            // Distinct from "failed": nothing was even attempted, because no template recognises
+            // this situation. Reporting it as a failure would suggest the request was understood and
+            // could not be built, which is a different and more misleading thing to tell an author.
+            report.put("status", "no_pattern_matched");
+            report.put("successAttempt", JSONObject.NULL);
+            report.put("chosenTemplate", JSONObject.NULL);
+            report.put("assumptions", new JSONArray());
+            report.put("noMatch", new JSONObject()
+                    .put("reason", "No pattern recognises this situation, so nothing was generated.")
+                    .put("recognisedSituations",
+                            new JSONArray(SceneFlowIrTemplateLibrary.recognisedSituationHints())));
         } else {
             report.put("status", "failed");
             report.put("successAttempt", JSONObject.NULL);

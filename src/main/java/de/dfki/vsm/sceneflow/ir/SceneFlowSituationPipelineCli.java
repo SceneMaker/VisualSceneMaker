@@ -55,6 +55,17 @@ public final class SceneFlowSituationPipelineCli {
                 System.out.println("OK: report written to " + reportPath.toAbsolutePath());
                 return;
             }
+            if ("no_pattern_matched".equals(report.optString("status", ""))) {
+                System.err.println("NO MATCH: no pattern recognises this situation, so nothing was generated.");
+                final org.json.JSONArray hints = report.optJSONObject("noMatch") == null
+                        ? new org.json.JSONArray()
+                        : report.optJSONObject("noMatch").optJSONArray("recognisedSituations");
+                for (int i = 0; hints != null && i < hints.length(); i++) {
+                    System.err.println("  - " + hints.optString(i, ""));
+                }
+                System.err.println("Report: " + reportPath.toAbsolutePath());
+                System.exit(2);
+            }
             System.err.println("FAILED: no candidate passed validation/compile. See report: " + reportPath.toAbsolutePath());
             System.exit(1);
         } catch (SceneFlowIrCompileException exc) {

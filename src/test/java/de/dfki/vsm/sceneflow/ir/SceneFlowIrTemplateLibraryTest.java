@@ -326,4 +326,38 @@ class SceneFlowIrTemplateLibraryTest {
         }
         return out;
     }
+
+    /**
+     * The library used to answer anything it did not recognise with a constrained-activity wait
+     * template, which told the caller a request had been understood when it had not been.
+     */
+    @Test
+    void unrecognisedSituationProducesNoCandidateAtAll() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary()
+                .generateCandidates("make the avatar happy", snapshot);
+
+        assertTrue(candidates.isEmpty(),
+                "Expected an honest miss, got: " + candidates.stream()
+                        .map(c -> c.getJSONObject("metadata").optString("source"))
+                        .collect(Collectors.joining(", ")));
+    }
+
+    @Test
+    void anEmptySituationIsAMissRatherThanAWaitTemplate() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        assertTrue(new SceneFlowIrTemplateLibrary().generateCandidates("", snapshot).isEmpty());
+    }
+
+    @Test
+    void recognisedSituationHintsCoverEveryPredicate() {
+        List<String> hints = SceneFlowIrTemplateLibrary.recognisedSituationHints();
+        assertEquals(4, hints.size(), "One hint per predicate: wait, retry, condition, sequence");
+        String all = String.join(" ", hints).toLowerCase(java.util.Locale.ROOT);
+        for (String marker : new String[] {"waiting", "retry", "if", "first"}) {
+            assertTrue(all.contains(marker), "Hints must mention " + marker + ": " + all);
+        }
+    }
 }
