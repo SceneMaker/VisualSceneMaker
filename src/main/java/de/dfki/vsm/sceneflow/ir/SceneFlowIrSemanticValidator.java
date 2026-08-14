@@ -65,6 +65,9 @@ public final class SceneFlowIrSemanticValidator {
             "SCENE_PARAM_MISSING",
             "SCENE_PARAM_UNKNOWN",
             "SCENE_ARG_NOT_STRUCT",
+            "EDGE_DEFAULT_DUPLICATE",
+            "NODE_UNREACHABLE",
+            "NODE_DEAD_END",
             RULE_EXIT_TARGET_OUTSIDE_SCOPE,
             RULE_INTERNAL_LIVENESS_REQUIRED,
             "SUPERNODE_EXIT_TARGET_IN_SCOPE",
@@ -116,8 +119,118 @@ public final class SceneFlowIrSemanticValidator {
         }
 
         validateNodeCommands(operations, snapshot, result);
+        validateGraphStructure(operations, snapshot, result);
         validateConfiguredInvariants(ir, operations, nodeParentById, superNodeIds, result);
         return result;
+    }
+
+    /**
+     * Structural checks that need the whole operation list rather than one operation at a time:
+     * whether a node ends up with two default edges, whether anything can reach a created node, and
+     * whether execution simply stops at one.
+     */
+    private void validateGraphStructure(
+            final JSONArray operations,
+            final JSONObject snapshot,
+            final SemanticValidationResult result) {
+        final Map<String, String> createdNodePaths = new LinkedHashMap<>();
+        final Set<String> startNodes = new LinkedHashSet<>();
+        final Set<String> edgeSources = new LinkedHashSet<>();
+        final Set<String> edgeTargets = new LinkedHashSet<>();
+        final Map<String, Integer> defaultEdgesBySource = new LinkedHashMap<>();
+        final Map<String, String> defaultEdgePaths = new LinkedHashMap<>();
+        boolean patchDeletesEdges = false;
+
+        for (int i = 0; i < operations.length(); i++) {
+            final JSONObject op = operations.optJSONObject(i);
+            if (op == null) {
+                continue;
+            }
+            final String path = "/operations/" + i;
+            switch (op.optString("op", "")) {
+                case "create_node" -> {
+                    final String nodeId = op.optString("nodeId", "").trim();
+                    if (!nodeId.isEmpty()) {
+                        createdNodePaths.put(nodeId, path);
+                        if (op.optBoolean("isStartNode", false)) {
+                            startNodes.add(nodeId);
+                        }
+                    }
+                }
+                case "create_supernode" -> {
+                    final String superNodeId = op.optString("superNodeId", "").trim();
+                    if (!superNodeId.isEmpty() && op.optBoolean("isStartNode", false)) {
+                        startNodes.add(superNodeId);
+                    }
+                }
+                case "update_node" -> {
+                    if (op.optBoolean("isStartNode", false)) {
+                        startNodes.add(op.optString("nodeId", "").trim());
+                    }
+                }
+                case "create_edge" -> {
+                    final String source = op.optString("sourceNodeId", "").trim();
+                    final String target = op.optString("targetNodeId", "").trim();
+                    edgeSources.add(source);
+                    edgeTargets.add(target);
+                    final String edgeType = op.optString("edgeType", "").trim();
+                    if ("EEDGE".equals(edgeType) || "TEDGE".equals(edgeType)) {
+                        defaultEdgesBySource.merge(source, 1, Integer::sum);
+                        defaultEdgePaths.putIfAbsent(source, path);
+                    }
+                }
+                // An existing edge can be retargeted, which makes its new target reachable, but its
+                // source cannot be changed, so this never affects the dead-end check.
+                case "update_edge" -> edgeTargets.add(op.optString("targetNodeId", "").trim());
+                case "delete_edge" -> patchDeletesEdges = true;
+                default -> { }
+            }
+        }
+
+        // A delete_edge names only an edge id, and snapshot edges carry no ids, so a patch that
+        // removes an edge cannot be reconciled with the existing flow. Rather than risk reporting a
+        // conflict that the deletion resolves, only count what this patch creates.
+        if (!patchDeletesEdges) {
+            final JSONObject flow = snapshot == null ? null : snapshot.optJSONObject("flow");
+            final JSONArray existingEdges = flow == null ? null : flow.optJSONArray("edges");
+            for (int i = 0; existingEdges != null && i < existingEdges.length(); i++) {
+                final JSONObject edge = existingEdges.optJSONObject(i);
+                if (edge == null) {
+                    continue;
+                }
+                final String type = edge.optString("type", "");
+                if ("EEDGE".equals(type) || "TEDGE".equals(type)) {
+                    defaultEdgesBySource.merge(edge.optString("sourceNodeId", "").trim(), 1, Integer::sum);
+                }
+            }
+        }
+
+        for (Map.Entry<String, Integer> entry : defaultEdgesBySource.entrySet()) {
+            if (entry.getValue() <= 1 || entry.getKey().isEmpty()) {
+                continue;
+            }
+            emitIssue(result, "EDGE_DEFAULT_DUPLICATE",
+                    defaultEdgePaths.getOrDefault(entry.getKey(), "/operations"),
+                    "Node \"" + entry.getKey() + "\" would end up with " + entry.getValue()
+                            + " default edges. An epsilon edge and a timeout edge share one slot on a "
+                            + "node, so only one of them can exist. The compiler rejects the second.");
+        }
+
+        for (Map.Entry<String, String> created : createdNodePaths.entrySet()) {
+            final String nodeId = created.getKey();
+            if (!startNodes.contains(nodeId) && !edgeTargets.contains(nodeId)) {
+                emitIssue(result, "NODE_UNREACHABLE", created.getValue(),
+                        "Nothing reaches node \"" + nodeId + "\": it is not a start node and no edge "
+                                + "targets it, so it can never run. Give it an incoming edge or mark "
+                                + "it as a start node.");
+            }
+            if (!edgeSources.contains(nodeId)) {
+                emitIssue(result, "NODE_DEAD_END", created.getValue(),
+                        "Execution ends at node \"" + nodeId + "\": it has no outgoing edge. That is "
+                                + "correct for a final step, so give it a continuation only if the "
+                                + "flow should carry on from there.");
+            }
+        }
     }
 
     /**

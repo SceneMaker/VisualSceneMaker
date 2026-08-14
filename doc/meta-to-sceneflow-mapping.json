@@ -1,5 +1,5 @@
 {
-  "version": "1.3",
+  "version": "1.4",
   "updatedAt": "2026-08-13",
   "purpose": "Machine-readable realization matrix from constrained-activity meta model to Visual SceneMaker SceneFlow concepts.",
   "metaToSceneFlow": [
@@ -304,6 +304,27 @@
       "scope": "general",
       "severity": "warning",
       "description": "Scene parameters bind by name, and ReactivePlayer.getSubstitutions ignores every argument that is not a struct. A bare value passed to a scene that declares parameters therefore supplies nothing at runtime despite looking like it does.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_DEFAULT_DUPLICATE",
+      "scope": "general",
+      "severity": "error",
+      "description": "An epsilon edge and a timeout edge share a single default-edge slot on a node, so a node can carry only one of them. The compiler throws on the second, which surfaces as an exception rather than a diagnostic, so this rule reports it as a structured issue first. Existing edges are only counted when the patch deletes none, because a delete_edge names an edge id and snapshot edges carry none.",
+      "activation": {}
+    },
+    {
+      "id": "NODE_UNREACHABLE",
+      "scope": "general",
+      "severity": "warning",
+      "description": "A created node that is neither a start node nor the target of any edge can never run. Warning rather than error because an author may intend to connect it by hand afterwards.",
+      "activation": {}
+    },
+    {
+      "id": "NODE_DEAD_END",
+      "scope": "general",
+      "severity": "warning",
+      "description": "Execution stops at a created node with no outgoing edge. This is correct for the final step of a sequence, so it is reported as information rather than as a defect: it is the prompt for deciding whether the flow should carry on.",
       "activation": {}
     },
     {

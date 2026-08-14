@@ -442,4 +442,127 @@ class SceneFlowIrSemanticValidatorTest {
                                         .put("isHistoryNode", false)))
                         .put("edges", new JSONArray()));
     }
+
+    /**
+     * Two default edges on one node used to surface only as a compile exception, several stages later
+     * than the diagnostic that could have explained it.
+     */
+    @Test
+    void rejectsTwoDefaultEdgesOnTheSameNode() {
+        JSONObject ir = irWithOps(new JSONArray()
+                .put(createNode("A", true))
+                .put(createNode("B", false))
+                .put(edge("e1", "EEDGE", "A", "B"))
+                .put(edge("e2", "TEDGE", "A", "B").put("payload", new JSONObject().put("timeoutMs", 500))));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, baseSnapshot());
+        assertTrue(issueCodes(result).contains("EDGE_DEFAULT_DUPLICATE"));
+        assertTrue(result.hasErrors(), "The compiler would throw, so this must block acceptance");
+    }
+
+    /** A guarded edge lives in its own list, so it does not compete for the default-edge slot. */
+    @Test
+    void allowsAGuardedEdgeAlongsideADefaultEdge() {
+        JSONObject ir = irWithOps(new JSONArray()
+                .put(createNode("A", true))
+                .put(createNode("B", false))
+                .put(edge("e1", "EEDGE", "A", "B"))
+                .put(edge("e2", "CEDGE", "A", "B")
+                        .put("payload", new JSONObject().put("conditionText", "UIEvent != \"\""))));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, baseSnapshot());
+        assertFalse(issueCodes(result).contains("EDGE_DEFAULT_DUPLICATE"));
+    }
+
+    @Test
+    void detectsADefaultEdgeAddedToANodeThatAlreadyHasOne() throws Exception {
+        // DesignPatterns N31 already leaves via an epsilon edge to N32.
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject ir = irWithOps(new JSONArray()
+                .put(edge("extra", "EEDGE", "N31", "N32")));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, snapshot);
+        assertTrue(issueCodes(result).contains("EDGE_DEFAULT_DUPLICATE"),
+                "Existing edges must be counted, was: " + issueCodes(result));
+    }
+
+    /**
+     * A delete_edge names only an edge id and snapshot edges carry none, so the existing flow cannot
+     * be reconciled with the patch. Reporting a conflict the deletion resolves would be worse than
+     * missing one.
+     */
+    @Test
+    void doesNotGuessAboutDefaultEdgesWhenThePatchDeletesEdges() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject ir = irWithOps(new JSONArray()
+                .put(new JSONObject().put("op", "delete_edge").put("edgeId", "whichever"))
+                .put(edge("replacement", "EEDGE", "N31", "N32")));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, snapshot);
+        assertFalse(issueCodes(result).contains("EDGE_DEFAULT_DUPLICATE"));
+    }
+
+    @Test
+    void reportsACreatedNodeNothingCanReach() {
+        JSONObject ir = irWithOps(new JSONArray()
+                .put(createNode("A", true))
+                .put(createNode("Orphan", false)));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, baseSnapshot());
+        assertTrue(issueCodes(result).contains("NODE_UNREACHABLE"));
+        assertFalse(result.hasErrors(), "An unreachable node is inert rather than broken");
+    }
+
+    @Test
+    void aStartNodeAndAnEdgeTargetAreBothReachable() {
+        JSONObject ir = irWithOps(new JSONArray()
+                .put(createNode("A", true))
+                .put(createNode("B", false))
+                .put(edge("e1", "EEDGE", "A", "B")));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, baseSnapshot());
+        assertFalse(issueCodes(result).contains("NODE_UNREACHABLE"));
+    }
+
+    @Test
+    void reportsWhereExecutionStops() {
+        JSONObject ir = irWithOps(new JSONArray()
+                .put(createNode("A", true))
+                .put(createNode("B", false))
+                .put(edge("e1", "EEDGE", "A", "B")));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, baseSnapshot());
+        assertTrue(issueCodes(result).contains("NODE_DEAD_END"), "B has no outgoing edge");
+        assertFalse(result.hasErrors(), "A terminal step is legitimate");
+    }
+
+    private JSONObject irWithOps(final JSONArray operations) {
+        return new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", operations);
+    }
+
+    private JSONObject createNode(final String nodeId, final boolean isStartNode) {
+        JSONObject op = new JSONObject()
+                .put("op", "create_node")
+                .put("parentSuperNodeId", "SceneFlow")
+                .put("nodeId", nodeId)
+                .put("name", nodeId);
+        if (isStartNode) {
+            op.put("isStartNode", true);
+        }
+        return op;
+    }
+
+    private JSONObject edge(final String edgeId, final String type, final String from, final String to) {
+        return new JSONObject()
+                .put("op", "create_edge")
+                .put("edgeId", edgeId)
+                .put("edgeType", type)
+                .put("sourceNodeId", from)
+                .put("targetNodeId", to);
+    }
 }
