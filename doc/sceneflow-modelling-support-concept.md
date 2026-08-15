@@ -71,7 +71,7 @@ Status legend: **H** = taught in sceneflow-help.html, **D** = modelled in Design
 |---|---|---|---|---|
 | 1.1 | **Sequence** | Do A, then B, then C | EEdge chain of nodes with PlayScene/PlayAction | H D |
 | 1.2 | **Timed pause** | Wait a moment before continuing (fixed / random range / variable duration) | TEdge (timeout / min–max / variable) | H D |
-| 1.3 | **Ask & wait for answer** | Ask the user something, wait for the reply, store it | PlayScene + clear var → TEdge self-loop + CEdge(`var != ""`) → Assignment (the IntakeInterview idiom); also covers "await async service result" (LLM call) | I |
+| 1.3 | **Ask & wait for answer** | Ask the user something, wait for the reply, store it | PlayScene + clear var → TEdge self-loop + CEdge(`var != ""`) → Assignment (the IntakeInterview idiom); also covers "await async service result" (LLM call) | I C |
 | 1.4 | **Branch by condition** | If X then A, else B (optionally: else-after-timeout) | Ordered CEdges + EEdge fallback; timeframe variant with TEdge fallback | H D |
 | 1.5 | **Branch by chance** | Vary behaviour randomly | PEdges (incl. the 1 % self-loop re-roll trick) | H D |
 | 1.6 | **Retry / poll until** | Check again after a delay until a condition holds | CEdge + TEdge self-loop (DesignPatterns D12 is the placeholder — currently modelled incompletely, needs fixing) | D(broken) |

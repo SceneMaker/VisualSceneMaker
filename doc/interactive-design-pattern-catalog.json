@@ -1,5 +1,5 @@
 {
-  "catalogVersion": "1.3",
+  "catalogVersion": "1.4",
   "updatedAt": "2026-08-15",
   "purpose": "Scientific grounding and executable mapping for constrained activity modeling in SceneFlow generation.",
   "metaModel": {
@@ -165,6 +165,165 @@
           "doi": "10.1023/A:1022883727209",
           "url": "https://doi.org/10.1023/A:1022883727209",
           "relevance": "Sequence is control-flow pattern 1, the base case from which the other control-flow patterns are composed."
+        }
+      ]
+    },
+    {
+      "id": "ask_and_wait",
+      "label": "Ask and wait for an answer",
+      "level": 1,
+      "humanDescription": "The agent asks something and then does nothing else until an answer arrives. The answer is remembered so that it can be used later.",
+      "status": "planned",
+      "layer": "executable_pattern",
+      "mapsToTemplateSource": null,
+      "sceneFlowMapping": {
+        "ask": "a node playing the question scene, which also clears the answer channel",
+        "wait": "a node with no commands, a CEDGE on channel != \"\" and a TEDGE self-loop",
+        "store": "a node copying the channel into a variable of its own",
+        "ordering": "EEDGE from ask to wait, CEDGE from wait to store"
+      },
+      "supportsMeta": {
+        "situation.shape": [
+          "ask-and-wait"
+        ]
+      },
+      "resourceRequirements": [
+        {
+          "role": "question",
+          "kind": "scene",
+          "cardinality": "1",
+          "description": "What the agent asks.",
+          "onMissing": "record"
+        },
+        {
+          "role": "speaker",
+          "kind": "agent",
+          "cardinality": "1",
+          "description": "The agent that asks the question.",
+          "onMissing": "create"
+        },
+        {
+          "role": "answer-source",
+          "kind": "input",
+          "cardinality": "1",
+          "description": "Anything that writes the answer channel. This is the requirement that makes the capability shape worth having: a screen control and a background service satisfy it in completely different ways, and the pattern does not care which.",
+          "writes": "$answerChannel",
+          "providedBy": [
+            {
+              "capability": "user-input",
+              "via": "a screen control carrying sendsVar",
+              "plugin": "htmlgui-ws",
+              "templates": [
+                "chat-interview",
+                "question-buttons"
+              ]
+            },
+            {
+              "capability": "service-result",
+              "via": "any plugin declaring the channel under variables.writes",
+              "note": "Covers waiting for a slow service rather than a person, such as a language model composing a summary. The flow shape is identical."
+            }
+          ],
+          "onMissing": "create",
+          "onMissingReason": "A screen can be created from a template, or copied from a near match and rewired. If no plugin present provides either capability the requirement is blocked, and the flow is still generated with the gap recorded against that deployment."
+        },
+        {
+          "role": "answer-channel",
+          "kind": "variable",
+          "type": "String",
+          "cardinality": "1",
+          "description": "Where the answer arrives. Shared by every question in a project, which is why it has to be cleared before each one and copied out after.",
+          "onMissing": "create"
+        },
+        {
+          "role": "answer-store",
+          "kind": "variable",
+          "type": "String",
+          "cardinality": "1",
+          "description": "Where this particular answer is kept. Without it the next question overwrites the answer, so this is a correctness requirement rather than bookkeeping.",
+          "onMissing": "create"
+        }
+      ],
+      "assistantScript": [
+        {
+          "slot": "question",
+          "ask": "What should the agent ask?",
+          "kind": "scene",
+          "suggest": "existing-or-new"
+        },
+        {
+          "slot": "answerStore",
+          "ask": "What should the answer be called, so it can be used later?",
+          "kind": "variable",
+          "suggest": "existing-or-new"
+        },
+        {
+          "slot": "answerSource",
+          "ask": "How does the person answer?",
+          "kind": "capability",
+          "capability": "user-input",
+          "note": "Resolved against the snapshot first. Offer an existing screen that already writes a channel, otherwise a copy of the closest one, otherwise a new one from a template."
+        },
+        {
+          "slot": "reactionStyle",
+          "ask": "How quickly should the agent notice the answer?",
+          "kind": "choice",
+          "default": "poll",
+          "options": [
+            "poll",
+            "immediate"
+          ],
+          "note": "Polling checks every interval and is always available. Immediate needs the channel to be an Event variable, and reacts without delay through an IEDGE."
+        },
+        {
+          "slot": "pollInterval",
+          "ask": "How often should it check?",
+          "kind": "duration",
+          "default": "500ms",
+          "appliesWhen": "reactionStyle == poll",
+          "note": "The interval is the worst-case delay before the agent notices an answer."
+        },
+        {
+          "slot": "continuation",
+          "ask": "What happens once the answer is stored?",
+          "kind": "node-or-stop",
+          "default": "stop"
+        }
+      ],
+      "tutorialScript": [
+        {
+          "step": "Ask the question",
+          "instruction": "Add a node that plays your question scene, and in the same node set the answer channel back to empty.",
+          "verify": "node-has-command"
+        },
+        {
+          "step": "Wait for the answer",
+          "instruction": "Add a second node and leave it empty. Draw a conditional edge out of it that fires when the channel is no longer empty, and a timeout edge back onto itself.",
+          "verify": "node-guarded-wait-loop"
+        },
+        {
+          "step": "Keep the answer",
+          "instruction": "Add a third node that copies the channel into a variable of its own, so the next question cannot overwrite it.",
+          "verify": "node-has-command"
+        }
+      ],
+      "runtimeSemantics": "Three details decide whether this works, all visible in doc/IntakeInterview. The channel is cleared in the node that asks, never in the node that waits, because a reset in the wait node would run on every poll and the answer would never be seen. The wait node carries no commands, because a guard is only evaluated after a node's commands have finished, so anything blocking there delays the check by its own duration. And the answer is copied out before the next question is asked, because the channel is shared. See doc/patterns/1.1-fixed-sequence.md section 2.3 for the underlying execution order.",
+      "knownLimitations": [
+        "The convention that an empty channel means \"no answer yet\" makes an empty answer indistinguishable from silence.",
+        "With polling, the agent notices an answer up to one interval late. Immediate reaction needs the channel to be an Event variable."
+      ],
+      "scientificSources": [
+        {
+          "type": "paper",
+          "title": "Opening up closings",
+          "authors": [
+            "Emanuel A. Schegloff",
+            "Harvey Sacks"
+          ],
+          "year": 1973,
+          "venue": "Semiotica",
+          "relevance": "The adjacency pair, a first action making a particular second action expectable, is the conversational structure this pattern realises: the agent asks and then withholds its own next action until the answer arrives.",
+          "verifyReference": true
         }
       ]
     },
