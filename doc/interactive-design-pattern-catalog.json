@@ -1,6 +1,6 @@
 {
-  "catalogVersion": "1.2",
-  "updatedAt": "2026-08-14",
+  "catalogVersion": "1.3",
+  "updatedAt": "2026-08-15",
   "purpose": "Scientific grounding and executable mapping for constrained activity modeling in SceneFlow generation.",
   "metaModel": {
     "name": "ConstrainedActivityModel",
@@ -78,6 +78,77 @@
           "sequence"
         ]
       },
+      "resourceRequirements": [
+        {
+          "role": "step-content",
+          "kind": "scene",
+          "cardinality": "1..n",
+          "description": "What the agent says or shows at each step. One per step.",
+          "onMissing": "record",
+          "onMissingReason": "A scene with no wording is a placeholder that looks finished and says nothing, so it is reported for the author to write rather than stubbed."
+        },
+        {
+          "role": "speaker",
+          "kind": "agent",
+          "cardinality": "1",
+          "description": "The agent that plays each scene. Its device must resolve to a loaded plugin, or the step silently does nothing.",
+          "providedBy": [
+            {
+              "capability": "speech",
+              "via": "a plugin declaring a speak or scene-playing command"
+            }
+          ],
+          "onMissing": "create",
+          "onMissingReason": "A plugin instance and the SceneFlow variables its config implies can be provisioned from the plugin spec, so this has a sensible default."
+        }
+      ],
+      "assistantScript": [
+        {
+          "slot": "steps",
+          "ask": "What should happen, in order?",
+          "kind": "ordered-list",
+          "resolveFrom": "situation-text",
+          "note": "Usually already in the situation as first, then, finally. Ask only if absent."
+        },
+        {
+          "slot": "stepContent",
+          "ask": "What does the agent say or do at this step?",
+          "kind": "scene",
+          "perItem": "steps",
+          "suggest": "existing-or-new"
+        },
+        {
+          "slot": "attachPoint",
+          "ask": "Where should this start?",
+          "kind": "node-or-start",
+          "default": "start"
+        },
+        {
+          "slot": "continuation",
+          "ask": "What happens after the last step?",
+          "kind": "node-or-stop",
+          "default": "stop",
+          "note": "The generated final step has no outgoing edge, which NODE_DEAD_END reports. This slot is that warning turned into a question."
+        }
+      ],
+      "tutorialScript": [
+        {
+          "step": "Create the first step",
+          "instruction": "Add a node to the canvas and name it after what happens first.",
+          "verify": "node-exists"
+        },
+        {
+          "step": "Give it something to do",
+          "instruction": "Open the node and add a PlayScene command naming the scene it should play.",
+          "verify": "node-has-command"
+        },
+        {
+          "step": "Add the next step",
+          "instruction": "Add a second node, then draw an unconditional edge from the first to it.",
+          "verify": "sequence-detected",
+          "verifyNote": "The explainer reports a chain of three or more nodes as one sequence, so verification of the finished exercise uses the same detector that produces the preview."
+        }
+      ],
       "runtimeSemantics": "The bare EEDGE chain delivers step-after-step ordering only because a step blocks. Playing a scene blocks the node until the scene has finished. A plugin action blocks only until execute() returns, so a fire-and-forget action overlaps the next step and needs a completion handshake instead. See doc/patterns/1.1-fixed-sequence.md section 2.",
       "scientificSources": [
         {
@@ -365,5 +436,6 @@
       "constraint variable exists or is created according to output mode"
     ]
   },
-  "selectionContract": "Pattern selection matches supportsMeta against the meta a template resolved. Only array values are criteria; a scalar documents where a value comes from and is never matched. A criterion whose key the template did not resolve is ignored, a resolved value outside the declared list rejects the pattern, and a pattern must match at least one criterion. Implemented patterns win over planned ones, then higher specificity, then the order in this file. When only planned patterns match, fallbackTo decides where to land."
+  "selectionContract": "Pattern selection matches supportsMeta against the meta a template resolved. Only array values are criteria; a scalar documents where a value comes from and is never matched. A criterion whose key the template did not resolve is ignored, a resolved value outside the declared list rejects the pattern, and a pattern must match at least one criterion. Implemented patterns win over planned ones, then higher specificity, then the order in this file. When only planned patterns match, fallbackTo decides where to land.",
+  "authoringContract": "resourceRequirements are capability-shaped: state what a pattern needs, never a named artifact, so one entry both matches an existing resource and describes what to build when none exists. onMissing is create (a placeholder with a sensible default: variables, screens from a template), record (only the author can supply the substance, such as a scene wording), or block (no plugin present provides the capability, in which case the flow is still generated and the gap is recorded against that deployment). A near-match is copied with a note rather than rebound, so nothing another part of the flow depends on is quietly repurposed. See doc/sceneflow-modelling-support-concept.md sections 4a and 4b."
 }

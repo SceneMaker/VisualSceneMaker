@@ -138,12 +138,13 @@ the single source of truth** for all pattern-related features. Each pattern entr
   "sceneFlowMapping": { ... },         // exists
   "supportsMeta": { ... },             // exists
   "scientificSources": [ ... ],        // exists
-  "resourceRequirements": {            // NEW: what the assistant must elicit/provision
-    "variables": [ {"name": "user_input", "type": "String", "role": "answer slot"} ],
-    "plugins":   [ {"capability": "user-input", "examples": ["htmlgui-ws"]} ],
-    "scenes":    [ {"role": "question", "count": "1..n"} ],
-    "screens":   [ {"template": "chat", "optional": true} ]
-  },
+  "resourceRequirements": [            // NEW: capability-shaped, see 4a
+    {"role": "answer", "kind": "variable", "type": "String"},
+    {"role": "answer-source", "kind": "input", "writes": "$answer",
+     "providedBy": [{"plugin": "htmlgui-ws", "via": "screen control with sendsVar",
+                     "templates": ["question-buttons", "chat-interview"]}]},
+    {"role": "question", "kind": "scene"}
+  ],
   "assistantScript": [                 // NEW: slot-elicitation dialogue (see §5)
     {"slot": "question", "ask": "What should be asked?", "kind": "scene-or-text"},
     {"slot": "answerVar", "ask": "Where should the answer be stored?", "kind": "variable", "suggest": "existing-or-new"}
@@ -151,6 +152,57 @@ the single source of truth** for all pattern-related features. Each pattern entr
   "tutorialScript": [ ... ]            // NEW: step-by-step build-it-yourself variant (see §6)
 }
 ```
+
+### 4a. Requirements are capability-shaped, and resolution has four outcomes
+
+A requirement must not name an artifact. Pattern 1.3 does not need "the screen `ask_name`"; it needs
+*an input that writes the answer variable*. Naming the artifact would make the catalogue wrong for
+every project that spells things differently, and would carry nothing the assistant could create
+from. Stated as a capability, the same entry both matches an existing screen and describes what to
+build when none exists.
+
+Resolving one requirement against the capability snapshot lands in exactly one of four states.
+The snapshot answers the first two questions directly: plugin `commands` say what is *possible*,
+while `screens[].writesVariables`, `script.scenes[]` and `flow.variables` say what *exists*.
+
+| Outcome | Meaning | What the assistant does |
+|---|---|---|
+| **Present** | An artifact already satisfies it | Propose reuse, never bind silently |
+| **Creatable** | No artifact, but a generator exists | Create a placeholder (see below) |
+| **Author-only** | Only the author can supply the substance | Record it, create nothing |
+| **Blocked** | No plugin present provides the capability | Generate anyway, record the gap |
+
+**Decisions (2026-08-15).**
+
+*Placeholders are created eagerly where a sensible default exists*, which means **variables** and
+**screens from a template**. **Scenes are recorded rather than stubbed**, because a scene with no
+wording is a placeholder that looks finished and says nothing. This matches what the sequence
+template already does with `scenesToAuthor` and what `SCENE_REF_UNKNOWN` already reports as a
+warning rather than an error.
+
+*A near-match is copied, not repurposed.* Where an existing artifact almost fits, for example a
+screen whose control writes a different variable, the assistant **copies it and notes that the copy
+needs refinement** rather than rebinding the original. Rebinding would quietly repurpose something
+another part of the flow may depend on. Copying also preserves the author's layout and styling work,
+which creating from a template would discard. The copy carries its provenance and the specific
+refinement needed, for example which binding was rewired.
+
+*A blocked requirement does not stop generation.* The flow is generated and the gap recorded. This
+is deliberate given the two deployment profiles: a pattern that is blocked on the runtime server may
+be perfectly satisfiable in the editor, so "blocked" is a statement about **this deployment**, not
+about the pattern. The record should name the deployment rather than imply impossibility.
+
+### 4b. Creating a resource is not an IR operation
+
+The IR (intermediate representation, the operation list a generator emits instead of raw XML) covers
+nodes, edges, commands and variables only. There is no operation for creating a scene or a screen,
+and there should not be: both already have their own models, APIs and editors, and adding them to
+the IR would make it the second place each is defined.
+
+The consequence is that applying a pattern is an **ordered plan across several endpoints**, not one
+patch. Resources are created first and the flow patch applied second, otherwise the patch validates
+with warnings about things that are about to exist. Because a plan can fail halfway, the assistant
+reports what it created, so a partially applied change is visible rather than mysterious.
 
 The four consumers:
 
