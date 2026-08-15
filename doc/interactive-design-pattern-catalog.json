@@ -1,5 +1,5 @@
 {
-  "catalogVersion": "1.4",
+  "catalogVersion": "1.5",
   "updatedAt": "2026-08-15",
   "purpose": "Scientific grounding and executable mapping for constrained activity modeling in SceneFlow generation.",
   "metaModel": {
@@ -173,9 +173,9 @@
       "label": "Ask and wait for an answer",
       "level": 1,
       "humanDescription": "The agent asks something and then does nothing else until an answer arrives. The answer is remembered so that it can be used later.",
-      "status": "planned",
+      "status": "implemented",
       "layer": "executable_pattern",
-      "mapsToTemplateSource": null,
+      "mapsToTemplateSource": "template-ask-and-wait",
       "sceneFlowMapping": {
         "ask": "a node playing the question scene, which also clears the answer channel",
         "wait": "a node with no commands, a CEDGE on channel != \"\" and a TEDGE self-loop",

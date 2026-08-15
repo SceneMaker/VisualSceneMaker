@@ -354,9 +354,10 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void recognisedSituationHintsCoverEveryPredicate() {
         List<String> hints = SceneFlowIrTemplateLibrary.recognisedSituationHints();
-        assertEquals(4, hints.size(), "One hint per predicate: wait, retry, condition, sequence");
+        assertEquals(5, hints.size(),
+                "One hint per predicate: wait, retry, condition, sequence, ask-and-wait");
         String all = String.join(" ", hints).toLowerCase(java.util.Locale.ROOT);
-        for (String marker : new String[] {"waiting", "retry", "if", "first"}) {
+        for (String marker : new String[] {"waiting", "retry", "if", "first", "asking"}) {
             assertTrue(all.contains(marker), "Hints must mention " + marker + ": " + all);
         }
     }
@@ -476,5 +477,171 @@ class SceneFlowIrTemplateLibraryTest {
         assertEquals("sequence", sequence.getJSONObject("metadata")
                 .getJSONObject("interactiveDesignPattern").getString("selectedPatternId"),
                 "The sequence template must be attributed through the catalogue like every other");
+    }
+
+    // ---- ask and wait ----
+
+    private JSONObject askAndWaitFor(final String situation, final String snapshotPath) throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of(snapshotPath)));
+        return candidateFromSource(
+                new SceneFlowIrTemplateLibrary().generateCandidates(situation, snapshot),
+                "template-ask-and-wait");
+    }
+
+    @Test
+    void askingAndWaitingProducesTheAskWaitStoreShape() throws Exception {
+        JSONObject candidate = askAndWaitFor("Ask the person for their name and wait for the reply",
+                "doc/capability-snapshot.designpatterns.json");
+        assertNotNull(candidate);
+
+        assertEquals(3, countOps(candidate, "create_node"));
+        assertEquals(3, countOps(candidate, "create_edge"));
+
+        // The wait node is the one with no commands, and it must stay that way: a guard is only
+        // evaluated once a node's commands have finished.
+        JSONArray ops = candidate.getJSONArray("operations");
+        String waitNode = null;
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if ("create_edge".equals(op.optString("op")) && "TEDGE".equals(op.optString("edgeType"))
+                    && op.getString("sourceNodeId").equals(op.getString("targetNodeId"))) {
+                waitNode = op.getString("sourceNodeId");
+            }
+        }
+        assertNotNull(waitNode, "The wait node polls with a self timeout edge");
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if ("add_node_command".equals(op.optString("op"))) {
+                assertFalse(waitNode.equals(op.getString("nodeId")),
+                        "The wait node must carry no commands");
+            }
+        }
+    }
+
+    /** A reset that ran on every poll would discard the answer before it could be seen. */
+    @Test
+    void theChannelIsClearedWhereTheQuestionIsAskedNotWhereItWaits() throws Exception {
+        JSONObject candidate = askAndWaitFor("Ask for the name and wait for an answer",
+                "doc/capability-snapshot.designpatterns.json");
+        String channel = candidate.getJSONObject("metadata").getString("answerChannel");
+
+        JSONArray ops = candidate.getJSONArray("operations");
+        String scenePlayingNode = null;
+        String clearingNode = null;
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if (!"add_node_command".equals(op.optString("op"))) {
+                continue;
+            }
+            String text = op.getString("commandText");
+            if (text.startsWith("PlayScene(")) {
+                scenePlayingNode = op.getString("nodeId");
+            } else if (text.equals(channel + " = \"\"")) {
+                clearingNode = op.getString("nodeId");
+            }
+        }
+        assertNotNull(clearingNode, "The channel has to be cleared somewhere");
+        assertEquals(scenePlayingNode, clearingNode,
+                "The reset belongs in the node that asks, not the one that waits");
+    }
+
+    /** The channel is shared, so an answer not copied out is lost when the next question clears it. */
+    @Test
+    void theAnswerIsCopiedIntoAVariableOfItsOwn() throws Exception {
+        JSONObject candidate = askAndWaitFor("Ask for the name and wait for an answer",
+                "doc/capability-snapshot.designpatterns.json");
+        JSONObject metadata = candidate.getJSONObject("metadata");
+        String channel = metadata.getString("answerChannel");
+        String store = metadata.getString("answerStore");
+
+        assertFalse(channel.equals(store), "Copying the channel onto itself would keep nothing");
+        assertTrue(commandTexts(candidate).contains(store + " = " + channel));
+    }
+
+    /** Reuse what the project already has rather than inventing a near-duplicate beside it. */
+    @Test
+    void anExistingSceneAndChannelAreReusedRatherThanRecreated() throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.intakeinterview.json")));
+        JSONObject candidate = candidateFromSource(new SceneFlowIrTemplateLibrary()
+                .generateCandidates("Ask the visitor for their name and wait for the answer", snapshot),
+                "template-ask-and-wait");
+        assertNotNull(candidate);
+
+        JSONObject metadata = candidate.getJSONObject("metadata");
+        assertEquals("ask_name", metadata.getString("questionScene"),
+                "IntakeInterview already has an ask_name scene");
+        assertEquals(0, metadata.getJSONArray("scenesToAuthor").length(),
+                "Nothing to author when the scene exists");
+        assertEquals("user_input", metadata.getString("answerChannel"),
+                "The project already has a channel a screen fills");
+
+        for (String created : createdVariables(candidate)) {
+            assertFalse("user_input".equals(created), "An existing channel must not be redeclared");
+        }
+    }
+
+    /** With nothing to reuse, everything creatable is created and the rest is recorded. */
+    @Test
+    void withNothingToReuseTheChannelIsCreatedAndTheSceneIsRecorded() throws Exception {
+        JSONObject candidate = askAndWaitFor("Ask the person for their name and wait for the reply",
+                "doc/capability-snapshot.designpatterns.json");
+
+        assertTrue(createdVariables(candidate).contains("user_input"),
+                "The channel is creatable, so it is created");
+        assertEquals(1, candidate.getJSONObject("metadata").getJSONArray("scenesToAuthor").length(),
+                "The scene is the author's to write, so it is recorded rather than stubbed");
+        assertTrue(candidate.getJSONArray("assumptions").toString().contains("sendsVar"),
+                "Nothing writes the channel yet, and the author has to be told so");
+    }
+
+    /** A bare wait is the constrained-activity pattern; asking makes it a different pattern. */
+    @Test
+    void anAskingSituationDoesNotAlsoProduceABareWaitTemplate() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary()
+                .generateCandidates("Ask the person for their name and wait for the reply", snapshot);
+
+        assertNotNull(candidateFromSource(candidates, "template-ask-and-wait"));
+        assertNull(candidateFromSource(candidates, "template-constrained-activity"),
+                "A bare wait supernode would ask nothing and store nothing");
+    }
+
+    @Test
+    void aPlainWaitStillProducesTheConstrainedActivityTemplate() throws Exception {
+        JSONObject snapshot = new JSONObject(
+                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary()
+                .generateCandidates("Wait until the user pressed the Okay button", snapshot);
+
+        assertNotNull(candidateFromSource(candidates, "template-constrained-activity"));
+        assertNull(candidateFromSource(candidates, "template-ask-and-wait"));
+    }
+
+    @Test
+    void thePollIntervalCanBeTakenFromTheSituation() throws Exception {
+        JSONObject candidate = askAndWaitFor("Ask for the name and wait for an answer, checking every 2 seconds",
+                "doc/capability-snapshot.designpatterns.json");
+        JSONArray ops = candidate.getJSONArray("operations");
+        int timeout = -1;
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if ("create_edge".equals(op.optString("op")) && "TEDGE".equals(op.optString("edgeType"))) {
+                timeout = op.getJSONObject("payload").getInt("timeoutMs");
+            }
+        }
+        assertEquals(2000, timeout);
+    }
+
+    private java.util.List<String> createdVariables(final JSONObject candidate) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        JSONArray ops = candidate.getJSONArray("operations");
+        for (int i = 0; i < ops.length(); i++) {
+            JSONObject op = ops.getJSONObject(i);
+            if ("add_variable_definition".equals(op.optString("op"))) {
+                out.add(op.getJSONObject("varDef").getString("name"));
+            }
+        }
+        return out;
     }
 }

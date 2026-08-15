@@ -46,7 +46,13 @@ public final class SceneFlowIrTemplateLibrary {
                 : constraintResolutionMode;
 
         final List<JSONObject> candidates = new ArrayList<>();
-        if (looksLikeWaitForEvent(lower)) {
+        final boolean askAndWait = looksLikeAskAndWait(lower);
+        if (askAndWait) {
+            candidates.add(askAndWaitTemplate(prompt, rootId, snapshot));
+        }
+        // The wait predicate matches on "wait" and "until" alone, so without this an asking
+        // situation would also produce a bare wait supernode that asks nothing and stores nothing.
+        if (!askAndWait && looksLikeWaitForEvent(lower)) {
             final ConstrainedActivitySpec spec = constrainedActivitySpec(prompt, rootId, eventVar, snapshot, mode);
             candidates.add(constrainedActivityTemplate(spec, snapshot));
         }
@@ -80,11 +86,27 @@ public final class SceneFlowIrTemplateLibrary {
                 "Waiting for something to happen: mention waiting, until, or a button being pressed.",
                 "Retrying after a delay: mention retry, or timeout together with again.",
                 "Acting on a condition: mention if or when.",
-                "A sequence of steps: mention first, then, after that, or finally.");
+                "A sequence of steps: mention first, then, after that, or finally.",
+                "Asking someone something and waiting for their answer: mention asking, and answer "
+                        + "or reply.");
     }
 
     private boolean looksLikeWaitForEvent(final String lower) {
         return lower.contains("wait") || lower.contains("until") || lower.contains("pressed");
+    }
+
+    /**
+     * Recognises asking someone something and waiting for their answer.
+     *
+     * <p>Needs both halves. An asking cue alone is usually just a step in a sequence, and a waiting
+     * cue alone is the constrained-activity wait.
+     */
+    private boolean looksLikeAskAndWait(final String lower) {
+        final boolean asks = lower.contains("ask") || lower.contains("question")
+                || lower.contains("prompt");
+        final boolean waits = lower.contains("answer") || lower.contains("reply")
+                || lower.contains("response") || lower.contains("wait") || lower.contains("until");
+        return asks && waits;
     }
 
     private boolean looksLikeTimeoutRetry(final String lower) {
@@ -270,6 +292,240 @@ public final class SceneFlowIrTemplateLibrary {
                                 .put("sourceNodeId", nodeId)
                                 .put("targetNodeId", nodeId)
                                 .put("payload", new JSONObject().put("conditionText", eventVar + " != \"\""))));
+    }
+
+    /**
+     * Builds the ask, wait, store shape, modelled on doc/IntakeInterview.
+     *
+     * <p>Three details decide whether it works, and all three are easy to get wrong. The channel is
+     * cleared in the node that asks, never in the one that waits, because a reset in the wait node
+     * would run on every poll and the answer would never be seen. The wait node carries no commands,
+     * because a guard is only evaluated after a node's commands finish, so anything blocking there
+     * delays the check by its own duration. And the answer is copied into a variable of its own,
+     * because the channel is shared by every question in a project and the next question clears it.
+     */
+    private JSONObject askAndWaitTemplate(
+            final String situation, final String rootId, final JSONObject snapshot) {
+        final Set<String> usedIds = new LinkedHashSet<>(snapshotNodeIds(snapshot, rootId));
+        usedIds.addAll(snapshotNodeNames(snapshot));
+
+        final String subject = questionSubject(situation);
+        final String askId = uniqueNodeId("Ask" + pascalCase(subject), usedIds);
+        final String waitId = uniqueNodeId("Wait" + pascalCase(subject), usedIds);
+        final String storeId = uniqueNodeId("Store" + pascalCase(subject), usedIds);
+
+        final Set<String> sceneNames = sceneNames(snapshot);
+        final String questionScene = resolveSceneName("ask " + subject, sceneNames);
+        final String channel = resolveAnswerChannel(snapshot);
+        final String store = uniqueVariableName(snakeCase(subject), channel, snapshot);
+        final int intervalMs = extractPollIntervalMs(situation);
+
+        final JSONArray operations = new JSONArray();
+        for (String variable : new String[] {channel, store}) {
+            if (!snapshotVariableNames(snapshot).contains(variable)) {
+                operations.put(new JSONObject()
+                        .put("op", "add_variable_definition")
+                        .put("opId", "declare-" + variable)
+                        .put("reason", variable.equals(channel)
+                                ? "Where the answer arrives."
+                                : "Where this answer is kept, so the next question cannot overwrite it.")
+                        .put("ownerNodeId", rootId)
+                        .put("varDef", new JSONObject()
+                                .put("name", variable)
+                                .put("type", "String")
+                                .put("expression", "\"\"")));
+            }
+        }
+
+        operations.put(node(askId, "Ask the question and clear the answer channel.", rootId, 120, true));
+        operations.put(command(askId, "PlayScene(\"" + questionScene + "\")", "Ask the question."));
+        operations.put(command(askId, channel + " = \"\"",
+                "Clear the channel here rather than in the wait node: a reset that ran on every poll "
+                        + "would discard the answer."));
+
+        // No commands on the wait node. A guard is only evaluated once a node's commands have
+        // finished, so anything here would delay noticing the answer by its own duration.
+        operations.put(node(waitId, "Wait for the answer. Deliberately carries no commands.",
+                rootId, 440, false));
+
+        operations.put(node(storeId, "Keep the answer under a name of its own.", rootId, 760, false));
+        operations.put(command(storeId, store + " = " + channel,
+                "Copy the answer out before the next question clears the shared channel."));
+
+        operations.put(new JSONObject()
+                .put("op", "create_edge")
+                .put("opId", "ask-to-wait")
+                .put("reason", "Start waiting once the question has been asked.")
+                .put("edgeId", "Seq" + askId + "To" + waitId)
+                .put("edgeType", "EEDGE")
+                .put("sourceNodeId", askId)
+                .put("targetNodeId", waitId));
+        operations.put(new JSONObject()
+                .put("op", "create_edge")
+                .put("opId", "answer-arrived")
+                .put("reason", "Continue as soon as the channel holds something.")
+                .put("edgeId", "Answer" + waitId)
+                .put("edgeType", "CEDGE")
+                .put("sourceNodeId", waitId)
+                .put("targetNodeId", storeId)
+                .put("payload", new JSONObject().put("conditionText", channel + " != \"\"")));
+        operations.put(new JSONObject()
+                .put("op", "create_edge")
+                .put("opId", "poll")
+                .put("reason", "Check again after the interval. This is the worst-case delay before "
+                        + "the agent notices an answer.")
+                .put("edgeId", "Poll" + waitId)
+                .put("edgeType", "TEDGE")
+                .put("sourceNodeId", waitId)
+                .put("targetNodeId", waitId)
+                .put("payload", new JSONObject().put("timeoutMs", intervalMs)));
+
+        final JSONArray assumptions = new JSONArray()
+                .put("The answer arrives in \"" + channel + "\". Something has to write it: a screen "
+                        + "control carrying sendsVar, or a plugin declaring it under variables.writes. "
+                        + "Nothing in this patch provides that.")
+                .put("An empty channel means no answer yet, so an empty answer cannot be told apart "
+                        + "from silence.")
+                .put("Polling notices an answer up to " + intervalMs + " ms late. Reacting immediately "
+                        + "would need the channel to be an Event variable and an interrupt edge.")
+                .put("The final step has no outgoing edge and therefore ends here.");
+        if (!sceneNames.contains(questionScene)) {
+            assumptions.put("Scene \"" + questionScene + "\" does not exist yet and has to be written.");
+        }
+
+        final PatternSelection selection = selectPattern(Map.of("situation.shape", "ask-and-wait"));
+        return new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("metadata", metadata("template-ask-and-wait", situation)
+                        .put("interactiveDesignPattern", new JSONObject()
+                                .put("selectedPatternId", selection.patternId())
+                                .put("selectionReason", selection.reason())
+                                .put("resolvedMeta", new JSONObject()
+                                        .put("situation", new JSONObject().put("shape", "ask-and-wait"))
+                                        .put("policy", new JSONObject().put("pollIntervalMs", intervalMs))))
+                        .put("answerChannel", channel)
+                        .put("answerStore", store)
+                        .put("questionScene", questionScene)
+                        .put("scenesToAuthor", sceneNames.contains(questionScene)
+                                ? new JSONArray()
+                                : new JSONArray().put(questionScene)))
+                .put("assumptions", assumptions)
+                .put("operations", operations);
+    }
+
+    private JSONObject node(final String nodeId, final String reason, final String rootId,
+                            final int x, final boolean isStartNode) {
+        final JSONObject op = new JSONObject()
+                .put("op", "create_node")
+                .put("opId", "node-" + nodeId)
+                .put("reason", reason)
+                .put("parentSuperNodeId", rootId)
+                .put("nodeId", nodeId)
+                .put("name", nodeId)
+                .put("position", new JSONObject().put("x", x).put("y", 340));
+        if (isStartNode) {
+            op.put("isStartNode", true);
+        }
+        return op;
+    }
+
+    private JSONObject command(final String nodeId, final String commandText, final String reason) {
+        return new JSONObject()
+                .put("op", "add_node_command")
+                .put("opId", "cmd-" + nodeId + "-" + Math.abs(commandText.hashCode()))
+                .put("reason", reason)
+                .put("nodeId", nodeId)
+                .put("commandText", commandText);
+    }
+
+    /**
+     * The channel an answer arrives in.
+     *
+     * <p>Prefers one a screen already writes, since that is a channel the project demonstrably has a
+     * way to fill. Falls back to the conventional name, which the assumptions then flag as needing a
+     * source.
+     */
+    private String resolveAnswerChannel(final JSONObject snapshot) {
+        final JSONObject screens = snapshot == null ? null : snapshot.optJSONObject("screens");
+        final JSONArray defined = screens == null ? null : screens.optJSONArray("screens");
+        final Set<String> declared = snapshotVariableNames(snapshot);
+        for (int i = 0; defined != null && i < defined.length(); i++) {
+            final JSONArray writes = defined.optJSONObject(i) == null
+                    ? null
+                    : defined.getJSONObject(i).optJSONArray("writesVariables");
+            for (int j = 0; writes != null && j < writes.length(); j++) {
+                final String candidate = writes.optString(j, "").trim();
+                if (!candidate.isEmpty() && declared.contains(candidate)) {
+                    return candidate;
+                }
+            }
+        }
+        return "user_input";
+    }
+
+    private Set<String> snapshotVariableNames(final JSONObject snapshot) {
+        final Set<String> names = new LinkedHashSet<>();
+        final JSONObject flow = snapshot == null ? null : snapshot.optJSONObject("flow");
+        final JSONArray variables = flow == null ? null : flow.optJSONArray("variables");
+        for (int i = 0; variables != null && i < variables.length(); i++) {
+            final JSONObject variable = variables.optJSONObject(i);
+            final String name = variable == null ? "" : variable.optString("name", "").trim();
+            if (!name.isEmpty()) {
+                names.add(name);
+            }
+        }
+        return names;
+    }
+
+    /**
+     * A variable of this answer's own.
+     *
+     * <p>Never an existing variable: reusing one would repurpose something another part of the flow
+     * may depend on. And never the channel itself, or the answer would be copied over itself and
+     * lost the moment the next question clears it.
+     */
+    private String uniqueVariableName(final String base, final String channel, final JSONObject snapshot) {
+        final String candidate = base.isBlank() ? "answer" : base;
+        final Set<String> taken = new LinkedHashSet<>(snapshotVariableNames(snapshot));
+        taken.add(channel);
+        if (!taken.contains(candidate)) {
+            return candidate;
+        }
+        String suffixed = candidate + "_answer";
+        int n = 2;
+        while (taken.contains(suffixed)) {
+            suffixed = candidate + "_answer" + n++;
+        }
+        return suffixed;
+    }
+
+    /** What is being asked about, used to name the nodes and the variable holding the answer. */
+    private String questionSubject(final String situation) {
+        final String cleaned = situation == null ? "" : situation
+                .replaceAll("(?i)\\b(please|the agent should|the agent|ask(s|ing)?|for|wait(s|ing)?"
+                        + "|until|their|his|her|the|a|an|and|then|answer|reply|response|user|person"
+                        + "|visitor)\\b", " ")
+                .replaceAll("[^A-Za-z0-9 ]", " ")
+                .trim();
+        return cleaned.isBlank() ? "answer" : cleaned;
+    }
+
+    private int extractPollIntervalMs(final String situation) {
+        if (situation != null) {
+            final Matcher ms = Pattern.compile("(\\d+)\\s*(ms|millisecond)").matcher(
+                    situation.toLowerCase(Locale.ROOT));
+            if (ms.find()) {
+                return Math.max(50, Integer.parseInt(ms.group(1)));
+            }
+            final Matcher sec = Pattern.compile("(\\d+)\\s*(second|seconds|sec)\\b").matcher(
+                    situation.toLowerCase(Locale.ROOT));
+            if (sec.find()) {
+                return Math.max(50, Integer.parseInt(sec.group(1)) * 1000);
+            }
+        }
+        // What doc/IntakeInterview uses: responsive enough to feel immediate, cheap enough to ignore.
+        return 500;
     }
 
     /**

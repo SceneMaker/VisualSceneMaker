@@ -1,0 +1,897 @@
+{
+  "screens": {"screens": []},
+  "generatedAt": "2026-08-15T13:53:25+02:00",
+  "project": {
+    "androidProject": false,
+    "plugins": [
+      {
+        "load": true,
+        "name": "HtmlGuiWs",
+        "className": "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor",
+        "readsVariables": [
+          {
+            "name": "conversation_log",
+            "type": "String"
+          },
+          {
+            "name": "sensor_data",
+            "type": "String"
+          },
+          {
+            "name": "heart_rate",
+            "type": "Int"
+          },
+          {
+            "name": "heart_color",
+            "type": "String"
+          },
+          {
+            "name": "breath_rate",
+            "type": "Int"
+          },
+          {
+            "name": "breath_color",
+            "type": "String"
+          }
+        ],
+        "type": "device",
+        "writesVariables": [
+          {
+            "name": "sceneflowStateVar",
+            "type": "Bool"
+          },
+          {
+            "name": "sceneflowInfoVar",
+            "type": "String"
+          },
+          {
+            "name": "gui_choice",
+            "type": "String"
+          },
+          {
+            "name": "conversation_log",
+            "type": "String"
+          }
+        ],
+        "commands": [
+          {
+            "summary": "Set an element value",
+            "name": "set",
+            "type": "action",
+            "params": [
+              {
+                "name": "element",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "value",
+                "type": "string",
+                "required": true
+              }
+            ]
+          },
+          {
+            "summary": "",
+            "name": "setMoodGraph",
+            "type": "action",
+            "params": [
+              {
+                "name": "element",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "day",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "type",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "value",
+                "type": "string",
+                "required": false
+              }
+            ]
+          },
+          {
+            "summary": "",
+            "name": "setWorkHrsGraph",
+            "type": "action",
+            "params": [
+              {
+                "name": "element",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "day",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "type",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "value",
+                "type": "string",
+                "required": false
+              }
+            ]
+          },
+          {
+            "summary": "",
+            "name": "setSpeechBubble",
+            "type": "action",
+            "params": [
+              {
+                "name": "element",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "producer",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "value",
+                "type": "string",
+                "required": false
+              }
+            ]
+          },
+          {
+            "summary": "",
+            "name": "setMenuItem",
+            "type": "action",
+            "params": [
+              {
+                "name": "id",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "value",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "type",
+                "type": "string",
+                "required": false
+              }
+            ]
+          },
+          {
+            "summary": "",
+            "name": "showElement",
+            "type": "action",
+            "params": [{
+              "name": "id",
+              "type": "string",
+              "required": false
+            }]
+          },
+          {
+            "summary": "",
+            "name": "hideElement",
+            "type": "action",
+            "params": [{
+              "name": "id",
+              "type": "string",
+              "required": false
+            }]
+          },
+          {
+            "summary": "",
+            "name": "setcss",
+            "type": "action",
+            "params": [
+              {
+                "name": "var",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "value",
+                "type": "string",
+                "required": false
+              }
+            ]
+          },
+          {
+            "summary": "",
+            "name": "muteMic",
+            "type": "action",
+            "params": []
+          },
+          {
+            "summary": "",
+            "name": "openMic",
+            "type": "action",
+            "params": []
+          },
+          {
+            "summary": "",
+            "name": "setAudioItem",
+            "type": "action",
+            "params": [
+              {
+                "name": "element",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "audio",
+                "type": "string",
+                "required": false
+              }
+            ]
+          },
+          {
+            "summary": "",
+            "name": "controlAudio",
+            "type": "action",
+            "params": [
+              {
+                "name": "element",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "type",
+                "type": "string",
+                "required": false
+              }
+            ]
+          },
+          {
+            "summary": "",
+            "name": "stop",
+            "type": "action",
+            "params": []
+          },
+          {
+            "summary": "Bring legacy GUI iframe to foreground",
+            "name": "guiToFront",
+            "type": "action",
+            "params": []
+          },
+          {
+            "summary": "Bring video-conferencing iframe to foreground",
+            "name": "vcToFront",
+            "type": "action",
+            "params": []
+          },
+          {
+            "summary": "Switch to a schema-defined screen (screens.json)",
+            "name": "loadScreen",
+            "type": "action",
+            "params": [{
+              "name": "screen",
+              "type": "string",
+              "required": true
+            }]
+          },
+          {
+            "summary": "Push a variable value to a bound screen component",
+            "name": "updateVar",
+            "type": "action",
+            "params": [
+              {
+                "name": "var",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "value",
+                "type": "string",
+                "required": true
+              }
+            ]
+          },
+          {
+            "summary": "Bring the schema-driven screens iframe to foreground",
+            "name": "screensToFront",
+            "type": "action",
+            "params": []
+          },
+          {
+            "summary": "Append a message to a vsm-feed variable",
+            "name": "appendMessage",
+            "type": "action",
+            "params": [
+              {
+                "name": "var",
+                "type": "string",
+                "required": true
+              },
+              {
+                "name": "role",
+                "type": "string",
+                "required": false
+              },
+              {
+                "name": "text",
+                "type": "string",
+                "required": true
+              }
+            ]
+          },
+          {
+            "summary": "Clear a vsm-feed variable",
+            "name": "clearFeed",
+            "type": "action",
+            "params": [{
+              "name": "var",
+              "type": "string",
+              "required": true
+            }]
+          }
+        ]
+      },
+      {
+        "load": true,
+        "name": "Llm",
+        "className": "de.dfki.vsm.xtension.llm.LlmExecutor",
+        "readsVariables": [],
+        "type": "device",
+        "writesVariables": [{
+          "name": "llm_response",
+          "type": "String"
+        }],
+        "commands": [{
+          "summary": "Send a prompt to the LLM and store the response in a SceneFlow variable.",
+          "name": "send",
+          "type": "action",
+          "params": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "system",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "responseVar",
+              "type": "string",
+              "required": false
+            }
+          ]
+        }]
+      }
+    ],
+    "name": "1-IntakeInterview",
+    "agents": [
+      {
+        "features": [
+          {
+            "value": "conversation_log",
+            "key": "var"
+          },
+          {
+            "value": "agent",
+            "key": "role"
+          },
+          {
+            "value": "Alex",
+            "key": "speaker"
+          }
+        ],
+        "name": "alex",
+        "device": "HtmlGuiWs"
+      },
+      {
+        "features": [{
+          "value": "chat.html",
+          "key": "default"
+        }],
+        "name": "gui",
+        "device": "HtmlGuiWs"
+      },
+      {
+        "features": [],
+        "name": "llm",
+        "device": "Llm"
+      }
+    ]
+  },
+  "snapshotVersion": "1.2",
+  "source": "/Users/gebhard/Code/Repo/VisualSceneMaker/doc/IntakeInterview",
+  "script": {
+    "scenes": [
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 12,
+        "speakers": ["alex"],
+        "name": "ask_additional",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 12,
+        "speakers": ["alex"],
+        "name": "ask_concern",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 9,
+        "speakers": ["alex"],
+        "name": "ask_duration",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 13,
+        "speakers": ["alex"],
+        "name": "ask_impact",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 5,
+        "speakers": ["alex"],
+        "name": "ask_name",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 14,
+        "speakers": ["alex"],
+        "name": "ask_treatment",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 19,
+        "speakers": ["alex"],
+        "name": "closing",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 24,
+        "speakers": ["alex"],
+        "name": "greet",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 0,
+        "speakers": ["alex"],
+        "name": "show_summary",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": ["summary"]
+      },
+      {
+        "inlineCommands": [],
+        "languages": ["en"],
+        "wordCount": 13,
+        "speakers": ["alex"],
+        "name": "thinking",
+        "turnCount": 1,
+        "referencedAgents": [],
+        "parameters": []
+      }
+    ],
+    "sections": []
+  },
+  "flow": {
+    "startNodeIds": ["N1"],
+    "variables": [
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "gui_connected",
+        "type": "Bool"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "user_input",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "conversation_log",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "patient_name",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "main_concern",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "duration_text",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "daily_impact",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "previous_treatment",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "additional_notes",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "llm_summary",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "llm_response",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "gui_info",
+        "type": "String"
+      },
+      {
+        "scope": "global",
+        "ownerNodeId": "SceneFlow",
+        "name": "gui_choice",
+        "type": "String"
+      }
+    ],
+    "nodes": [
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "WaitForGui",
+        "commandCount": 0,
+        "id": "N1",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Greet",
+        "commandCount": 1,
+        "id": "N2",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "AskName",
+        "commandCount": 2,
+        "id": "N3",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "WaitName",
+        "commandCount": 0,
+        "id": "N4",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "StoreName",
+        "commandCount": 3,
+        "id": "N5",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "WaitConcern",
+        "commandCount": 0,
+        "id": "N6",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "StoreConcern",
+        "commandCount": 3,
+        "id": "N7",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "WaitDuration",
+        "commandCount": 0,
+        "id": "N8",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "StoreDuration",
+        "commandCount": 3,
+        "id": "N9",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "WaitImpact",
+        "commandCount": 0,
+        "id": "N10",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "StoreImpact",
+        "commandCount": 3,
+        "id": "N11",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "WaitTreatment",
+        "commandCount": 0,
+        "id": "N12",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "StoreTreatment",
+        "commandCount": 4,
+        "id": "N13",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "WaitLLM",
+        "commandCount": 0,
+        "id": "N14",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "ShowSummary",
+        "commandCount": 1,
+        "id": "N15",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "AskAdditional",
+        "commandCount": 2,
+        "id": "N16",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "WaitAdditional",
+        "commandCount": 0,
+        "id": "N17",
+        "parentSuperNodeId": "SceneFlow"
+      },
+      {
+        "isSuperNode": false,
+        "isHistoryNode": false,
+        "name": "Closing",
+        "commandCount": 2,
+        "id": "N18",
+        "parentSuperNodeId": "SceneFlow"
+      }
+    ],
+    "allowedEdgeTypes": [
+      "EEDGE",
+      "CEDGE",
+      "PEDGE",
+      "TEDGE",
+      "FEDGE",
+      "IEDGE"
+    ],
+    "rootId": "SceneFlow",
+    "edges": [
+      {
+        "sourceNodeId": "N1",
+        "conditionText": "gui_connected",
+        "type": "CEDGE",
+        "targetNodeId": "N2"
+      },
+      {
+        "timeoutMs": 500,
+        "sourceNodeId": "N1",
+        "type": "TEDGE",
+        "targetNodeId": "N1"
+      },
+      {
+        "sourceNodeId": "N2",
+        "type": "EEDGE",
+        "targetNodeId": "N3"
+      },
+      {
+        "sourceNodeId": "N3",
+        "type": "EEDGE",
+        "targetNodeId": "N4"
+      },
+      {
+        "sourceNodeId": "N4",
+        "conditionText": "user_input != \"\"",
+        "type": "CEDGE",
+        "targetNodeId": "N5"
+      },
+      {
+        "timeoutMs": 500,
+        "sourceNodeId": "N4",
+        "type": "TEDGE",
+        "targetNodeId": "N4"
+      },
+      {
+        "sourceNodeId": "N5",
+        "type": "EEDGE",
+        "targetNodeId": "N6"
+      },
+      {
+        "sourceNodeId": "N6",
+        "conditionText": "user_input != \"\"",
+        "type": "CEDGE",
+        "targetNodeId": "N7"
+      },
+      {
+        "timeoutMs": 500,
+        "sourceNodeId": "N6",
+        "type": "TEDGE",
+        "targetNodeId": "N6"
+      },
+      {
+        "sourceNodeId": "N7",
+        "type": "EEDGE",
+        "targetNodeId": "N8"
+      },
+      {
+        "sourceNodeId": "N8",
+        "conditionText": "user_input != \"\"",
+        "type": "CEDGE",
+        "targetNodeId": "N9"
+      },
+      {
+        "timeoutMs": 500,
+        "sourceNodeId": "N8",
+        "type": "TEDGE",
+        "targetNodeId": "N8"
+      },
+      {
+        "sourceNodeId": "N9",
+        "type": "EEDGE",
+        "targetNodeId": "N10"
+      },
+      {
+        "sourceNodeId": "N10",
+        "conditionText": "user_input != \"\"",
+        "type": "CEDGE",
+        "targetNodeId": "N11"
+      },
+      {
+        "timeoutMs": 500,
+        "sourceNodeId": "N10",
+        "type": "TEDGE",
+        "targetNodeId": "N10"
+      },
+      {
+        "sourceNodeId": "N11",
+        "type": "EEDGE",
+        "targetNodeId": "N12"
+      },
+      {
+        "sourceNodeId": "N12",
+        "conditionText": "user_input != \"\"",
+        "type": "CEDGE",
+        "targetNodeId": "N13"
+      },
+      {
+        "timeoutMs": 500,
+        "sourceNodeId": "N12",
+        "type": "TEDGE",
+        "targetNodeId": "N12"
+      },
+      {
+        "sourceNodeId": "N13",
+        "type": "EEDGE",
+        "targetNodeId": "N14"
+      },
+      {
+        "sourceNodeId": "N14",
+        "conditionText": "llm_summary != \"\"",
+        "type": "CEDGE",
+        "targetNodeId": "N15"
+      },
+      {
+        "timeoutMs": 1000,
+        "sourceNodeId": "N14",
+        "type": "TEDGE",
+        "targetNodeId": "N14"
+      },
+      {
+        "sourceNodeId": "N15",
+        "type": "EEDGE",
+        "targetNodeId": "N16"
+      },
+      {
+        "sourceNodeId": "N16",
+        "type": "EEDGE",
+        "targetNodeId": "N17"
+      },
+      {
+        "sourceNodeId": "N17",
+        "conditionText": "user_input != \"\"",
+        "type": "CEDGE",
+        "targetNodeId": "N18"
+      },
+      {
+        "timeoutMs": 500,
+        "sourceNodeId": "N17",
+        "type": "TEDGE",
+        "targetNodeId": "N17"
+      }
+    ]
+  }
+}
