@@ -2541,6 +2541,121 @@ a.export-link {
   white-space: nowrap;
 }
 
+/* Pressed state, so the bar shows whether the panel below is open. */
+.flow-assistant-btn.active {
+  background: var(--panel-soft);
+  box-shadow: inset 0 0 0 1px var(--stroke);
+}
+
+/* A row of the sceneflow area's grid, between the menu bar and the editing layout, so opening it
+   pushes the canvas down rather than covering it: the assistant talks about a flow the author has
+   to be able to see. */
+.flow-assistant {
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  /* Its own scroll, so a project with many scenes cannot push the canvas off screen. */
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.flow-assistant-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 0.35rem 0.75rem;
+}
+
+.flow-assistant-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  grid-column: 1;
+}
+
+.flow-assistant-lede {
+  margin: 0;
+  grid-column: 1;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.flow-assistant-close {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.flow-assistant-caps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0.75rem;
+}
+
+.flow-assistant-cap {
+  background: var(--panel-soft);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.7rem;
+}
+
+.flow-assistant-cap h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.flow-assistant-cap ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+}
+
+.flow-assistant-cap li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  line-height: 1.4;
+}
+
+.flow-assistant-cap p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Something the author would have to supply or fix before a pattern can use it. Distinct from
+   .muted, which is only secondary detail. */
+.flow-assistant-gap {
+  color: #8a5a1b;
+  font-size: 0.75rem;
+}
+
+.flow-assistant-error {
+  margin: 0;
+  color: #a33;
+  font-size: 0.8125rem;
+}
+
+.flow-assistant-next {
+  margin: 0;
+  font-size: 0.75rem;
+  border-top: 1px solid var(--stroke);
+  padding-top: 0.6rem;
+}
+
 .sceneflow-context-cluster {
   display: inline-flex;
   align-items: center;

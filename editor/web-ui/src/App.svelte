@@ -6644,11 +6644,88 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   // Opens the static SceneFlow-editing help page — same popup-window pattern as
   // openScriptSyntaxHelp() above (fixed window name reuses one window across clicks).
-  // Stub. The Flow Assistant itself is not built yet; the control exists so the SceneFlow menu
-  // bar has its intended shape and the entry point has a settled home.
-  function openFlowAssistant() {
-    console.info("[flow-assistant] not implemented yet");
+  // ── Flow Assistant ────────────────────────────────────────────────────────
+  // Sits between the SceneFlow menu bar and the editing area, so what it proposes and the canvas
+  // it would change stay visible together. Opening it does not disturb the layout below.
+  let flowAssistantOpen = false;
+  let flowAssistantCapabilities = null;
+  let flowAssistantLoading = false;
+  let flowAssistantError = "";
+  // Which project the loaded snapshot describes. Loading is driven by comparing this with the
+  // selection rather than by the click handler, so the panel cannot end up open and blank: opening
+  // it and switching project while it is open both go through the same path.
+  let flowAssistantProjectId = "";
+
+  function toggleFlowAssistant() {
+    flowAssistantOpen = !flowAssistantOpen;
   }
+
+  $: if (
+    flowAssistantOpen
+    && selectedProjectId
+    && flowAssistantProjectId !== selectedProjectId
+    && !flowAssistantLoading
+  ) {
+    loadFlowAssistantCapabilities();
+  }
+
+  /**
+   * Asks the server what this project offers: its scenes, the commands each agent can run, the
+   * screens and what they read and write. Every proposal the assistant makes has to be checked
+   * against this, so it is loaded once the panel opens rather than at startup.
+   */
+  async function loadFlowAssistantCapabilities() {
+    const pid = selectedProjectId;
+    if (!pid) return;
+    flowAssistantLoading = true;
+    flowAssistantError = "";
+    try {
+      const snapshot = await apiGet(`/api/v1/projects/${encodeURIComponent(pid)}/capabilities`);
+      // The selection can change while the request is in flight, and a snapshot describes one
+      // project, so a late reply for a project no longer selected is discarded.
+      if (pid !== selectedProjectId) return;
+      flowAssistantCapabilities = snapshot;
+      flowAssistantProjectId = pid;
+    } catch (err) {
+      if (pid !== selectedProjectId) return;
+      flowAssistantError = err && err.message ? err.message : String(err);
+      flowAssistantCapabilities = null;
+      // Marked as attempted so the reactive load does not retry in a loop; "Try again" clears it.
+      flowAssistantProjectId = pid;
+    } finally {
+      flowAssistantLoading = false;
+    }
+  }
+
+  function retryFlowAssistantCapabilities() {
+    flowAssistantProjectId = "";
+    flowAssistantError = "";
+  }
+
+  // What an agent can be asked to do is its plugin's commands, reached through the device it is
+  // bound to. Reported once per plugin in the snapshot, since two agents on one plugin share them.
+  $: flowAssistantAgents = (() => {
+    const caps = flowAssistantCapabilities;
+    if (!caps) return [];
+    const byName = new Map(
+      (caps.project?.plugins || []).map((plugin) => [plugin.name, plugin])
+    );
+    return (caps.project?.agents || []).map((agent) => {
+      const plugin = byName.get(agent.device) || null;
+      const commandCount = plugin ? (plugin.commands || []).length : 0;
+      return {
+        name: agent.name,
+        device: agent.device,
+        commandCount,
+        // The project names a device nothing provides.
+        unresolved: !plugin,
+        // The plugin is declared but this deployment carries no description of it, so nothing can
+        // be asked of the agent here. Editing on a laptop and running on a device are different
+        // deployments, so this is about where the flow is running, not about the project.
+        unavailableHere: !!plugin && commandCount === 0
+      };
+    });
+  })();
 
   function openSceneFlowHelp() {
     window.open(
@@ -16765,9 +16842,12 @@ Sentence:
             <button
               type="button"
               class="panel-save flow-assistant-btn"
-              on:click={openFlowAssistant}
+              class:active={flowAssistantOpen}
+              on:click={toggleFlowAssistant}
               disabled={!selectedProject}
-              title="Flow Assistant (coming soon)"
+              aria-expanded={flowAssistantOpen}
+              aria-controls="flow-assistant-panel"
+              title={flowAssistantOpen ? "Hide the Flow Assistant" : "Show the Flow Assistant"}
             >
               <IconDocument className="icon" />
               Flow Assistant
@@ -16960,6 +17040,130 @@ Sentence:
             </button>
           </div>
         </div>
+
+          {#if flowAssistantOpen}
+            <!-- Between the menu bar and the editing area on purpose: what the assistant proposes
+                 and the canvas it would change stay on screen together. -->
+            <section
+              id="flow-assistant-panel"
+              class="flow-assistant"
+              aria-label="Flow Assistant"
+            >
+              <header class="flow-assistant-head">
+                <h3>Flow Assistant</h3>
+                <p class="flow-assistant-lede">
+                  Describe what should happen and I will propose the steps. First, what this project
+                  already offers, since anything I propose has to use it or ask you to add it.
+                </p>
+                <button
+                  type="button"
+                  class="ghost icon-button flat flow-assistant-close"
+                  on:click={toggleFlowAssistant}
+                  aria-label="Close the Flow Assistant"
+                  title="Close"
+                >
+                  <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </header>
+
+              {#if flowAssistantLoading}
+                <p class="muted">Reading what this project offers…</p>
+              {:else if flowAssistantError}
+                <p class="flow-assistant-error">
+                  Could not read this project's capabilities: {flowAssistantError}
+                </p>
+                <button type="button" class="ghost" on:click={retryFlowAssistantCapabilities}>
+                  Try again
+                </button>
+              {:else if flowAssistantCapabilities}
+                <div class="flow-assistant-caps">
+                  <section class="flow-assistant-cap">
+                    <h4>Who can act</h4>
+                    {#if flowAssistantAgents.length === 0}
+                      <p class="muted">No agents. A step that speaks or acts needs one.</p>
+                    {:else}
+                      <ul>
+                        {#each flowAssistantAgents as agent}
+                          <li>
+                            <strong>{agent.name}</strong>
+                            {#if agent.unresolved}
+                              <span class="flow-assistant-gap">
+                                needs {agent.device}, which this project does not declare
+                              </span>
+                            {:else if agent.unavailableHere}
+                              <span class="flow-assistant-gap">
+                                {agent.device} is not available here, so nothing can be asked of it
+                              </span>
+                            {:else}
+                              <span class="muted">{agent.commandCount} things it can do</span>
+                            {/if}
+                          </li>
+                        {/each}
+                      </ul>
+                    {/if}
+                  </section>
+
+                  <section class="flow-assistant-cap">
+                    <h4>What it can say</h4>
+                    {#if (flowAssistantCapabilities.script?.scenes || []).length === 0}
+                      <p class="muted">No scenes yet. I can name the ones a pattern needs.</p>
+                    {:else}
+                      <ul>
+                        {#each flowAssistantCapabilities.script.scenes.slice(0, 6) as scene}
+                          <li>
+                            <strong>{scene.name}</strong>
+                            {#if (scene.parameters || []).length > 0}
+                              <span class="flow-assistant-gap">
+                                needs {scene.parameters.join(", ")}
+                              </span>
+                            {/if}
+                          </li>
+                        {/each}
+                        {#if flowAssistantCapabilities.script.scenes.length > 6}
+                          <li class="muted">
+                            and {flowAssistantCapabilities.script.scenes.length - 6} more
+                          </li>
+                        {/if}
+                      </ul>
+                    {/if}
+                  </section>
+
+                  <section class="flow-assistant-cap">
+                    <h4>How someone answers</h4>
+                    {#if (flowAssistantCapabilities.screens?.screens || []).length === 0}
+                      <p class="muted">
+                        No screens. A pattern that waits for an answer needs something that writes
+                        one, so I would offer to add a screen.
+                      </p>
+                    {:else}
+                      <ul>
+                        {#each flowAssistantCapabilities.screens.screens as screen}
+                          <li>
+                            <strong>{screen.name}</strong>
+                            {#if (screen.writesVariables || []).length > 0}
+                              <span class="muted">
+                                sets {screen.writesVariables.join(", ")}
+                              </span>
+                            {:else}
+                              <span class="flow-assistant-gap">shows only, sets nothing</span>
+                            {/if}
+                          </li>
+                        {/each}
+                      </ul>
+                    {/if}
+                  </section>
+                </div>
+
+                <p class="flow-assistant-next muted">
+                  Describing a situation comes next. The patterns and the generator are built and
+                  tested; they are not yet reachable from here.
+                </p>
+              {/if}
+            </section>
+          {/if}
+
           {#if sceneFlow}
           <div
             class="sceneflow-layout"
