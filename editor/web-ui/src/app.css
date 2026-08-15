@@ -1359,13 +1359,6 @@ a.export-link {
   height: 14px;
 }
 
-.autosave-status.embeddings-badge-centered {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
 .autosave-status.error {
   border-color: var(--danger);
   color: var(--danger);
