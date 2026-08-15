@@ -199,7 +199,7 @@
 <main>
   <div class="title-row">
     <img src="/images/vsm_logo.svg" alt="Visual SceneMaker">
-    <h1>SceneFlow Guide<span class="version-pill">v1.5 · 2026-08-11</span></h1>
+    <h1>SceneFlow Guide<span class="version-pill">v1.6 · 2026-08-15</span></h1>
   </div>
   <p class="subtitle">How SceneFlow editing is structured, and how to model common interaction patterns</p>
 
@@ -221,10 +221,10 @@
 
   <h2 id="canvas">Canvas &amp; panels</h2>
   <p>
-    The SceneFlow editor has three regions, held together in one framed workspace &mdash; the same
-    kind of frame the script editor below it sits in. The blocks and inspector panels share the
-    frame's background, so the whole area reads as a single surface with the canvas inset into it
-    (screenshots below from the ExampleProject).
+    The SceneFlow editor has three regions, held together in one framed workspace which shares a card
+    with its own menu bar &mdash; laid out just like the script editor and its toolbar below. The
+    blocks and inspector panels share the frame's background, so the whole area reads as a single
+    surface with the canvas inset into it (screenshots below from the ExampleProject).
   </p>
 
   <h3>Blocks (left)</h3>
@@ -242,27 +242,41 @@
   <img class="sf-shot" src="sceneflow-help-assets/inspector-panel.png" alt="Inspector panel: start nodes, types, variables" style="max-width:320px">
   <p class="sf-caption">ExampleProject — 3 of its 8 declared start nodes, no custom types, and its 21 global variables.</p>
 
+  <h3>Two menu bars</h3>
   <p>
-    Canvas toolbar (top of the graph): <strong>Toggle node snap</strong> (magnet icon — snaps
-    dragged nodes to a grid), <strong>Toggle info overlays</strong> (circled <em>i</em> — shows
-    or hides the small colored command badges on nodes, see <a href="#commands">Commands</a>
-    below), and <strong>Show/hide variable badges</strong> (stacked cards — see
-    <a href="#variables">Variables</a> below). This guide's own button sits right beside them.
+    Controls are split by what they act on. The <strong>project menu</strong> sits at the very top of
+    the page and holds everything that concerns the project as a whole: its name and save state,
+    <strong>project modules</strong>, the <strong>plugin dashboard</strong> and
+    <strong>preferences</strong>, the runtime <strong>Start / Pause / Stop</strong> controls, and
+    Autosave / Save / Export / share / close. It is <strong>pinned to the top of the window</strong>,
+    so when the page grows taller than the browser and you scroll down into the script, saving and
+    starting a run stay one click away.
   </p>
-
-  <h3>The menu stays put</h3>
   <p>
-    Above the workspace sits the project menu — the project name and save state on one row, and the
-    editing tools, project modules and runtime <strong>Start / Pause / Stop</strong> controls on the
-    next. It is <strong>pinned to the top of the window</strong>: when the page grows taller than the
-    browser window and you scroll down into the script, the menu stays where it is and the SceneFlow
-    workspace and script scroll underneath it, so saving and starting a run are always one click away.
+    The <strong>SceneFlow menu bar</strong> sits directly above the workspace, inside the same card,
+    and holds everything that acts on the flow itself. It scrolls away with the workspace, because it
+    belongs to it. Left to right:
+  </p>
+  <ul>
+    <li><strong>Flow Assistant</strong> — reserved for assisted flow authoring; not active yet.</li>
+    <li><strong>Delete, Undo, Redo, Relayout edges, Create visual copy</strong> — editing the graph.</li>
+    <li>The <strong>current chart's name</strong>, or breadcrumbs showing your path when you are
+      inside a supernode.</li>
+    <li><strong>Runtime monitor</strong> <em>(x)</em> and <strong>Download snapshot</strong> (camera).</li>
+    <li>At the right: <strong>Toggle node snap</strong> (magnet — snaps dragged nodes to a grid),
+      <strong>Toggle info overlays</strong> (circled <em>i</em> — the small colored command badges on
+      nodes, see <a href="#commands">Commands</a>), <strong>Show/hide variable badges</strong>
+      (stacked cards, see <a href="#variables">Variables</a>), and this guide's own button.</li>
+  </ul>
+  <p>
+    The last four used to float over the canvas's top-right corner; they now sit in this bar, leaving
+    the graph itself clear.
   </p>
 
   <h3>Resizing the editor</h3>
   <p>
     By default the three regions are as tall as the canvas is wide, which on a wide window can make
-    them taller than you need. Drag the <strong>grip in the frame's bottom-right corner</strong> to
+    them taller than you need. Drag the <strong>grip in the workspace's bottom-right corner</strong> to
     set the height yourself; the blocks and inspector panels follow along.
     Once set, the height stays put when you resize the browser window, and is remembered per
     project. <strong>Double-click the grip</strong> to clear it and go back to the
@@ -400,7 +414,7 @@
   <p>
     To get them out of the way entirely, use the
     <svg class="icon-inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h10.5v5.5H3.75zM9.75 13.25h10.5v5.5H9.75z"/></svg>
-    <strong>Show/hide variable badges</strong> button in the canvas toolbar &mdash; it hides every
+    <strong>Show/hide variable badges</strong> button in the SceneFlow menu bar &mdash; it hides every
     badge at once, chart and plugin alike, and remembers the setting. Expanded badges come back
     expanded when you switch them on again. The same values are also always available without the
     badges: in the Inspector's Variables section, and in the runtime monitor.
@@ -478,7 +492,7 @@
     <p>No polling loop at all. The instant the i-edge's condition (e.g. an incoming <code>Event</code> variable matching a button-press signal) becomes true, it preemptively interrupts whatever's running and reacts right away.</p>
   </div>
 
-  <footer>Visual SceneMaker — SceneFlow editing reference · v1.5 · 2026-08-11</footer>
+  <footer>Visual SceneMaker — SceneFlow editing reference · v1.6 · 2026-08-15</footer>
 </main>
 
 </div>

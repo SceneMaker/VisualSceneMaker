@@ -2329,10 +2329,16 @@ a.export-link {
      default height is derived from the canvas width, the default height with it. */
   --sf-frame-pad: 0.45rem;
   --sf-frame-border: 1px;
+  /* Inset of .sceneflow-area, the card that holds the menu bar and the graph frame together
+     (matching .scenescript's own 0.75rem 0.9rem). Subtracted from --sf-canvas-width below for the
+     same reason as the frame's own inset: it sits between the panel and the canvas. */
+  --sf-area-pad: 0.9rem;
+  --sf-area-pad-y: 0.75rem;
+  --sf-area-border: 1px;
   /* Same scrollbar-width correction as .panel-wide above — margin-left/right (below) don't need
      it, only the width, since the scrollbar only ever overshoots the right edge. */
   --sf-viewport-width: calc(100vw - var(--scrollbar-width, 0px) - (2 * var(--sf-side-margin)));
-  --sf-canvas-width: calc(var(--sf-viewport-width) - (2 * var(--sf-panel-pad)) - (2 * var(--sf-frame-pad)) - (2 * var(--sf-frame-border)) - (2 * var(--sf-side-width)) - (2 * var(--sf-gap)));
+  --sf-canvas-width: calc(var(--sf-viewport-width) - (2 * var(--sf-panel-pad)) - (2 * var(--sf-area-pad)) - (2 * var(--sf-area-border)) - (2 * var(--sf-frame-pad)) - (2 * var(--sf-frame-border)) - (2 * var(--sf-side-width)) - (2 * var(--sf-gap)));
   --sf-canvas-height: var(--sf-canvas-width);
   grid-column: 1 / -1;
   user-select: none;
@@ -2341,14 +2347,6 @@ a.export-link {
   margin-left: calc(50% - 50vw + var(--sf-side-margin));
   margin-right: calc(50% - 50vw + var(--sf-side-margin));
   box-sizing: border-box;
-}
-
-.sceneflow-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  align-items: center;
-  margin: 0;
 }
 
 .runtime-controls {
@@ -2399,22 +2397,6 @@ a.export-link {
   border-color: rgba(138, 75, 75, 0.35);
 }
 
-.sceneflow-toolbar .toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-.sceneflow-toolbar .toggle input {
-  accent-color: var(--accent);
-}
-
-.sceneflow-toolbar .edge-type select {
-  min-width: 140px;
-}
-
 .sceneflow-breadcrumbs {
   display: inline-flex;
   align-items: center;
@@ -2428,16 +2410,6 @@ a.export-link {
   border: 1px solid var(--stroke);
   overflow-x: auto;
   white-space: nowrap;
-}
-
-.main-toolbar-row {
-  flex: 1 1 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  position: relative;
-  min-height: 40px;
 }
 
 .sceneflow-gear {
@@ -2496,25 +2468,79 @@ a.export-link {
   border: 1px solid var(--stroke);
 }
 
+/* Both clusters used to be absolutely positioned inside .main-toolbar-row — the nav cluster centred
+   on it, the runtime cluster pinned to its right edge. That row is gone: the project menu is now a
+   single row, so they are ordinary flex items in it. Left absolute, the runtime cluster would sit on
+   top of .panel-title-right's Save/Export/share buttons. */
 .sceneflow-nav-cluster {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .sceneflow-runtime-cluster {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
+}
+
+/* The project menu is one row: title, then the flow-independent controls, then the save/share group
+   pushed to the far right. .panel-title is shared with other panels, so this is scoped. */
+.sceneflow-controls-panel .panel-title {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.sceneflow-controls-panel .panel-title-right {
+  margin-left: auto;
+}
+
+/* The flow's menu bar and its graph share one card, mirroring .scenescript below: there the script
+   toolbar and the editor frame sit together in a single dashed tan card, and the toolbar itself
+   carries no card of its own. Same here, so each menu bar reads as belonging to the thing it acts
+   on rather than floating above it. */
+.sceneflow-area {
+  background: #e7e1d8;
+  border: var(--sf-area-border) dashed var(--stroke);
+  border-radius: var(--radius-md);
+  padding: var(--sf-area-pad-y) var(--sf-area-pad);
+  display: grid;
+  gap: 0.65rem;
+  box-sizing: border-box;
+}
+
+/* No background/border/radius of its own — the card above provides those (cf. .script-toolbar). */
+.sceneflow-menubar {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-gap, 0.5rem);
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+/* Fixed to the blocks column's width so "Flow Assistant" lines up with the palette below it, and
+   keeps that alignment whether or not either side rail is collapsed. */
+.sceneflow-menubar-lead {
+  width: var(--sf-side-width);
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Without this the label breaks onto two lines and the button grows taller than the rest of the
+   bar, since .panel-save sizes to its content inside a fixed-width column. */
+.flow-assistant-btn {
+  white-space: nowrap;
+}
+
+.sceneflow-context-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .runtime-lang-select {
@@ -3113,11 +3139,12 @@ a.export-link {
   opacity: 0.96;
 }
 
+/* These four (snap, info overlays, variable badges, help) used to float over the canvas's top-right
+   corner. They now live in the SceneFlow menu bar, so the absolute placement and its z-index are
+   gone and they sit at the bar's right end — over the inspector column, mirroring the lead group
+   over the blocks column. */
 .sceneflow-toggles {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  z-index: 4;
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;

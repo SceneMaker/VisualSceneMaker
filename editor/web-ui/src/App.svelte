@@ -6644,6 +6644,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   // Opens the static SceneFlow-editing help page — same popup-window pattern as
   // openScriptSyntaxHelp() above (fixed window name reuses one window across clicks).
+  // Stub. The Flow Assistant itself is not built yet; the control exists so the SceneFlow menu
+  // bar has its intended shape and the entry point has a settled home.
+  function openFlowAssistant() {
+    console.info("[flow-assistant] not implemented yet");
+  }
+
   function openSceneFlowHelp() {
     window.open(
       "/web-ui/sceneflow-help.html",
@@ -16521,6 +16527,98 @@ Sentence:
           <h2>
             VSM Web Project <span class="project-name-accent">{selectedProject?.name || ""}{headerDirty ? " *" : ""}</span>
           </h2>
+            {#if selectedProject}
+            <div class="sceneflow-nav-cluster">
+            <button
+              type="button"
+              class="sceneflow-gear flat"
+              on:click={openProjectConfigDialog}
+              disabled={!selectedProject || !wsConnected}
+              aria-label="Open project modules"
+              title="Project modules"
+            >
+              <IconPuzzle className="icon" />
+            </button>
+            <button
+              type="button"
+              class="sceneflow-gear flat"
+              on:click={openPluginDashboard}
+              disabled={!selectedProject || !wsConnected}
+              aria-label="Open plugin dashboard"
+              title="Plugin Dashboard"
+            >
+              <IconBlocks className="icon" />
+            </button>
+            <button
+              type="button"
+              class="sceneflow-gear flat"
+              on:click={openPrefsDialog}
+              disabled={!selectedProject || !wsConnected}
+              aria-label="Open preferences"
+              title="Preferences"
+            >
+              <IconGear className="icon" />
+            </button>
+            </div>
+          <div class="sceneflow-runtime-cluster">
+            <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
+            {#if runtimeLanguageOptions.length > 0}
+              <select
+                class="runtime-lang-select"
+                title="Scene language"
+                disabled={runtimeState !== "stopped"}
+                value={preferredSceneLanguage}
+                on:change={(e) => setPreferredSceneLanguage(e.target.value)}
+              >
+                <option value="">Any</option>
+                {#each runtimeLanguageOptions as opt}
+                  <option value={opt.value}>{opt.label}</option>
+                {/each}
+              </select>
+            {/if}
+            <button
+              type="button"
+              class="ghost icon-button"
+              on:click={() => {
+                const win = openRuntimeGui({ requireAutostart: true });
+                if (win) refreshHtmlGuiUrlAndNavigate(win);
+                const playPromise = runRuntimeCommand("Runtime.Play");
+                // Refresh again once Play actually completes server-side — covers a project
+                // with no preview-capable plugin, where PortPoolManager's first-ever port
+                // allocation happens only now (a preview-capable plugin, e.g. charamel-embed,
+                // would have already triggered it earlier via the SIA panel's lazy launch, so
+                // the immediate refresh above already has fresh data in that case — this
+                // second call is then a no-op, deduped by runtimeGuiWindowLastUrl).
+                if (win) playPromise.then(() => refreshHtmlGuiUrlAndNavigate(win));
+              }}
+              disabled={!runtimeCanPlay}
+              aria-label={runtimePlayLabel}
+              title={runtimePlayLabel}
+            >
+              <IconStart className="icon" />
+            </button>
+            <button
+              type="button"
+              class="ghost icon-button"
+              on:click={() => runRuntimeCommand("Runtime.Pause")}
+              disabled={!runtimeCanPause}
+              aria-label="Pause"
+              title="Pause"
+            >
+              <IconPause className="icon" />
+            </button>
+            <button
+              type="button"
+              class="ghost icon-button danger"
+              on:click={() => runRuntimeCommand("Runtime.Stop")}
+              disabled={!runtimeCanStop}
+              aria-label="Stop"
+              title="Stop"
+            >
+              <IconStop className="icon" />
+            </button>
+          </div>
+            {/if}
           <div class="panel-title-right">
             {#if autoSaving || autoSaveStatus}
               <span
@@ -16648,216 +16746,6 @@ Sentence:
             </button>
           </div>
         </header>
-        <div class="sceneflow-toolbar">
-        {#if selectedProject}
-          <div class="main-toolbar-row">
-            <div class="sceneflow-edit-cluster">
-              <button
-                type="button"
-                class="ghost icon-button danger flat"
-                on:click={deleteSceneFlowSelection}
-                disabled={!sceneFlowSelection || sceneFlowBusy}
-                aria-label="Delete"
-                title="Delete"
-              >
-                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                  />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="ghost icon-button flat"
-                on:click={undoSceneFlow}
-                disabled={!wsConnected || sceneFlowBusy || !(sceneFlow?.undoState?.canUndo ?? sceneFlowCanUndo)}
-                aria-label="Undo"
-                title="Undo"
-              >
-                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="ghost icon-button flat"
-                on:click={redoSceneFlow}
-                disabled={!wsConnected || sceneFlowBusy || !(sceneFlow?.undoState?.canRedo ?? sceneFlowCanRedo)}
-                aria-label="Redo"
-                title="Redo"
-              >
-                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="ghost icon-button flat"
-                on:click={straightenAllEdges}
-                disabled={!wsConnected || sceneFlowBusy}
-                aria-label="Relayout edges"
-                title="Relayout edges"
-              >
-                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="ghost icon-button flat"
-                on:click={createAlias}
-                disabled={!wsConnected || sceneFlowBusy || !canCreateAlias}
-                aria-label="Create visual copy"
-                title="Create visual copy of selected supernode"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v8.25A2.25 2.25 0 0 0 6 16.5h2.25m8.25-8.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-7.5A2.25 2.25 0 0 1 8.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 0 0-2.25 2.25v6" />
-                </svg>
-              </button>
-            </div>
-            <div class="sceneflow-nav-cluster">
-              <button
-                type="button"
-                class="sceneflow-gear flat"
-                on:click={openProjectConfigDialog}
-                disabled={!selectedProject || !wsConnected}
-                aria-label="Open project modules"
-                title="Project modules"
-              >
-                <IconPuzzle className="icon" />
-              </button>
-              <button
-                type="button"
-                class="sceneflow-gear flat"
-                on:click={openPluginDashboard}
-                disabled={!selectedProject || !wsConnected}
-                aria-label="Open plugin dashboard"
-                title="Plugin Dashboard"
-              >
-                <IconBlocks className="icon" />
-              </button>
-              <button
-                type="button"
-                class="sceneflow-gear flat"
-                on:click={openPrefsDialog}
-                disabled={!selectedProject || !wsConnected}
-                aria-label="Open preferences"
-                title="Preferences"
-              >
-                <IconGear className="icon" />
-              </button>
-              {#if sceneFlowBreadcrumbNodes.length}
-                <nav class="sceneflow-breadcrumbs" aria-label="SceneFlow path">
-                  {#each sceneFlowBreadcrumbNodes as node, idx}
-                    {#if idx > 0}
-                      <span class="crumb-sep">/</span>
-                    {/if}
-                    {#if idx < sceneFlowBreadcrumbNodes.length - 1}
-                      <button
-                        type="button"
-                        class="crumb"
-                        on:click={() => navigateSceneFlow(node.id || SCENEFLOW_ROOT_ID)}
-                        disabled={!wsConnected || sceneFlowBusy}
-                      >
-                        {node.name || "SceneFlow"}
-                      </button>
-                    {:else}
-                      <span class="crumb-current">{node.name || "SceneFlow"}</span>
-                    {/if}
-                  {/each}
-                </nav>
-              {:else}
-                <div class="sceneflow-breadcrumbs">
-                  <span class="muted">Path: {(sceneFlow?.path || []).join(" / ")}</span>
-                </div>
-              {/if}
-              <button
-                type="button"
-                class="sceneflow-gear flat"
-                on:click={openMonitorDialog}
-                disabled={!selectedProject || !wsConnected}
-                aria-label="Open runtime monitor"
-                title="Runtime monitor"
-              >
-                <IconMonitor className="icon" />
-              </button>
-              <button
-                type="button"
-                class="sceneflow-gear flat"
-                on:click={downloadSceneFlowSnapshot}
-                disabled={!sceneFlowRef || !sceneFlow}
-                aria-label="Download snapshot"
-                title="Download snapshot"
-              >
-                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                </svg>
-              </button>
-            </div>
-            <div class="sceneflow-runtime-cluster">
-              <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
-              {#if runtimeLanguageOptions.length > 0}
-                <select
-                  class="runtime-lang-select"
-                  title="Scene language"
-                  disabled={runtimeState !== "stopped"}
-                  value={preferredSceneLanguage}
-                  on:change={(e) => setPreferredSceneLanguage(e.target.value)}
-                >
-                  <option value="">Any</option>
-                  {#each runtimeLanguageOptions as opt}
-                    <option value={opt.value}>{opt.label}</option>
-                  {/each}
-                </select>
-              {/if}
-              <button
-                type="button"
-                class="ghost icon-button"
-                on:click={() => {
-                  const win = openRuntimeGui({ requireAutostart: true });
-                  if (win) refreshHtmlGuiUrlAndNavigate(win);
-                  const playPromise = runRuntimeCommand("Runtime.Play");
-                  // Refresh again once Play actually completes server-side — covers a project
-                  // with no preview-capable plugin, where PortPoolManager's first-ever port
-                  // allocation happens only now (a preview-capable plugin, e.g. charamel-embed,
-                  // would have already triggered it earlier via the SIA panel's lazy launch, so
-                  // the immediate refresh above already has fresh data in that case — this
-                  // second call is then a no-op, deduped by runtimeGuiWindowLastUrl).
-                  if (win) playPromise.then(() => refreshHtmlGuiUrlAndNavigate(win));
-                }}
-                disabled={!runtimeCanPlay}
-                aria-label={runtimePlayLabel}
-                title={runtimePlayLabel}
-              >
-                <IconStart className="icon" />
-              </button>
-              <button
-                type="button"
-                class="ghost icon-button"
-                on:click={() => runRuntimeCommand("Runtime.Pause")}
-                disabled={!runtimeCanPause}
-                aria-label="Pause"
-                title="Pause"
-              >
-                <IconPause className="icon" />
-              </button>
-              <button
-                type="button"
-                class="ghost icon-button danger"
-                on:click={() => runRuntimeCommand("Runtime.Stop")}
-                disabled={!runtimeCanStop}
-                aria-label="Stop"
-                title="Stop"
-              >
-                <IconStop className="icon" />
-              </button>
-            </div>
-          </div>
-        {/if}
-        </div>
       </div>
       {/if}
       {#if isScriptWindow}
@@ -16865,1746 +16753,1885 @@ Sentence:
              loads in this window's app instance; only rendering is omitted. -->
       {:else if !selectedProject}
         <p class="muted">Select a project to view the SceneFlow graph.</p>
-      {:else if sceneFlow}
-        <div
-          class="sceneflow-layout"
-          class:left-collapsed={!sceneFlowShowBlocks}
-          class:right-collapsed={!sceneFlowShowInspector}
-          style={sceneFlowLayoutStyle}
-          bind:this={sceneFlowLayoutEl}
-        >
-          {#if sceneFlowShowBlocks}
-            <aside
-              class="sceneflow-blocks sceneflow-region-left"
-              class:agents-collapsed={agentsCollapsed}
-              class:scenes-collapsed={scenesCollapsed}
+      {:else}
+        <!-- Menu bar and graph share one card, the way the script toolbar and editor do
+             inside .scenescript — the bar belongs to the flow it acts on. -->
+        <div class="sceneflow-area">
+        <!-- SceneFlow menu bar: everything that acts on the flow itself. Spans the whole
+             editing area (blocks | canvas | inspector) and scrolls with it — only the
+             project menu above is pinned. -->
+        <div class="sceneflow-menubar">
+          <div class="sceneflow-menubar-lead">
+            <button
+              type="button"
+              class="panel-save flow-assistant-btn"
+              on:click={openFlowAssistant}
+              disabled={!selectedProject}
+              title="Flow Assistant (coming soon)"
             >
-            <div class="blocks-section blocks-section--icons">
-              <div class="blocks-grid blocks-grid--icons">
-                <button
-                  type="button"
-                  class="block-icon"
-                  title="Supernode"
-                  aria-label="Supernode"
-                  style="color:#7A7D81"
-                  draggable="true"
-                  on:click={() => createSceneFlowNode("Super")}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "node", nodeType: "Super" })}
-                  disabled={!selectedProject || !wsConnected || sceneFlowBusy}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d={superNodeIconPath(16, 16)} transform="translate(4 4)" fill="currentColor" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="block-icon"
-                  title="Node"
-                  aria-label="Node"
-                  style="color:#7A7D81"
-                  draggable="true"
-                  on:click={() => createSceneFlowNode("Basic")}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "node", nodeType: "Basic" })}
-                  disabled={!selectedProject || !wsConnected || sceneFlowBusy}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <ellipse cx="12" cy="12" rx="7" ry="7" fill="currentColor" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="block-icon"
-                  title="Comment"
-                  aria-label="Comment"
-                  style="color:#7A7D81"
-                  draggable="true"
-                  on:click={createSceneFlowComment}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "comment" })}
-                  disabled={!selectedProject || !wsConnected || sceneFlowBusy}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="4.5" y="6" width="15" height="12" rx="3.5" ry="3.5" />
-                    <line x1="7" y1="10" x2="17" y2="10" />
-                    <line x1="7" y1="14" x2="15" y2="14" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="block-icon"
-                  class:active={edgeCreateMode && edgeCreateType === "EEDGE"}
-                  title="Epsilon edge"
-                  aria-label="Epsilon edge"
-                  style="color:#7A7D81"
-                  draggable="true"
-                  on:click={() => startEdgeCreate("EEDGE")}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "EEDGE" })}
-                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.EEDGE}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <g transform="translate(0 0)">
-                      <path d="M4 12h12" stroke="currentColor" />
-                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
-                      <text class="block-icon-text edge-symbol" x="5" y="9"></text>
-                    </g>
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="block-icon"
-                  class:active={edgeCreateMode && edgeCreateType === "PEDGE"}
-                  title="Probabilistic edge"
-                  aria-label="Probabilistic edge"
-                  style="color:#5BAE7A"
-                  draggable="true"
-                  on:click={() => startEdgeCreate("PEDGE")}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "PEDGE" })}
-                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.PEDGE}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <g transform="translate(0 4)">
-                      <path d="M4 12h12" stroke="currentColor" />
-                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
-                      <text class="block-icon-text edge-symbol" x="5" y="9">P</text>
-                    </g>
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="block-icon"
-                  class:active={edgeCreateMode && edgeCreateType === "FEDGE"}
-                  title="Fork edge"
-                  aria-label="Fork edge"
-                  style="color:#5B8EDC"
-                  draggable="true"
-                  on:click={() => startEdgeCreate("FEDGE")}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "FEDGE" })}
-                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.FEDGE}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <g transform="translate(0 0)">
-                      <path d="M4 12h12" stroke="currentColor" />
-                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
-                      <text class="block-icon-text edge-symbol" x="5" y="9"></text>
-                    </g>
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="block-icon"
-                  class:active={edgeCreateMode && edgeCreateType === "CEDGE"}
-                  title="Conditional edge"
-                  aria-label="Conditional edge"
-                  style="color:#FFC857"
-                  draggable="true"
-                  on:click={() => startEdgeCreate("CEDGE")}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "CEDGE" })}
-                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.CEDGE}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <g transform="translate(0 4)">
-                      <path d="M4 12h12" stroke="currentColor" />
-                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
-                      <text class="block-icon-text edge-symbol" x="5" y="9">C</text>
-                    </g>
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="block-icon"
-                  class:active={edgeCreateMode && edgeCreateType === "TEDGE"}
-                  title="Timeout edge"
-                  aria-label="Timeout edge"
-                  style="color:#A06A4B"
-                  draggable="true"
-                  on:click={() => startEdgeCreate("TEDGE")}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "TEDGE" })}
-                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.TEDGE}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <g transform="translate(0 4)">
-                      <path d="M4 12h12" stroke="currentColor" />
-                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
-                      <text class="block-icon-text edge-symbol" x="5" y="9">T</text>
-                    </g>
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="block-icon"
-                  class:active={edgeCreateMode && edgeCreateType === "IEDGE"}
-                  title="Interruptive edge"
-                  aria-label="Interruptive edge"
-                  style="color:#E26D5A"
-                  draggable="true"
-                  on:click={() => startEdgeCreate("IEDGE")}
-                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "IEDGE" })}
-                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.IEDGE}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <g transform="translate(0 4)">
-                      <path d="M4 12h12" stroke="currentColor" />
-                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
-                      <text class="block-icon-text edge-symbol" x="5" y="9">I</text>
-                    </g>
-                  </svg>
-                </button>
-              </div>
-              {#if edgeCreateMode}
-                <p class="muted edge-hint">
-                  {edgeCreateSourceId
-                    ? `Edge ${edgeTypeLabel(edgeCreateType)}: pick target node`
-                    : `Edge ${edgeTypeLabel(edgeCreateType)}: pick source node`}
-                </p>
-              {/if}
-            </div>
-            <div class="blocks-section blocks-section--agents" class:collapsed={agentsCollapsed}>
-              <div class="block-section-header">
-                <div class="block-section-title">Agents</div>
-                <button
-                  type="button"
-                  class="ghost icon-button block-section-toggle"
-                  aria-pressed={!agentsCollapsed}
-                  aria-label={agentsCollapsed ? "Expand agents" : "Collapse agents"}
-                  title={agentsCollapsed ? "Expand" : "Collapse"}
-                  on:click={() => (agentsCollapsed = !agentsCollapsed)}
-                >
-                  {#if agentsCollapsed}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                  {:else}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-                    </svg>
-                  {/if}
-                </button>
-              </div>
-              {#if !agentsCollapsed}
-              {#if !selectedProject}
-                <p class="muted">Select a project to view agents.</p>
-              {:else if scriptLoading || projectConfigLoading}
-                <p class="muted">Loading agents...</p>
-              {:else if agentGroups.input.length === 0 &&
-                agentGroups.processing.length === 0 &&
-                agentGroups.output.length === 0}
-                <p class="muted">No agents found.</p>
-              {:else}
-                <div class="agent-list">
-                  <div class="scene-group agent-group">
-                    <div class="scene-group-title">Input</div>
-                    <div class="scene-items" role="list">
-                      {#if agentGroups.input.length === 0}
-                        <div class="agent-empty">No agents.</div>
-                      {:else}
-                        {#each agentGroups.input as agent}
-                          <div class="scene-item agent-item" role="listitem">
-                            <div class="scene-item-main">
-                              <span
-                                class="scene-drag-handle agent-drag-handle"
-                                draggable="true"
-                                on:dragstart={(event) => startAgentDrag(event, agent, "input")}
-                                role="button"
-                                tabindex="0"
-                                aria-label={`Drag agent ${agent.name}`}
-                                title="Drag agent"
-                              >
-                                <svg
-                                  class="scene-drag-icon agent-icon"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke-width="1.5"
-                                  stroke="currentColor"
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d={AGENT_ICON_PATHS.input}
-                                  />
-                                </svg>
-                              </span>
-                              <span class="scene-name agent-name">{agent.name}</span>
-                            </div>
-                          </div>
-                        {/each}
-                      {/if}
-                    </div>
-                  </div>
-                  <div class="scene-group agent-group">
-                    <div class="scene-group-title">Processing</div>
-                    <div class="scene-items" role="list">
-                      {#if agentGroups.processing.length === 0}
-                        <div class="agent-empty">No agents.</div>
-                      {:else}
-                        {#each agentGroups.processing as agent}
-                          <div class="scene-item agent-item" role="listitem">
-                            <div class="scene-item-main">
-                              <span
-                                class="scene-drag-handle agent-drag-handle"
-                                draggable="true"
-                                on:dragstart={(event) => startAgentDrag(event, agent, "processing")}
-                                role="button"
-                                tabindex="0"
-                                aria-label={`Drag agent ${agent.name}`}
-                                title="Drag agent"
-                              >
-                                <svg
-                                  class="scene-drag-icon agent-icon"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke-width="1.5"
-                                  stroke="currentColor"
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d={AGENT_ICON_PATHS.processing}
-                                  />
-                                </svg>
-                              </span>
-                              <span class="scene-name agent-name">{agent.name}</span>
-                            </div>
-                          </div>
-                        {/each}
-                      {/if}
-                    </div>
-                  </div>
-                  <div class="scene-group agent-group">
-                    <div class="scene-group-title">Output</div>
-                    <div class="scene-items" role="list">
-                      {#if agentGroups.output.length === 0}
-                        <div class="agent-empty">No agents.</div>
-                      {:else}
-                        {#each agentGroups.output as agent}
-                          <div class="scene-item agent-item" role="listitem">
-                            <div class="scene-item-main">
-                              <span
-                                class="scene-drag-handle agent-drag-handle"
-                                draggable="true"
-                                on:dragstart={(event) => startAgentDrag(event, agent, "output")}
-                                role="button"
-                                tabindex="0"
-                                aria-label={`Drag agent ${agent.name}`}
-                                title="Drag agent"
-                              >
-                                <svg
-                                  class="scene-drag-icon agent-icon"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke-width="1.5"
-                                  stroke="currentColor"
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d={AGENT_ICON_PATHS.output}
-                                  />
-                                </svg>
-                              </span>
-                              <span class="scene-name agent-name" class:shared={agent.shared}>{agent.name}</span>
-                            </div>
-                          </div>
-                        {/each}
-                      {/if}
-                    </div>
-                  </div>
-                </div>
-              {/if}
-              {/if}
-            </div>
-            <div class="blocks-section blocks-section--scenes" class:collapsed={scenesCollapsed}>
-              <div class="block-section-header">
-                <div class="block-section-title">Scenes</div>
-                <button
-                  type="button"
-                  class="ghost icon-button block-section-toggle"
-                  aria-pressed={!scenesCollapsed}
-                  aria-label={scenesCollapsed ? "Expand scenes" : "Collapse scenes"}
-                  title={scenesCollapsed ? "Expand" : "Collapse"}
-                  on:click={() => (scenesCollapsed = !scenesCollapsed)}
-                >
-                  {#if scenesCollapsed}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                  {:else}
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-                    </svg>
-                  {/if}
-                </button>
-              </div>
-              {#if !scenesCollapsed}
-              <div class="scene-selector">
-                <select
-                  bind:value={scriptScenesLanguage}
-                  disabled={!selectedProject}
-                  aria-label="Scene language"
-                >
-                  {#each sceneLanguageOptions as option}
-                    <option value={option.value}>{option.label}</option>
-                  {/each}
-                </select>
-              </div>
-              <input
-                class="search"
-                placeholder="Filter scenes"
-                bind:value={scriptScenesFilter}
-                disabled={!selectedProject}
-              />
-              {#if !selectedProject}
-                <p class="muted">Select a project to view scenes.</p>
-              {:else if scriptScenesLoading && scriptScenesLive.length === 0}
-                <p class="muted">Loading scenes...</p>
-              {:else if scriptScenesError}
-                <p class="error">{scriptScenesError}</p>
-              {:else if filteredScriptScenes.length === 0}
-                <p class="muted">No scenes found.</p>
-              {:else}
-                <div class="scene-list">
-                  {#each filteredScriptScenes as lang}
-                    <div class="scene-group">
-                      <div class="scene-group-title">
-                        <span>{sceneLanguageLabel(lang.language)}</span>
-                        <span class="scene-count">{sceneGroupTotal(lang.groups)}</span>
-                      </div>
-                      <div class="scene-items" role="list">
-                        {#each lang.groups as group}
-                          <div class="scene-item" role="listitem">
-                            <div class="scene-item-main">
-                              <span
-                                class="scene-drag-handle"
-                                draggable="true"
-                                on:dragstart={(event) => startSceneDrag(event, group, lang.language)}
-                                role="button"
-                                tabindex="0"
-                                aria-label={`Drag scene ${group.name}`}
-                                title="Drag scene"
-                              >
-                                <svg
-                                  class="scene-drag-icon"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke-width="1.5"
-                                  stroke="currentColor"
-                                  aria-hidden="true"
-                                >
-                                  <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                                  />
-                                </svg>
-                              </span>
-                              <div class="scene-title-block">
-                                <span
-                                  class="scene-name"
-                                  title={group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name}
-                                  use:fitMiddleEllipsis={{ text: group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name }}
-                                ></span>
-                                {#if sceneTitleSuggestions.size > 0}
-                                  {@const suggestion = sceneTitleSuggestions.get(sceneGroupKey(lang.language, group.name))}
-                                  {#if suggestion && suggestion.suggestions && suggestion.suggestions.length}
-                                    <div class="scene-title-suggestion-wrap">
-                                      <div class="scene-title-suggestion-list">
-                                        {#each suggestion.suggestions.slice(0, 3) as option, idx}
-                                          <button
-                                            type="button"
-                                            class="ghost scene-title-suggestion-line"
-                                            aria-label={`Accept suggested title ${option.name}`}
-                                            on:click={() =>
-                                              applySceneTitleSuggestion(sceneGroupKey(lang.language, group.name), option.name)
-                                            }
-                                          >
-                                            <span class="scene-title-suggestion-rank">{idx + 1}.</span>
-                                            <span class="scene-title-suggestion-text">{option.name}</span>
-                                            {#if idx === 0}
-                                              <span class="scene-title-suggestion-badge">top</span>
-                                            {/if}
-                                          </button>
-                                        {/each}
-                                      </div>
-                                      <button
-                                        type="button"
-                                        class="ghost icon-button scene-title-suggestion-dismiss"
-                                        aria-label="Dismiss suggested titles"
-                                        on:click={() => dismissSceneTitleSuggestion(sceneGroupKey(lang.language, group.name))}
-                                      >
-                                        ×
-                                      </button>
-                                    </div>
-                                  {/if}
-                                {/if}
-                              </div>
-                            </div>
-                            <span class="scene-count">{group.count}</span>
-                          </div>
-                        {/each}
-                      </div>
-                    </div>
-                  {/each}
-                </div>
-              {/if}
-              {/if}
-            </div>
-            <div class="blocks-filler" aria-hidden="true"></div>
-            </aside>
-          {:else}
-            <div class="sceneflow-side-placeholder sceneflow-region-left" aria-hidden="true"></div>
-          {/if}
-          <button
-            type="button"
-            class="sceneflow-rail sceneflow-rail-left"
-            class:collapsed={!sceneFlowShowBlocks}
-            on:click={() => (sceneFlowShowBlocks = !sceneFlowShowBlocks)}
-            aria-label={sceneFlowShowBlocks ? "Hide blocks panel" : "Show blocks panel"}
-            aria-pressed={sceneFlowShowBlocks}
-            disabled={!sceneFlow}
-            title={sceneFlowShowBlocks ? "Hide blocks" : "Show blocks"}
-          >
-            <span class="sceneflow-rail-line" aria-hidden="true"></span>
-            <span class="sceneflow-rail-pill" aria-hidden="true">
-              {#if sceneFlowShowBlocks}&#8249;{:else}&#8250;{/if}
-            </span>
-          </button>
-          <div class="sceneflow-container sceneflow-region-center" style={sceneFlowFrameStyle} bind:this={sceneFlowContainerEl}>
-            <div class="sceneflow-scroll">
-              <SceneFlowView
-                bind:this={sceneFlowRef}
-                bind:zoomLevel={sceneFlowZoom}
-                bind:worldBox={sceneFlowWorldBox}
-                bind:viewBoxState={sceneFlowViewBox}
-                bind:selection={sceneFlowSelection}
-                bind:multiSelection={sceneFlowMultiSelection}
-                config={configDraft}
-                snapshot={sceneFlow}
-                activityNodes={activityNodeIds}
-                activityEdges={activityEdgeList}
-                timeoutEdges={timeoutEdgeList}
-                runtimeValues={runtimeValues}
-                runtimeState={runtimeState}
-                onNavigate={navigateSceneFlow}
-                onNodeMove={moveSceneFlowNode}
-                onNodeGroupMove={moveSceneFlowNodeGroup}
-                onCommentUpdate={updateSceneFlowComment}
-                onEdgeControlUpdate={updateSceneFlowEdgeControl}
-                onEdgeRetarget={retargetSceneFlowEdge}
-                onDeleteSelection={deleteSceneFlowSelection}
-                onUndo={undoSceneFlow}
-                onRedo={redoSceneFlow}
-                nodeSnapToGrid={sceneFlowNodeSnap}
-                edgeCreateMode={edgeCreateMode}
-                edgeCreateSourceId={edgeCreateSourceId}
-                edgeCreateType={edgeCreateType}
-                onEdgePick={handleEdgePick}
-                onSceneDrop={handleSceneFlowSceneDrop}
-                sceneDragType={SCENE_DRAG_TYPE}
-                onAgentDrop={handleSceneFlowAgentDrop}
-                agentDragType={AGENT_DRAG_TYPE}
-                onBlockDrop={handleBlockDrop}
-                blockDragType={BLOCK_DRAG_TYPE}
-                showInfo={sceneFlowShowInfo}
-                onCommandOpen={openCmdDialog}
-                onCommandMove={moveNodeCommand}
-                onCopySelection={copySceneFlowSelection}
-                onPasteSelection={pasteSceneFlowSelection}
-                onCutSelection={cutSceneFlowSelection}
-                onDuplicateSelection={duplicateSceneFlowSelection}
-                onTimeoutEdgeUpdate={handleCanvasTimeoutEdgeUpdate}
-              />
-            </div>
-            {#if sceneFlow?.usedByAliases?.length > 0}
-              <div class="alias-notice" role="note">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                <span>
-                  Shared flow — <strong>{sceneFlow.superNode?.name || sceneFlow.superNodeId}</strong> is also used as a visual copy in:
-                  {#each sceneFlow.usedByAliases as alias, i}
-                    {alias.parentName || 'root'}{i < sceneFlow.usedByAliases.length - 1 ? ', ' : ''}.
-                  {/each}
-                </span>
-              </div>
-            {/if}
-            <div class="sceneflow-toggles">
-              <button
-                type="button"
-                class="sceneflow-toggle sceneflow-toggle-icon"
-                class:active={sceneFlowNodeSnap}
-                on:click={() => (sceneFlowNodeSnap = !sceneFlowNodeSnap)}
-                aria-pressed={sceneFlowNodeSnap}
-                aria-label="Toggle node snap"
-                disabled={!sceneFlow}
-                title="Toggle node snap"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
+              <IconDocument className="icon" />
+              Flow Assistant
+            </button>
+          </div>
+          <div class="sceneflow-edit-cluster">
+            <button
+              type="button"
+              class="ghost icon-button danger flat"
+              on:click={deleteSceneFlowSelection}
+              disabled={!sceneFlowSelection || sceneFlowBusy}
+              aria-label="Delete"
+              title="Delete"
+            >
+              <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
-                  class="icon"
-                  aria-hidden="true"
-                >
-                  <path d="m12 15 4 4" />
-                  <path d="M2.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l6.029-6.029a1 1 0 1 1 3 3l-6.029 6.029a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l6.365-6.367A1 1 0 0 0 8.716 4.282z" />
-                  <path d="m5 8 4 4" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="sceneflow-toggle sceneflow-toggle-icon"
-                class:active={sceneFlowShowInfo}
-                on:click={() => (sceneFlowShowInfo = !sceneFlowShowInfo)}
-                aria-pressed={sceneFlowShowInfo}
-                aria-label="Toggle info overlays"
-                disabled={!sceneFlow}
-                title="Toggle info overlays"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="sceneflow-toggle sceneflow-toggle-icon"
-                class:active={sceneFlowShowVars}
-                on:click={toggleVarBadges}
-                aria-pressed={sceneFlowShowVars}
-                aria-label={sceneFlowShowVars ? "Hide variable badges" : "Show variable badges"}
-                disabled={!sceneFlow}
-                title={sceneFlowShowVars ? "Hide variable badges" : "Show variable badges"}
-              >
-                <!-- Stacked cards: the badges themselves, shown/hidden as one group. -->
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h10.5v5.5H3.75zM9.75 13.25h10.5v5.5H9.75z" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="sceneflow-toggle sceneflow-toggle-icon"
-                on:click={openSceneFlowHelp}
-                aria-label="Open SceneFlow help"
-                title="Open SceneFlow help"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-                </svg>
-              </button>
-            </div>
-            {#if sceneFlowShowVars}
-              <VarBadge
-                title="Variables"
-                variables={displayGlobalVarList.map((def) => ({ line: varBadgeLine(def), description: varBadgeLine(def) }))}
-                loading={runtimeLoading}
-                error={runtimeError}
-                expanded={varBadgeState.global?.expanded ?? false}
-                x={varBadgeState.global?.x ?? 0}
-                y={varBadgeState.global?.y ?? 0}
-                w={varBadgeState.global?.w ?? VAR_BADGE_MIN_WIDTH}
-                h={varBadgeState.global?.h ?? VAR_BADGE_MIN_HEIGHT}
-                color="#edf1f8"
-                onDragStart={(e) => startVarBadgeMove(e, "global")}
-                onToggle={() => toggleVarBadge("global")}
-                onResizeStart={(e) => startVarBadgeResize(e, "global")}
-              />
-              {#if showLocalVarBadge}
-                <VarBadge
-                  title="Local variables"
-                  subtitle={currentSuperName}
-                  variables={displayLocalVarList.map((def) => ({ line: varBadgeLine(def), description: varBadgeLine(def) }))}
-                  loading={runtimeLoading}
-                  error={runtimeError}
-                  expanded={varBadgeState.local?.expanded ?? false}
-                  x={varBadgeState.local?.x ?? 0}
-                  y={varBadgeState.local?.y ?? 0}
-                  w={varBadgeState.local?.w ?? VAR_BADGE_MIN_WIDTH}
-                  h={varBadgeState.local?.h ?? VAR_BADGE_MIN_HEIGHT}
-                  color="#edf1f8"
-                  onDragStart={(e) => startVarBadgeMove(e, "local")}
-                  onToggle={() => toggleVarBadge("local")}
-                  onResizeStart={(e) => startVarBadgeResize(e, "local")}
+                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                 />
-              {/if}
-            {/if}
-            <!-- Same sceneFlowShowVars gate as the project variable badges above: one toolbar
-                 button hides every badge on the canvas. Plugin badges previously had no visibility
-                 control at all, so a project's canvas gained one permanent panel per plugin (4
-                 plugins in the ExampleProject already covered 20% of the canvas). -->
-            {#if sceneFlowShowVars && selectedProjectId && pluginBadgeDescriptors.length > 0}
-              {#each pluginBadgeDescriptors as badge, i (badge.instanceName)}
-                <VarBadge
-                  title={badge.pluginName}
-                  category={badge.category}
-                  variables={badge.variables.map((v) => {
-                    const sfDef = sceneFlowVarDefs.find((d) => d.name === v.name);
-                    const expr = normalizeRuntimeValue(sfDef?.expr ?? sfDef?.expression ?? "");
-                    const captured = normalizeRuntimeValue(runtimeInitialValues[v.name]);
-                    const defaultVal = captured || expr;
-                    const value = normalizeRuntimeValue(runtimeValues[v.name]);
-                    let line;
-                    if (value) {
-                      const showDefault = defaultVal && value !== defaultVal;
-                      line = showDefault ? `${v.name} = ${value} (${defaultVal})` : `${v.name} = ${value}`;
-                    } else if (defaultVal) {
-                      line = `${v.name} = ${defaultVal}`;
-                    } else {
-                      line = v.name;
-                    }
-                    return { line, description: v.description || line };
-                  })}
-                  expanded={pluginBadgeState[badge.instanceName]?.expanded ?? false}
-                  x={pluginBadgeState[badge.instanceName]?.x ?? PLUGIN_BADGE_DEFAULT_X}
-                  y={pluginBadgeState[badge.instanceName]?.y ?? (PLUGIN_BADGE_DEFAULT_Y + i * PLUGIN_BADGE_Y_STEP)}
-                  w={pluginBadgeState[badge.instanceName]?.w ?? PLUGIN_BADGE_DEFAULT_W}
-                  h={pluginBadgeState[badge.instanceName]?.h ?? PLUGIN_BADGE_DEFAULT_H}
-                  color="#f8f6f2"
-                  onDragStart={(e) => startPluginBadgeDrag(e, badge.instanceName)}
-                  onToggle={() => togglePluginBadge(badge.instanceName)}
-                  onResizeStart={(e) => startPluginBadgeResize(e, badge.instanceName)}
-                />
-              {/each}
-            {/if}
-            <div class="sceneflow-navigator">
-              <div class="sceneflow-zoom-controls">
-                {#if sceneFlow}
-                  <span class="sceneflow-zoom-label">{Math.round(sceneFlowZoom * 100)}%</span>
-                {/if}
-                <button
-                  type="button"
-                  class="sceneflow-zoom-button"
-                  on:click={() => sceneFlowRef?.zoomIn()}
-                  disabled={!sceneFlow}
-                  aria-label="Zoom in"
-                  title="Zoom in"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="sceneflow-zoom-button"
-                  on:click={() => sceneFlowRef?.zoomOut()}
-                  disabled={!sceneFlow}
-                  aria-label="Zoom out"
-                  title="Zoom out"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="sceneflow-zoom-button"
-                  on:click={() => sceneFlowRef?.fitToView()}
-                  disabled={!sceneFlow}
-                  aria-label="Fit to view"
-                  title="Fit to view"
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  class="sceneflow-zoom-button"
-                  class:active={minimapVisible}
-                  on:click={() => (minimapVisible = !minimapVisible)}
-                  aria-label={minimapVisible ? "Hide minimap" : "Show minimap"}
-                  title={minimapVisible ? "Hide minimap" : "Show minimap"}
-                >
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <rect x="13" y="13" width="7" height="7" rx="1" />
-                  </svg>
-                </button>
-              </div>
-              {#if minimapVisible}
-                <SceneFlowMiniMap
-                  snapshot={sceneFlow}
-                  worldBox={sceneFlowWorldBox}
-                  viewBox={sceneFlowViewBox}
-                  onCenter={(x, y) => sceneFlowRef?.centerOn(x, y)}
-                  peers={[...peerPresence.values()]}
-                />
-              {/if}
-            </div>
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="ghost icon-button flat"
+              on:click={undoSceneFlow}
+              disabled={!wsConnected || sceneFlowBusy || !(sceneFlow?.undoState?.canUndo ?? sceneFlowCanUndo)}
+              aria-label="Undo"
+              title="Undo"
+            >
+              <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="ghost icon-button flat"
+              on:click={redoSceneFlow}
+              disabled={!wsConnected || sceneFlowBusy || !(sceneFlow?.undoState?.canRedo ?? sceneFlowCanRedo)}
+              aria-label="Redo"
+              title="Redo"
+            >
+              <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="ghost icon-button flat"
+              on:click={straightenAllEdges}
+              disabled={!wsConnected || sceneFlowBusy}
+              aria-label="Relayout edges"
+              title="Relayout edges"
+            >
+              <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="ghost icon-button flat"
+              on:click={createAlias}
+              disabled={!wsConnected || sceneFlowBusy || !canCreateAlias}
+              aria-label="Create visual copy"
+              title="Create visual copy of selected supernode"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v8.25A2.25 2.25 0 0 0 6 16.5h2.25m8.25-8.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-7.5A2.25 2.25 0 0 1 8.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 0 0-2.25 2.25v6" />
+              </svg>
+            </button>
           </div>
-          <button
-            type="button"
-            class="sceneflow-rail sceneflow-rail-right"
-            class:collapsed={!sceneFlowShowInspector}
-            on:click={() => (sceneFlowShowInspector = !sceneFlowShowInspector)}
-            aria-label={sceneFlowShowInspector ? "Hide inspector panel" : "Show inspector panel"}
-            aria-pressed={sceneFlowShowInspector}
-            disabled={!sceneFlow}
-            title={sceneFlowShowInspector ? "Hide inspector" : "Show inspector"}
+          <div class="sceneflow-context-cluster">
+            {#if sceneFlowBreadcrumbNodes.length}
+              <nav class="sceneflow-breadcrumbs" aria-label="SceneFlow path">
+                {#each sceneFlowBreadcrumbNodes as node, idx}
+                  {#if idx > 0}
+                    <span class="crumb-sep">/</span>
+                  {/if}
+                  {#if idx < sceneFlowBreadcrumbNodes.length - 1}
+                    <button
+                      type="button"
+                      class="crumb"
+                      on:click={() => navigateSceneFlow(node.id || SCENEFLOW_ROOT_ID)}
+                      disabled={!wsConnected || sceneFlowBusy}
+                    >
+                      {node.name || "SceneFlow"}
+                    </button>
+                  {:else}
+                    <span class="crumb-current">{node.name || "SceneFlow"}</span>
+                  {/if}
+                {/each}
+              </nav>
+            {:else}
+              <div class="sceneflow-breadcrumbs">
+                <span class="muted">Path: {(sceneFlow?.path || []).join(" / ")}</span>
+              </div>
+            {/if}
+            <button
+              type="button"
+              class="sceneflow-gear flat"
+              on:click={openMonitorDialog}
+              disabled={!selectedProject || !wsConnected}
+              aria-label="Open runtime monitor"
+              title="Runtime monitor"
+            >
+              <IconMonitor className="icon" />
+            </button>
+            <button
+              type="button"
+              class="sceneflow-gear flat"
+              on:click={downloadSceneFlowSnapshot}
+              disabled={!sceneFlowRef || !sceneFlow}
+              aria-label="Download snapshot"
+              title="Download snapshot"
+            >
+              <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+              </svg>
+            </button>
+          </div>
+          <div class="sceneflow-toggles">
+            <button
+              type="button"
+              class="sceneflow-toggle sceneflow-toggle-icon"
+              class:active={sceneFlowNodeSnap}
+              on:click={() => (sceneFlowNodeSnap = !sceneFlowNodeSnap)}
+              aria-pressed={sceneFlowNodeSnap}
+              aria-label="Toggle node snap"
+              disabled={!sceneFlow}
+              title="Toggle node snap"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="icon"
+                aria-hidden="true"
+              >
+                <path d="m12 15 4 4" />
+                <path d="M2.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l6.029-6.029a1 1 0 1 1 3 3l-6.029 6.029a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l6.365-6.367A1 1 0 0 0 8.716 4.282z" />
+                <path d="m5 8 4 4" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="sceneflow-toggle sceneflow-toggle-icon"
+              class:active={sceneFlowShowInfo}
+              on:click={() => (sceneFlowShowInfo = !sceneFlowShowInfo)}
+              aria-pressed={sceneFlowShowInfo}
+              aria-label="Toggle info overlays"
+              disabled={!sceneFlow}
+              title="Toggle info overlays"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="sceneflow-toggle sceneflow-toggle-icon"
+              class:active={sceneFlowShowVars}
+              on:click={toggleVarBadges}
+              aria-pressed={sceneFlowShowVars}
+              aria-label={sceneFlowShowVars ? "Hide variable badges" : "Show variable badges"}
+              disabled={!sceneFlow}
+              title={sceneFlowShowVars ? "Hide variable badges" : "Show variable badges"}
+            >
+              <!-- Stacked cards: the badges themselves, shown/hidden as one group. -->
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h10.5v5.5H3.75zM9.75 13.25h10.5v5.5H9.75z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="sceneflow-toggle sceneflow-toggle-icon"
+              on:click={openSceneFlowHelp}
+              aria-label="Open SceneFlow help"
+              title="Open SceneFlow help"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+          {#if sceneFlow}
+          <div
+            class="sceneflow-layout"
+            class:left-collapsed={!sceneFlowShowBlocks}
+            class:right-collapsed={!sceneFlowShowInspector}
+            style={sceneFlowLayoutStyle}
+            bind:this={sceneFlowLayoutEl}
           >
-            <span class="sceneflow-rail-line" aria-hidden="true"></span>
-            <span class="sceneflow-rail-pill" aria-hidden="true">
-              {#if sceneFlowShowInspector}&#8250;{:else}&#8249;{/if}
-            </span>
-          </button>
-          {#if sceneFlowShowInspector}
-            <aside class="sceneflow-inspector sceneflow-region-right">
-            {#if multiSelectionActive}
-              <h3 class="inspector-title">Selection ({selectionList.length})</h3>
-              <div class="inspector-meta">
-                <div class="inspector-row">
-                  <span>Nodes</span>
-                  <span>
-                    {selectionNodes.length
-                      ? `${selectionNodes.length}${selectionNodeSummary ? ` (${selectionNodeSummary})` : ""}`
-                      : "0"}
-                  </span>
+            {#if sceneFlowShowBlocks}
+              <aside
+                class="sceneflow-blocks sceneflow-region-left"
+                class:agents-collapsed={agentsCollapsed}
+                class:scenes-collapsed={scenesCollapsed}
+              >
+              <div class="blocks-section blocks-section--icons">
+                <div class="blocks-grid blocks-grid--icons">
+                  <button
+                    type="button"
+                    class="block-icon"
+                    title="Supernode"
+                    aria-label="Supernode"
+                    style="color:#7A7D81"
+                    draggable="true"
+                    on:click={() => createSceneFlowNode("Super")}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "node", nodeType: "Super" })}
+                    disabled={!selectedProject || !wsConnected || sceneFlowBusy}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d={superNodeIconPath(16, 16)} transform="translate(4 4)" fill="currentColor" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="block-icon"
+                    title="Node"
+                    aria-label="Node"
+                    style="color:#7A7D81"
+                    draggable="true"
+                    on:click={() => createSceneFlowNode("Basic")}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "node", nodeType: "Basic" })}
+                    disabled={!selectedProject || !wsConnected || sceneFlowBusy}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <ellipse cx="12" cy="12" rx="7" ry="7" fill="currentColor" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="block-icon"
+                    title="Comment"
+                    aria-label="Comment"
+                    style="color:#7A7D81"
+                    draggable="true"
+                    on:click={createSceneFlowComment}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "comment" })}
+                    disabled={!selectedProject || !wsConnected || sceneFlowBusy}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="4.5" y="6" width="15" height="12" rx="3.5" ry="3.5" />
+                      <line x1="7" y1="10" x2="17" y2="10" />
+                      <line x1="7" y1="14" x2="15" y2="14" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="block-icon"
+                    class:active={edgeCreateMode && edgeCreateType === "EEDGE"}
+                    title="Epsilon edge"
+                    aria-label="Epsilon edge"
+                    style="color:#7A7D81"
+                    draggable="true"
+                    on:click={() => startEdgeCreate("EEDGE")}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "EEDGE" })}
+                    disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.EEDGE}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <g transform="translate(0 0)">
+                        <path d="M4 12h12" stroke="currentColor" />
+                        <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                        <text class="block-icon-text edge-symbol" x="5" y="9"></text>
+                      </g>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="block-icon"
+                    class:active={edgeCreateMode && edgeCreateType === "PEDGE"}
+                    title="Probabilistic edge"
+                    aria-label="Probabilistic edge"
+                    style="color:#5BAE7A"
+                    draggable="true"
+                    on:click={() => startEdgeCreate("PEDGE")}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "PEDGE" })}
+                    disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.PEDGE}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <g transform="translate(0 4)">
+                        <path d="M4 12h12" stroke="currentColor" />
+                        <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                        <text class="block-icon-text edge-symbol" x="5" y="9">P</text>
+                      </g>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="block-icon"
+                    class:active={edgeCreateMode && edgeCreateType === "FEDGE"}
+                    title="Fork edge"
+                    aria-label="Fork edge"
+                    style="color:#5B8EDC"
+                    draggable="true"
+                    on:click={() => startEdgeCreate("FEDGE")}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "FEDGE" })}
+                    disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.FEDGE}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <g transform="translate(0 0)">
+                        <path d="M4 12h12" stroke="currentColor" />
+                        <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                        <text class="block-icon-text edge-symbol" x="5" y="9"></text>
+                      </g>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="block-icon"
+                    class:active={edgeCreateMode && edgeCreateType === "CEDGE"}
+                    title="Conditional edge"
+                    aria-label="Conditional edge"
+                    style="color:#FFC857"
+                    draggable="true"
+                    on:click={() => startEdgeCreate("CEDGE")}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "CEDGE" })}
+                    disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.CEDGE}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <g transform="translate(0 4)">
+                        <path d="M4 12h12" stroke="currentColor" />
+                        <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                        <text class="block-icon-text edge-symbol" x="5" y="9">C</text>
+                      </g>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="block-icon"
+                    class:active={edgeCreateMode && edgeCreateType === "TEDGE"}
+                    title="Timeout edge"
+                    aria-label="Timeout edge"
+                    style="color:#A06A4B"
+                    draggable="true"
+                    on:click={() => startEdgeCreate("TEDGE")}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "TEDGE" })}
+                    disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.TEDGE}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <g transform="translate(0 4)">
+                        <path d="M4 12h12" stroke="currentColor" />
+                        <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                        <text class="block-icon-text edge-symbol" x="5" y="9">T</text>
+                      </g>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="block-icon"
+                    class:active={edgeCreateMode && edgeCreateType === "IEDGE"}
+                    title="Interruptive edge"
+                    aria-label="Interruptive edge"
+                    style="color:#E26D5A"
+                    draggable="true"
+                    on:click={() => startEdgeCreate("IEDGE")}
+                    on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "IEDGE" })}
+                    disabled={!sceneFlow || !wsConnected || sceneFlowBusy || edgeTypeDisabledMap.IEDGE}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <g transform="translate(0 4)">
+                        <path d="M4 12h12" stroke="currentColor" />
+                        <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                        <text class="block-icon-text edge-symbol" x="5" y="9">I</text>
+                      </g>
+                    </svg>
+                  </button>
                 </div>
-                <div class="inspector-row">
-                  <span>Edges</span>
-                  <span>
-                    {selectionEdges.length
-                      ? `${selectionEdges.length}${selectionEdgeSummary ? ` (${selectionEdgeSummary})` : ""}`
-                      : "0"}
-                  </span>
-                </div>
-                <div class="inspector-row">
-                  <span>Comments</span>
-                  <span>{selectionComments.length || 0}</span>
-                </div>
-                {#if selectionNodes.length}
-                  <div class="inspector-row">
-                    <span>Start nodes</span>
-                    <span>{selectionStartCount ? selectionStartCount : "None"}</span>
-                  </div>
+                {#if edgeCreateMode}
+                  <p class="muted edge-hint">
+                    {edgeCreateSourceId
+                      ? `Edge ${edgeTypeLabel(edgeCreateType)}: pick target node`
+                      : `Edge ${edgeTypeLabel(edgeCreateType)}: pick source node`}
+                  </p>
                 {/if}
               </div>
-              {#if selectionNodePreview.length}
-                <div class="definition-section">
-                  <header class="definition-header">
-                    <h4>Nodes</h4>
-                    <span class="muted">{selectionNodes.length}</span>
-                  </header>
-                  <div class="definition-list">
-                    {#each selectionNodePreview as node}
-                      <div class="definition-row">
-                        <span>{displayNodeName(node)}</span>
-                        <span class="muted">{node.type === "Super" ? "Super" : "Basic"}</span>
-                      </div>
-                    {/each}
-                    {#if selectionNodeRemaining > 0}
-                      <div class="definition-row muted">+ {selectionNodeRemaining} more</div>
+              <div class="blocks-section blocks-section--agents" class:collapsed={agentsCollapsed}>
+                <div class="block-section-header">
+                  <div class="block-section-title">Agents</div>
+                  <button
+                    type="button"
+                    class="ghost icon-button block-section-toggle"
+                    aria-pressed={!agentsCollapsed}
+                    aria-label={agentsCollapsed ? "Expand agents" : "Collapse agents"}
+                    title={agentsCollapsed ? "Expand" : "Collapse"}
+                    on:click={() => (agentsCollapsed = !agentsCollapsed)}
+                  >
+                    {#if agentsCollapsed}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    {:else}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                      </svg>
                     {/if}
-                  </div>
+                  </button>
                 </div>
-              {/if}
-              {#if selectionCommentPreview.length}
-                <div class="definition-section">
-                  <header class="definition-header">
-                    <h4>Comments</h4>
-                    <span class="muted">{selectionComments.length}</span>
-                  </header>
-                  <div class="definition-list">
-                    {#each selectionCommentPreview as comment, index}
-                      <div class="definition-row">
-                        <span>{commentLabel(comment, index)}</span>
-                        <span class="muted">
-                          {comment.rect?.w ?? 0} x {comment.rect?.h ?? 0}
-                        </span>
-                      </div>
-                    {/each}
-                    {#if selectionCommentRemaining > 0}
-                      <div class="definition-row muted">+ {selectionCommentRemaining} more</div>
-                    {/if}
-                  </div>
-                </div>
-              {/if}
-              <div class="actions">
-                <button type="button" class="ghost" on:click={copySceneFlowSelection} disabled={!wsConnected || sceneFlowBusy}>
-                  Copy
-                </button>
-                <button type="button" class="ghost" on:click={cutSceneFlowSelection} disabled={!wsConnected || sceneFlowBusy}>
-                  Cut
-                </button>
-                <button
-                  type="button"
-                  class="ghost"
-                  on:click={duplicateSceneFlowSelection}
-                  disabled={!wsConnected || sceneFlowBusy}
-                >
-                  Duplicate
-                </button>
-                <button
-                  type="button"
-                  class="ghost"
-                  on:click={deleteSceneFlowSelection}
-                  disabled={!wsConnected || sceneFlowBusy}
-                >
-                  Delete
-                </button>
-              </div>
-              {#if selectionNodes.length}
-                <div class="definition-section">
-                  <header class="definition-header">
-                    <h4>Arrange</h4>
-                    <span class="muted">{selectionNodes.length} nodes</span>
-                  </header>
-                  <div class="stack">
-                    <div class="row">
-                      <span class="arrange-label">Align X</span>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => alignSelectedNodes("left")}
-                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
-                      >
-                        Left
-                      </button>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => alignSelectedNodes("center")}
-                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
-                      >
-                        Center
-                      </button>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => alignSelectedNodes("right")}
-                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
-                      >
-                        Right
-                      </button>
-                    </div>
-                    <div class="row">
-                      <span class="arrange-label">Align Y</span>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => alignSelectedNodes("top")}
-                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
-                      >
-                        Top
-                      </button>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => alignSelectedNodes("middle")}
-                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
-                      >
-                        Middle
-                      </button>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => alignSelectedNodes("bottom")}
-                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
-                      >
-                        Bottom
-                      </button>
-                    </div>
-                    <div class="row">
-                      <span class="arrange-label">Distribute</span>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => distributeSelectedNodes("x")}
-                        disabled={!selectionCanDistribute || !wsConnected || sceneFlowBusy}
-                      >
-                        Horizontal
-                      </button>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => distributeSelectedNodes("y")}
-                        disabled={!selectionCanDistribute || !wsConnected || sceneFlowBusy}
-                      >
-                        Vertical
-                      </button>
-                    </div>
-                    <div class="row">
-                      <span class="arrange-label">Start</span>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => setSelectedNodesStart(true)}
-                        disabled={!selectionCanToggleStart || !wsConnected || sceneFlowBusy}
-                      >
-                        Set
-                      </button>
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => setSelectedNodesStart(false)}
-                        disabled={!selectionCanToggleStart || !wsConnected || sceneFlowBusy}
-                      >
-                        Clear
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              {/if}
-              {#if selectionEdges.length > 1}
-                <div class="definition-section">
-                  <header class="definition-header">
-                    <h4>Edges</h4>
-                    <span class="muted">{selectionEdges.length} edges</span>
-                  </header>
-                  <div class="actions">
-                    <button
-                      type="button"
-                      class="ghost"
-                      on:click={normalizeSelectedEdges}
-                      disabled={!wsConnected || sceneFlowBusy}
-                    >
-                      Normalize
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost"
-                      on:click={straightenSelectedEdges}
-                      disabled={!wsConnected || sceneFlowBusy}
-                    >
-                      Relayout
-                    </button>
-                  </div>
-                </div>
-              {/if}
-            {:else if (sceneFlowSelection?.type === "node" || sceneFlowSelection?.type === "command") && selectedNode && nodeDraft}
-              <div class="node-header">
-                <input
-                  class="node-title-input"
-                  aria-label="Node name"
-                  bind:value={nodeDraft.name}
-                  disabled={selectedNode.isHistory}
-                  on:change={applyNodeEdits}
-                  on:keydown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      applyNodeEdits();
-                    }
-                  }}
-                />
-                <button
-                  type="button"
-                  class="ghost icon-button start-toggle"
-                  class:active={nodeDraft.isStart}
-                  on:click={toggleNodeStart}
-                  disabled={selectedNode.isHistory}
-                  aria-pressed={nodeDraft.isStart}
-                  aria-label="Toggle start node"
-                  title="Start node"
-                >
-                  <IconStart className="icon" />
-                </button>
-              </div>
-              {#if sceneFlowSelection?.type === "command" && selectedCommand}
-                <div class="definition-section">
-                  <header class="definition-header">
-                    <h4>Selected Command</h4>
-                    <span class="muted">#{selectedCommand.index + 1}</span>
-                  </header>
-                  <div class="stack">
-                    <div class="muted mono">{selectedCommand.command?.text || ""}</div>
-                    <div class="actions">
-                      <button
-                        type="button"
-                        class="ghost"
-                        on:click={() => openCmdDialog(selectedCommand.node?.id, selectedCommand.index)}
-                        disabled={!wsConnected || sceneFlowBusy}
-                      >
-                        Edit Commands
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              {/if}
-              {#if nodeEditError}
-                <p class="error">{nodeEditError}</p>
-              {/if}
-            {:else if sceneFlowSelection?.type === "edge" && selectedEdge && edgeDraft}
-              <h3 class="inspector-title">Edge {selectedEdge.sourceId} → {selectedEdge.targetId}</h3>
-              <div class="stack">
-                {#if selectedEdge.type === "CEDGE" || selectedEdge.type === "IEDGE"}
-                  <div class="cmd-field-label">Condition</div>
-                  <div class="cmd-helper-var-wrap">
-                    <div
-                      class="editable-input mono"
-                      class:is-empty={!String(edgeDraft.condition || "").length}
-                      contenteditable="true"
-                      role="textbox"
-                      tabindex="0"
-                      id="vsm-edge-condition-input"
-                      aria-label="SceneFlow edge condition expression"
-                      bind:this={edgeConditionInputEl}
-                      spellcheck="false"
-                      data-placeholder=""
-                      on:input={handleEdgeConditionInput}
-                      on:focus={handleEdgeConditionFocus}
-                      on:blur={handleEdgeConditionBlur}
-                      on:keydown={handleEdgeConditionKeydown}
-                    ></div>
-                    {#if edgeConditionSuggestOpen && edgeConditionSuggestions.length > 0}
-                      <div class="cmd-helper-var-dropdown" role="listbox" aria-label="Condition variable suggestions">
-                        {#each edgeConditionSuggestions as variable, i}
-                          <button
-                            type="button"
-                            class="cmd-ac-item"
-                            class:selected={i === edgeConditionSuggestIndex}
-                            role="option"
-                            aria-selected={i === edgeConditionSuggestIndex}
-                            on:mousedown|preventDefault={() => selectEdgeConditionSuggestion(variable)}
-                          >
-                            <span class="cmd-ac-label">{variable.name}</span>
-                            <span class="cmd-ac-detail">{variable.type || "Var"} • {variable.scope}</span>
-                          </button>
-                        {/each}
-                      </div>
-                    {/if}
-                  </div>
-                {:else if selectedEdge.type === "PEDGE"}
-                  <div class="prob-manager">
-                    <div class="prob-header">
-                      <span>Probabilities</span>
-                      <span class="prob-sum" class:ok={pEdgeValid && pEdgeSum === 100}>
-                        {pEdgeValid ? `Sum ${pEdgeSum}%` : "Sum --"}
-                      </span>
-                    </div>
-                    <div class="def-table prob-table">
-                      <div class="def-list prob-list">
-                        {#if pEdgeDrafts.length === 0}
-                          <div class="def-empty">No probability edges yet.</div>
+                {#if !agentsCollapsed}
+                {#if !selectedProject}
+                  <p class="muted">Select a project to view agents.</p>
+                {:else if scriptLoading || projectConfigLoading}
+                  <p class="muted">Loading agents...</p>
+                {:else if agentGroups.input.length === 0 &&
+                  agentGroups.processing.length === 0 &&
+                  agentGroups.output.length === 0}
+                  <p class="muted">No agents found.</p>
+                {:else}
+                  <div class="agent-list">
+                    <div class="scene-group agent-group">
+                      <div class="scene-group-title">Input</div>
+                      <div class="scene-items" role="list">
+                        {#if agentGroups.input.length === 0}
+                          <div class="agent-empty">No agents.</div>
                         {:else}
-                          {#each pEdgeDrafts as draft}
-                            <div class="def-row prob-row" class:selected={draft.edgeId === selectedEdge.id}>
-                              <span class="prob-label">{draft.label}</span>
-                              <input
-                                class="prob-input"
-                                type="number"
-                                min="0"
-                                max="100"
-                                value={draft.value}
-                                on:input={(event) => updatePEdgeDraft(draft.edgeId, event.currentTarget.value)}
-                              />
+                          {#each agentGroups.input as agent}
+                            <div class="scene-item agent-item" role="listitem">
+                              <div class="scene-item-main">
+                                <span
+                                  class="scene-drag-handle agent-drag-handle"
+                                  draggable="true"
+                                  on:dragstart={(event) => startAgentDrag(event, agent, "input")}
+                                  role="button"
+                                  tabindex="0"
+                                  aria-label={`Drag agent ${agent.name}`}
+                                  title="Drag agent"
+                                >
+                                  <svg
+                                    class="scene-drag-icon agent-icon"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d={AGENT_ICON_PATHS.input}
+                                    />
+                                  </svg>
+                                </span>
+                                <span class="scene-name agent-name">{agent.name}</span>
+                              </div>
                             </div>
                           {/each}
                         {/if}
                       </div>
-                      <div class="def-actions prob-actions">
-                        <button type="button" class="ghost" on:click={normalizePEdgeDrafts} disabled={!pEdgeDrafts.length}>
-                          Normalize
-                        </button>
-                        <button type="button" class="ghost" on:click={uniformPEdgeDrafts} disabled={!pEdgeDrafts.length}>
-                          Uniform
+                    </div>
+                    <div class="scene-group agent-group">
+                      <div class="scene-group-title">Processing</div>
+                      <div class="scene-items" role="list">
+                        {#if agentGroups.processing.length === 0}
+                          <div class="agent-empty">No agents.</div>
+                        {:else}
+                          {#each agentGroups.processing as agent}
+                            <div class="scene-item agent-item" role="listitem">
+                              <div class="scene-item-main">
+                                <span
+                                  class="scene-drag-handle agent-drag-handle"
+                                  draggable="true"
+                                  on:dragstart={(event) => startAgentDrag(event, agent, "processing")}
+                                  role="button"
+                                  tabindex="0"
+                                  aria-label={`Drag agent ${agent.name}`}
+                                  title="Drag agent"
+                                >
+                                  <svg
+                                    class="scene-drag-icon agent-icon"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d={AGENT_ICON_PATHS.processing}
+                                    />
+                                  </svg>
+                                </span>
+                                <span class="scene-name agent-name">{agent.name}</span>
+                              </div>
+                            </div>
+                          {/each}
+                        {/if}
+                      </div>
+                    </div>
+                    <div class="scene-group agent-group">
+                      <div class="scene-group-title">Output</div>
+                      <div class="scene-items" role="list">
+                        {#if agentGroups.output.length === 0}
+                          <div class="agent-empty">No agents.</div>
+                        {:else}
+                          {#each agentGroups.output as agent}
+                            <div class="scene-item agent-item" role="listitem">
+                              <div class="scene-item-main">
+                                <span
+                                  class="scene-drag-handle agent-drag-handle"
+                                  draggable="true"
+                                  on:dragstart={(event) => startAgentDrag(event, agent, "output")}
+                                  role="button"
+                                  tabindex="0"
+                                  aria-label={`Drag agent ${agent.name}`}
+                                  title="Drag agent"
+                                >
+                                  <svg
+                                    class="scene-drag-icon agent-icon"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d={AGENT_ICON_PATHS.output}
+                                    />
+                                  </svg>
+                                </span>
+                                <span class="scene-name agent-name" class:shared={agent.shared}>{agent.name}</span>
+                              </div>
+                            </div>
+                          {/each}
+                        {/if}
+                      </div>
+                    </div>
+                  </div>
+                {/if}
+                {/if}
+              </div>
+              <div class="blocks-section blocks-section--scenes" class:collapsed={scenesCollapsed}>
+                <div class="block-section-header">
+                  <div class="block-section-title">Scenes</div>
+                  <button
+                    type="button"
+                    class="ghost icon-button block-section-toggle"
+                    aria-pressed={!scenesCollapsed}
+                    aria-label={scenesCollapsed ? "Expand scenes" : "Collapse scenes"}
+                    title={scenesCollapsed ? "Expand" : "Collapse"}
+                    on:click={() => (scenesCollapsed = !scenesCollapsed)}
+                  >
+                    {#if scenesCollapsed}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    {:else}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                      </svg>
+                    {/if}
+                  </button>
+                </div>
+                {#if !scenesCollapsed}
+                <div class="scene-selector">
+                  <select
+                    bind:value={scriptScenesLanguage}
+                    disabled={!selectedProject}
+                    aria-label="Scene language"
+                  >
+                    {#each sceneLanguageOptions as option}
+                      <option value={option.value}>{option.label}</option>
+                    {/each}
+                  </select>
+                </div>
+                <input
+                  class="search"
+                  placeholder="Filter scenes"
+                  bind:value={scriptScenesFilter}
+                  disabled={!selectedProject}
+                />
+                {#if !selectedProject}
+                  <p class="muted">Select a project to view scenes.</p>
+                {:else if scriptScenesLoading && scriptScenesLive.length === 0}
+                  <p class="muted">Loading scenes...</p>
+                {:else if scriptScenesError}
+                  <p class="error">{scriptScenesError}</p>
+                {:else if filteredScriptScenes.length === 0}
+                  <p class="muted">No scenes found.</p>
+                {:else}
+                  <div class="scene-list">
+                    {#each filteredScriptScenes as lang}
+                      <div class="scene-group">
+                        <div class="scene-group-title">
+                          <span>{sceneLanguageLabel(lang.language)}</span>
+                          <span class="scene-count">{sceneGroupTotal(lang.groups)}</span>
+                        </div>
+                        <div class="scene-items" role="list">
+                          {#each lang.groups as group}
+                            <div class="scene-item" role="listitem">
+                              <div class="scene-item-main">
+                                <span
+                                  class="scene-drag-handle"
+                                  draggable="true"
+                                  on:dragstart={(event) => startSceneDrag(event, group, lang.language)}
+                                  role="button"
+                                  tabindex="0"
+                                  aria-label={`Drag scene ${group.name}`}
+                                  title="Drag scene"
+                                >
+                                  <svg
+                                    class="scene-drag-icon"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                                    />
+                                  </svg>
+                                </span>
+                                <div class="scene-title-block">
+                                  <span
+                                    class="scene-name"
+                                    title={group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name}
+                                    use:fitMiddleEllipsis={{ text: group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name }}
+                                  ></span>
+                                  {#if sceneTitleSuggestions.size > 0}
+                                    {@const suggestion = sceneTitleSuggestions.get(sceneGroupKey(lang.language, group.name))}
+                                    {#if suggestion && suggestion.suggestions && suggestion.suggestions.length}
+                                      <div class="scene-title-suggestion-wrap">
+                                        <div class="scene-title-suggestion-list">
+                                          {#each suggestion.suggestions.slice(0, 3) as option, idx}
+                                            <button
+                                              type="button"
+                                              class="ghost scene-title-suggestion-line"
+                                              aria-label={`Accept suggested title ${option.name}`}
+                                              on:click={() =>
+                                                applySceneTitleSuggestion(sceneGroupKey(lang.language, group.name), option.name)
+                                              }
+                                            >
+                                              <span class="scene-title-suggestion-rank">{idx + 1}.</span>
+                                              <span class="scene-title-suggestion-text">{option.name}</span>
+                                              {#if idx === 0}
+                                                <span class="scene-title-suggestion-badge">top</span>
+                                              {/if}
+                                            </button>
+                                          {/each}
+                                        </div>
+                                        <button
+                                          type="button"
+                                          class="ghost icon-button scene-title-suggestion-dismiss"
+                                          aria-label="Dismiss suggested titles"
+                                          on:click={() => dismissSceneTitleSuggestion(sceneGroupKey(lang.language, group.name))}
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    {/if}
+                                  {/if}
+                                </div>
+                              </div>
+                              <span class="scene-count">{group.count}</span>
+                            </div>
+                          {/each}
+                        </div>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+                {/if}
+              </div>
+              <div class="blocks-filler" aria-hidden="true"></div>
+              </aside>
+            {:else}
+              <div class="sceneflow-side-placeholder sceneflow-region-left" aria-hidden="true"></div>
+            {/if}
+            <button
+              type="button"
+              class="sceneflow-rail sceneflow-rail-left"
+              class:collapsed={!sceneFlowShowBlocks}
+              on:click={() => (sceneFlowShowBlocks = !sceneFlowShowBlocks)}
+              aria-label={sceneFlowShowBlocks ? "Hide blocks panel" : "Show blocks panel"}
+              aria-pressed={sceneFlowShowBlocks}
+              disabled={!sceneFlow}
+              title={sceneFlowShowBlocks ? "Hide blocks" : "Show blocks"}
+            >
+              <span class="sceneflow-rail-line" aria-hidden="true"></span>
+              <span class="sceneflow-rail-pill" aria-hidden="true">
+                {#if sceneFlowShowBlocks}&#8249;{:else}&#8250;{/if}
+              </span>
+            </button>
+            <div class="sceneflow-container sceneflow-region-center" style={sceneFlowFrameStyle} bind:this={sceneFlowContainerEl}>
+              <div class="sceneflow-scroll">
+                <SceneFlowView
+                  bind:this={sceneFlowRef}
+                  bind:zoomLevel={sceneFlowZoom}
+                  bind:worldBox={sceneFlowWorldBox}
+                  bind:viewBoxState={sceneFlowViewBox}
+                  bind:selection={sceneFlowSelection}
+                  bind:multiSelection={sceneFlowMultiSelection}
+                  config={configDraft}
+                  snapshot={sceneFlow}
+                  activityNodes={activityNodeIds}
+                  activityEdges={activityEdgeList}
+                  timeoutEdges={timeoutEdgeList}
+                  runtimeValues={runtimeValues}
+                  runtimeState={runtimeState}
+                  onNavigate={navigateSceneFlow}
+                  onNodeMove={moveSceneFlowNode}
+                  onNodeGroupMove={moveSceneFlowNodeGroup}
+                  onCommentUpdate={updateSceneFlowComment}
+                  onEdgeControlUpdate={updateSceneFlowEdgeControl}
+                  onEdgeRetarget={retargetSceneFlowEdge}
+                  onDeleteSelection={deleteSceneFlowSelection}
+                  onUndo={undoSceneFlow}
+                  onRedo={redoSceneFlow}
+                  nodeSnapToGrid={sceneFlowNodeSnap}
+                  edgeCreateMode={edgeCreateMode}
+                  edgeCreateSourceId={edgeCreateSourceId}
+                  edgeCreateType={edgeCreateType}
+                  onEdgePick={handleEdgePick}
+                  onSceneDrop={handleSceneFlowSceneDrop}
+                  sceneDragType={SCENE_DRAG_TYPE}
+                  onAgentDrop={handleSceneFlowAgentDrop}
+                  agentDragType={AGENT_DRAG_TYPE}
+                  onBlockDrop={handleBlockDrop}
+                  blockDragType={BLOCK_DRAG_TYPE}
+                  showInfo={sceneFlowShowInfo}
+                  onCommandOpen={openCmdDialog}
+                  onCommandMove={moveNodeCommand}
+                  onCopySelection={copySceneFlowSelection}
+                  onPasteSelection={pasteSceneFlowSelection}
+                  onCutSelection={cutSceneFlowSelection}
+                  onDuplicateSelection={duplicateSceneFlowSelection}
+                  onTimeoutEdgeUpdate={handleCanvasTimeoutEdgeUpdate}
+                />
+              </div>
+              {#if sceneFlow?.usedByAliases?.length > 0}
+                <div class="alias-notice" role="note">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                  <span>
+                    Shared flow — <strong>{sceneFlow.superNode?.name || sceneFlow.superNodeId}</strong> is also used as a visual copy in:
+                    {#each sceneFlow.usedByAliases as alias, i}
+                      {alias.parentName || 'root'}{i < sceneFlow.usedByAliases.length - 1 ? ', ' : ''}.
+                    {/each}
+                  </span>
+                </div>
+              {/if}
+              {#if sceneFlowShowVars}
+                <VarBadge
+                  title="Variables"
+                  variables={displayGlobalVarList.map((def) => ({ line: varBadgeLine(def), description: varBadgeLine(def) }))}
+                  loading={runtimeLoading}
+                  error={runtimeError}
+                  expanded={varBadgeState.global?.expanded ?? false}
+                  x={varBadgeState.global?.x ?? 0}
+                  y={varBadgeState.global?.y ?? 0}
+                  w={varBadgeState.global?.w ?? VAR_BADGE_MIN_WIDTH}
+                  h={varBadgeState.global?.h ?? VAR_BADGE_MIN_HEIGHT}
+                  color="#edf1f8"
+                  onDragStart={(e) => startVarBadgeMove(e, "global")}
+                  onToggle={() => toggleVarBadge("global")}
+                  onResizeStart={(e) => startVarBadgeResize(e, "global")}
+                />
+                {#if showLocalVarBadge}
+                  <VarBadge
+                    title="Local variables"
+                    subtitle={currentSuperName}
+                    variables={displayLocalVarList.map((def) => ({ line: varBadgeLine(def), description: varBadgeLine(def) }))}
+                    loading={runtimeLoading}
+                    error={runtimeError}
+                    expanded={varBadgeState.local?.expanded ?? false}
+                    x={varBadgeState.local?.x ?? 0}
+                    y={varBadgeState.local?.y ?? 0}
+                    w={varBadgeState.local?.w ?? VAR_BADGE_MIN_WIDTH}
+                    h={varBadgeState.local?.h ?? VAR_BADGE_MIN_HEIGHT}
+                    color="#edf1f8"
+                    onDragStart={(e) => startVarBadgeMove(e, "local")}
+                    onToggle={() => toggleVarBadge("local")}
+                    onResizeStart={(e) => startVarBadgeResize(e, "local")}
+                  />
+                {/if}
+              {/if}
+              <!-- Same sceneFlowShowVars gate as the project variable badges above: one toolbar
+                   button hides every badge on the canvas. Plugin badges previously had no visibility
+                   control at all, so a project's canvas gained one permanent panel per plugin (4
+                   plugins in the ExampleProject already covered 20% of the canvas). -->
+              {#if sceneFlowShowVars && selectedProjectId && pluginBadgeDescriptors.length > 0}
+                {#each pluginBadgeDescriptors as badge, i (badge.instanceName)}
+                  <VarBadge
+                    title={badge.pluginName}
+                    category={badge.category}
+                    variables={badge.variables.map((v) => {
+                      const sfDef = sceneFlowVarDefs.find((d) => d.name === v.name);
+                      const expr = normalizeRuntimeValue(sfDef?.expr ?? sfDef?.expression ?? "");
+                      const captured = normalizeRuntimeValue(runtimeInitialValues[v.name]);
+                      const defaultVal = captured || expr;
+                      const value = normalizeRuntimeValue(runtimeValues[v.name]);
+                      let line;
+                      if (value) {
+                        const showDefault = defaultVal && value !== defaultVal;
+                        line = showDefault ? `${v.name} = ${value} (${defaultVal})` : `${v.name} = ${value}`;
+                      } else if (defaultVal) {
+                        line = `${v.name} = ${defaultVal}`;
+                      } else {
+                        line = v.name;
+                      }
+                      return { line, description: v.description || line };
+                    })}
+                    expanded={pluginBadgeState[badge.instanceName]?.expanded ?? false}
+                    x={pluginBadgeState[badge.instanceName]?.x ?? PLUGIN_BADGE_DEFAULT_X}
+                    y={pluginBadgeState[badge.instanceName]?.y ?? (PLUGIN_BADGE_DEFAULT_Y + i * PLUGIN_BADGE_Y_STEP)}
+                    w={pluginBadgeState[badge.instanceName]?.w ?? PLUGIN_BADGE_DEFAULT_W}
+                    h={pluginBadgeState[badge.instanceName]?.h ?? PLUGIN_BADGE_DEFAULT_H}
+                    color="#f8f6f2"
+                    onDragStart={(e) => startPluginBadgeDrag(e, badge.instanceName)}
+                    onToggle={() => togglePluginBadge(badge.instanceName)}
+                    onResizeStart={(e) => startPluginBadgeResize(e, badge.instanceName)}
+                  />
+                {/each}
+              {/if}
+              <div class="sceneflow-navigator">
+                <div class="sceneflow-zoom-controls">
+                  {#if sceneFlow}
+                    <span class="sceneflow-zoom-label">{Math.round(sceneFlowZoom * 100)}%</span>
+                  {/if}
+                  <button
+                    type="button"
+                    class="sceneflow-zoom-button"
+                    on:click={() => sceneFlowRef?.zoomIn()}
+                    disabled={!sceneFlow}
+                    aria-label="Zoom in"
+                    title="Zoom in"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="sceneflow-zoom-button"
+                    on:click={() => sceneFlowRef?.zoomOut()}
+                    disabled={!sceneFlow}
+                    aria-label="Zoom out"
+                    title="Zoom out"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="sceneflow-zoom-button"
+                    on:click={() => sceneFlowRef?.fitToView()}
+                    disabled={!sceneFlow}
+                    aria-label="Fit to view"
+                    title="Fit to view"
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="sceneflow-zoom-button"
+                    class:active={minimapVisible}
+                    on:click={() => (minimapVisible = !minimapVisible)}
+                    aria-label={minimapVisible ? "Hide minimap" : "Show minimap"}
+                    title={minimapVisible ? "Hide minimap" : "Show minimap"}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <rect x="13" y="13" width="7" height="7" rx="1" />
+                    </svg>
+                  </button>
+                </div>
+                {#if minimapVisible}
+                  <SceneFlowMiniMap
+                    snapshot={sceneFlow}
+                    worldBox={sceneFlowWorldBox}
+                    viewBox={sceneFlowViewBox}
+                    onCenter={(x, y) => sceneFlowRef?.centerOn(x, y)}
+                    peers={[...peerPresence.values()]}
+                  />
+                {/if}
+              </div>
+            </div>
+            <button
+              type="button"
+              class="sceneflow-rail sceneflow-rail-right"
+              class:collapsed={!sceneFlowShowInspector}
+              on:click={() => (sceneFlowShowInspector = !sceneFlowShowInspector)}
+              aria-label={sceneFlowShowInspector ? "Hide inspector panel" : "Show inspector panel"}
+              aria-pressed={sceneFlowShowInspector}
+              disabled={!sceneFlow}
+              title={sceneFlowShowInspector ? "Hide inspector" : "Show inspector"}
+            >
+              <span class="sceneflow-rail-line" aria-hidden="true"></span>
+              <span class="sceneflow-rail-pill" aria-hidden="true">
+                {#if sceneFlowShowInspector}&#8250;{:else}&#8249;{/if}
+              </span>
+            </button>
+            {#if sceneFlowShowInspector}
+              <aside class="sceneflow-inspector sceneflow-region-right">
+              {#if multiSelectionActive}
+                <h3 class="inspector-title">Selection ({selectionList.length})</h3>
+                <div class="inspector-meta">
+                  <div class="inspector-row">
+                    <span>Nodes</span>
+                    <span>
+                      {selectionNodes.length
+                        ? `${selectionNodes.length}${selectionNodeSummary ? ` (${selectionNodeSummary})` : ""}`
+                        : "0"}
+                    </span>
+                  </div>
+                  <div class="inspector-row">
+                    <span>Edges</span>
+                    <span>
+                      {selectionEdges.length
+                        ? `${selectionEdges.length}${selectionEdgeSummary ? ` (${selectionEdgeSummary})` : ""}`
+                        : "0"}
+                    </span>
+                  </div>
+                  <div class="inspector-row">
+                    <span>Comments</span>
+                    <span>{selectionComments.length || 0}</span>
+                  </div>
+                  {#if selectionNodes.length}
+                    <div class="inspector-row">
+                      <span>Start nodes</span>
+                      <span>{selectionStartCount ? selectionStartCount : "None"}</span>
+                    </div>
+                  {/if}
+                </div>
+                {#if selectionNodePreview.length}
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Nodes</h4>
+                      <span class="muted">{selectionNodes.length}</span>
+                    </header>
+                    <div class="definition-list">
+                      {#each selectionNodePreview as node}
+                        <div class="definition-row">
+                          <span>{displayNodeName(node)}</span>
+                          <span class="muted">{node.type === "Super" ? "Super" : "Basic"}</span>
+                        </div>
+                      {/each}
+                      {#if selectionNodeRemaining > 0}
+                        <div class="definition-row muted">+ {selectionNodeRemaining} more</div>
+                      {/if}
+                    </div>
+                  </div>
+                {/if}
+                {#if selectionCommentPreview.length}
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Comments</h4>
+                      <span class="muted">{selectionComments.length}</span>
+                    </header>
+                    <div class="definition-list">
+                      {#each selectionCommentPreview as comment, index}
+                        <div class="definition-row">
+                          <span>{commentLabel(comment, index)}</span>
+                          <span class="muted">
+                            {comment.rect?.w ?? 0} x {comment.rect?.h ?? 0}
+                          </span>
+                        </div>
+                      {/each}
+                      {#if selectionCommentRemaining > 0}
+                        <div class="definition-row muted">+ {selectionCommentRemaining} more</div>
+                      {/if}
+                    </div>
+                  </div>
+                {/if}
+                <div class="actions">
+                  <button type="button" class="ghost" on:click={copySceneFlowSelection} disabled={!wsConnected || sceneFlowBusy}>
+                    Copy
+                  </button>
+                  <button type="button" class="ghost" on:click={cutSceneFlowSelection} disabled={!wsConnected || sceneFlowBusy}>
+                    Cut
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost"
+                    on:click={duplicateSceneFlowSelection}
+                    disabled={!wsConnected || sceneFlowBusy}
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost"
+                    on:click={deleteSceneFlowSelection}
+                    disabled={!wsConnected || sceneFlowBusy}
+                  >
+                    Delete
+                  </button>
+                </div>
+                {#if selectionNodes.length}
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Arrange</h4>
+                      <span class="muted">{selectionNodes.length} nodes</span>
+                    </header>
+                    <div class="stack">
+                      <div class="row">
+                        <span class="arrange-label">Align X</span>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => alignSelectedNodes("left")}
+                          disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                        >
+                          Left
                         </button>
                         <button
                           type="button"
-                          class="primary"
-                          on:click={applyPEdgeGroup}
-                          disabled={!wsConnected || sceneFlowBusy || !pEdgeDirty || !pEdgeValid || pEdgeSum !== 100}
+                          class="ghost"
+                          on:click={() => alignSelectedNodes("center")}
+                          disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
                         >
-                          Apply
+                          Center
                         </button>
-                        <button type="button" class="ghost" on:click={syncPEdgeDrafts} disabled={!pEdgeDirty}>
-                          Reset
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => alignSelectedNodes("right")}
+                          disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                        >
+                          Right
+                        </button>
+                      </div>
+                      <div class="row">
+                        <span class="arrange-label">Align Y</span>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => alignSelectedNodes("top")}
+                          disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                        >
+                          Top
+                        </button>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => alignSelectedNodes("middle")}
+                          disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                        >
+                          Middle
+                        </button>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => alignSelectedNodes("bottom")}
+                          disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                        >
+                          Bottom
+                        </button>
+                      </div>
+                      <div class="row">
+                        <span class="arrange-label">Distribute</span>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => distributeSelectedNodes("x")}
+                          disabled={!selectionCanDistribute || !wsConnected || sceneFlowBusy}
+                        >
+                          Horizontal
+                        </button>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => distributeSelectedNodes("y")}
+                          disabled={!selectionCanDistribute || !wsConnected || sceneFlowBusy}
+                        >
+                          Vertical
+                        </button>
+                      </div>
+                      <div class="row">
+                        <span class="arrange-label">Start</span>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => setSelectedNodesStart(true)}
+                          disabled={!selectionCanToggleStart || !wsConnected || sceneFlowBusy}
+                        >
+                          Set
+                        </button>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={() => setSelectedNodesStart(false)}
+                          disabled={!selectionCanToggleStart || !wsConnected || sceneFlowBusy}
+                        >
+                          Clear
                         </button>
                       </div>
                     </div>
-                    {#if pEdgeError}
-                      <p class="error">{pEdgeError}</p>
-                    {/if}
                   </div>
-                {:else if selectedEdge.type === "TEDGE"}
-                  <label for="edge-timeout-mode">Timeout mode</label>
-                  <select
-                    id="edge-timeout-mode"
-                    bind:value={edgeDraft.timeoutMode}
-                    on:change={handleTimeoutModeInspectorChange}
-                  >
-                    <option value="fixed">Fixed milliseconds</option>
-                    <option value="var">Integer variable</option>
-                    <option value="interval">Random interval</option>
-                  </select>
-                  {#if edgeDraft.timeoutMode === "fixed"}
-                    <label for="edge-timeout">Timeout (ms)</label>
-                    <input
-                      id="edge-timeout"
-                      type="text"
-                      placeholder="1000"
-                      bind:value={edgeDraft.timeoutSpec}
-                      on:input={handleTimeoutFixedInspectorInput}
-                    />
-                  {:else if edgeDraft.timeoutMode === "var"}
-                    <label for="edge-timeout">Timeout variable (int)</label>
-                    <input
-                      id="edge-timeout"
-                      type="text"
-                      list="edge-timeout-vars"
-                      placeholder="timeout_ms"
-                      bind:value={edgeDraft.timeoutSpec}
-                      on:input={handleTimeoutVarInspectorInput}
-                    />
-                    <datalist id="edge-timeout-vars">
-                      {#each sceneFlowIntVarNames as varName}
-                        <option value={varName}></option>
-                      {/each}
-                    </datalist>
-                  {:else}
-                    <label for="edge-timeout-min">Timeout interval (ms)</label>
-                    <div class="edge-timeout-interval">
-                      <input
-                        id="edge-timeout-min"
-                        type="number"
-                        min="0"
-                        max="60000"
-                        step="1"
-                        placeholder="min"
-                        bind:value={edgeDraft.timeoutMinSpec}
-                        on:input={handleTimeoutIntervalInspectorInput}
-                      />
-                      <span>to</span>
-                      <input
-                        id="edge-timeout-max"
-                        type="number"
-                        min="0"
-                        max="60000"
-                        step="1"
-                        placeholder="max"
-                        bind:value={edgeDraft.timeoutMaxSpec}
-                        on:input={handleTimeoutIntervalInspectorInput}
-                      />
+                {/if}
+                {#if selectionEdges.length > 1}
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Edges</h4>
+                      <span class="muted">{selectionEdges.length} edges</span>
+                    </header>
+                    <div class="actions">
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={normalizeSelectedEdges}
+                        disabled={!wsConnected || sceneFlowBusy}
+                      >
+                        Normalize
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={straightenSelectedEdges}
+                        disabled={!wsConnected || sceneFlowBusy}
+                      >
+                        Relayout
+                      </button>
                     </div>
-                    <p class="muted">Runtime picks one random timeout between min and max when this node becomes active.</p>
-                  {/if}
-                {:else}
-                  <p class="muted">No editable fields for this edge type yet.</p>
+                  </div>
                 {/if}
-                <div class:muted={!edgeAltStartEnabled} class="edge-alt-start-panel">
-                  <p class="muted">
-                    Alternative start nodes require a super node target. Below provide a selector of alternative
-                    startnodes if the edge is point at a supernode.
-                  </p>
-                  {#if edgeAltStartEnabled}
-                    {#if edgeAltStartStartNodes.length > 0}
-                      <div class="stack edge-alt-start-list">
-                        {#each edgeAltStartStartNodes as startNode}
-                          <div class="edge-alt-start-row">
-                            <label for={`edge-alt-start-${startNode.id}`}>{displayNodeName(startNode)}</label>
-                            <select
-                              id={`edge-alt-start-${startNode.id}`}
-                              value={edgeAltStartSelections[startNode.id] || ""}
-                              on:change={(event) => handleEdgeAltStartSelection(startNode.id, event)}
-                              disabled={edgeAltStartSelectorMuted}
-                            >
-                              <option value="">Default start node</option>
-                              {#each edgeAltStartChildNodes as candidate}
-                                <option value={candidate.id}>{displayNodeName(candidate)}</option>
-                              {/each}
-                            </select>
-                          </div>
-                        {/each}
-                      </div>
-                    {:else}
-                      <select disabled>
-                        <option>
-                          {edgeAltStartChildNodes.length === 0 ? "No internal nodes available" : "No start nodes available"}
-                        </option>
-                      </select>
-                    {/if}
-                  {:else}
-                    <select disabled>
-                      <option>Alternative start nodes unavailable</option>
-                    </select>
-                  {/if}
-                </div>
-              </div>
-              <div class="actions">
-                <button
-                  type="button"
-                  class="ghost"
-                  on:click={normalizeSelectedEdge}
-                  disabled={!wsConnected || sceneFlowBusy}
-                >
-                  Normalize
-                </button>
-                <button
-                  type="button"
-                  class="ghost"
-                  on:click={straightenSelectedEdge}
-                  disabled={!wsConnected || sceneFlowBusy}
-                >
-                  Relayout
-                </button>
-                {#if selectedEdge.type !== "TEDGE" && selectedEdge.type !== "CEDGE" && selectedEdge.type !== "IEDGE"}
-                  <button type="button" class="primary" on:click={applyEdgeEdits} disabled={!wsConnected || sceneFlowBusy}>
-                    Apply
-                  </button>
-                {/if}
-                {#if selectedEdge.type !== "CEDGE" && selectedEdge.type !== "IEDGE"}
-                  <button type="button" class="ghost" on:click={resetEdgeDraft} disabled={!edgeDirty}>
-                    Reset
-                  </button>
-                {/if}
-              </div>
-              {#if edgeEditError}
-                <p class="error">{edgeEditError}</p>
-              {/if}
-            {:else if sceneFlowSelection?.type === "comment" && selectedComment}
-              <h3 class="inspector-title">Comment</h3>
-              <div class="inspector-meta">
-                <div class="inspector-row">
-                  <span>Position</span>
-                  <span>{selectedComment.rect?.x ?? 0}, {selectedComment.rect?.y ?? 0}</span>
-                </div>
-                <div class="inspector-row">
-                  <span>Size</span>
-                  <span>{selectedComment.rect?.w ?? 0} x {selectedComment.rect?.h ?? 0}</span>
-                </div>
-              </div>
-            {:else}
-              {#if superNodeDraft}
+              {:else if (sceneFlowSelection?.type === "node" || sceneFlowSelection?.type === "command") && selectedNode && nodeDraft}
                 <div class="node-header">
                   <input
                     class="node-title-input"
                     aria-label="Node name"
-                    bind:value={superNodeDraft.name}
+                    bind:value={nodeDraft.name}
+                    disabled={selectedNode.isHistory}
+                    on:change={applyNodeEdits}
+                    on:keydown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        applyNodeEdits();
+                      }
+                    }}
                   />
                   <button
                     type="button"
                     class="ghost icon-button start-toggle"
-                    class:active={superNodeDraft.isStart}
-                    on:click={toggleSuperNodeStart}
-                    disabled={superNodeStartLocked}
-                    aria-pressed={superNodeDraft.isStart}
+                    class:active={nodeDraft.isStart}
+                    on:click={toggleNodeStart}
+                    disabled={selectedNode.isHistory}
+                    aria-pressed={nodeDraft.isStart}
                     aria-label="Toggle start node"
-                    title={superNodeStartLocked ? "Start node (locked)" : "Start node"}
+                    title="Start node"
                   >
                     <IconStart className="icon" />
                   </button>
                 </div>
-                {#if superNodeDirty}
-                  <div class="actions">
-                    <button type="button" class="primary" on:click={applySuperNodeEdits} disabled={!wsConnected || sceneFlowBusy}>
-                      Apply
-                    </button>
-                    <button type="button" class="ghost" on:click={resetSuperNodeDraft} disabled={!superNodeDirty}>
-                      Reset
-                    </button>
-                  </div>
-                {/if}
-              {:else}
-                <h3 class="inspector-title">{currentSuperName}</h3>
-              {/if}
-              <div class="definition-section">
-                <header class="definition-header">
-                  <h4>Start nodes</h4>
-                  <span class="muted">{startNodes.length}/{superNodeChildren.length}</span>
-                </header>
-                <div class="def-table start-node-table">
-                  <div class="def-list">
-                    {#if superNodeStartList.length === 0}
-                      <div class="def-empty">No nodes yet.</div>
-                    {:else}
-                      {#each superNodeStartList as node}
+                {#if sceneFlowSelection?.type === "command" && selectedCommand}
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Selected Command</h4>
+                      <span class="muted">#{selectedCommand.index + 1}</span>
+                    </header>
+                    <div class="stack">
+                      <div class="muted mono">{selectedCommand.command?.text || ""}</div>
+                      <div class="actions">
                         <button
                           type="button"
-                          class="def-row"
-                          class:selected={startListSelectedId === node.id}
-                          on:click={() => (startListSelectedId = node.id)}
-                          aria-pressed={startListSelectedId === node.id}
+                          class="ghost"
+                          on:click={() => openCmdDialog(selectedCommand.node?.id, selectedCommand.index)}
+                          disabled={!wsConnected || sceneFlowBusy}
                         >
-                          <span class="def-line">
-                            <span class={node.isStart ? "start-node" : "start-node-inactive"}>
-                              {displayNodeName(node)}
-                            </span>
-                            <span class="muted">({node.type === "Super" ? "Super" : "Basic"})</span>
-                          </span>
+                          Edit Commands
                         </button>
-                      {/each}
+                      </div>
+                    </div>
+                  </div>
+                {/if}
+                {#if nodeEditError}
+                  <p class="error">{nodeEditError}</p>
+                {/if}
+              {:else if sceneFlowSelection?.type === "edge" && selectedEdge && edgeDraft}
+                <h3 class="inspector-title">Edge {selectedEdge.sourceId} → {selectedEdge.targetId}</h3>
+                <div class="stack">
+                  {#if selectedEdge.type === "CEDGE" || selectedEdge.type === "IEDGE"}
+                    <div class="cmd-field-label">Condition</div>
+                    <div class="cmd-helper-var-wrap">
+                      <div
+                        class="editable-input mono"
+                        class:is-empty={!String(edgeDraft.condition || "").length}
+                        contenteditable="true"
+                        role="textbox"
+                        tabindex="0"
+                        id="vsm-edge-condition-input"
+                        aria-label="SceneFlow edge condition expression"
+                        bind:this={edgeConditionInputEl}
+                        spellcheck="false"
+                        data-placeholder=""
+                        on:input={handleEdgeConditionInput}
+                        on:focus={handleEdgeConditionFocus}
+                        on:blur={handleEdgeConditionBlur}
+                        on:keydown={handleEdgeConditionKeydown}
+                      ></div>
+                      {#if edgeConditionSuggestOpen && edgeConditionSuggestions.length > 0}
+                        <div class="cmd-helper-var-dropdown" role="listbox" aria-label="Condition variable suggestions">
+                          {#each edgeConditionSuggestions as variable, i}
+                            <button
+                              type="button"
+                              class="cmd-ac-item"
+                              class:selected={i === edgeConditionSuggestIndex}
+                              role="option"
+                              aria-selected={i === edgeConditionSuggestIndex}
+                              on:mousedown|preventDefault={() => selectEdgeConditionSuggestion(variable)}
+                            >
+                              <span class="cmd-ac-label">{variable.name}</span>
+                              <span class="cmd-ac-detail">{variable.type || "Var"} • {variable.scope}</span>
+                            </button>
+                          {/each}
+                        </div>
+                      {/if}
+                    </div>
+                  {:else if selectedEdge.type === "PEDGE"}
+                    <div class="prob-manager">
+                      <div class="prob-header">
+                        <span>Probabilities</span>
+                        <span class="prob-sum" class:ok={pEdgeValid && pEdgeSum === 100}>
+                          {pEdgeValid ? `Sum ${pEdgeSum}%` : "Sum --"}
+                        </span>
+                      </div>
+                      <div class="def-table prob-table">
+                        <div class="def-list prob-list">
+                          {#if pEdgeDrafts.length === 0}
+                            <div class="def-empty">No probability edges yet.</div>
+                          {:else}
+                            {#each pEdgeDrafts as draft}
+                              <div class="def-row prob-row" class:selected={draft.edgeId === selectedEdge.id}>
+                                <span class="prob-label">{draft.label}</span>
+                                <input
+                                  class="prob-input"
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  value={draft.value}
+                                  on:input={(event) => updatePEdgeDraft(draft.edgeId, event.currentTarget.value)}
+                                />
+                              </div>
+                            {/each}
+                          {/if}
+                        </div>
+                        <div class="def-actions prob-actions">
+                          <button type="button" class="ghost" on:click={normalizePEdgeDrafts} disabled={!pEdgeDrafts.length}>
+                            Normalize
+                          </button>
+                          <button type="button" class="ghost" on:click={uniformPEdgeDrafts} disabled={!pEdgeDrafts.length}>
+                            Uniform
+                          </button>
+                          <button
+                            type="button"
+                            class="primary"
+                            on:click={applyPEdgeGroup}
+                            disabled={!wsConnected || sceneFlowBusy || !pEdgeDirty || !pEdgeValid || pEdgeSum !== 100}
+                          >
+                            Apply
+                          </button>
+                          <button type="button" class="ghost" on:click={syncPEdgeDrafts} disabled={!pEdgeDirty}>
+                            Reset
+                          </button>
+                        </div>
+                      </div>
+                      {#if pEdgeError}
+                        <p class="error">{pEdgeError}</p>
+                      {/if}
+                    </div>
+                  {:else if selectedEdge.type === "TEDGE"}
+                    <label for="edge-timeout-mode">Timeout mode</label>
+                    <select
+                      id="edge-timeout-mode"
+                      bind:value={edgeDraft.timeoutMode}
+                      on:change={handleTimeoutModeInspectorChange}
+                    >
+                      <option value="fixed">Fixed milliseconds</option>
+                      <option value="var">Integer variable</option>
+                      <option value="interval">Random interval</option>
+                    </select>
+                    {#if edgeDraft.timeoutMode === "fixed"}
+                      <label for="edge-timeout">Timeout (ms)</label>
+                      <input
+                        id="edge-timeout"
+                        type="text"
+                        placeholder="1000"
+                        bind:value={edgeDraft.timeoutSpec}
+                        on:input={handleTimeoutFixedInspectorInput}
+                      />
+                    {:else if edgeDraft.timeoutMode === "var"}
+                      <label for="edge-timeout">Timeout variable (int)</label>
+                      <input
+                        id="edge-timeout"
+                        type="text"
+                        list="edge-timeout-vars"
+                        placeholder="timeout_ms"
+                        bind:value={edgeDraft.timeoutSpec}
+                        on:input={handleTimeoutVarInspectorInput}
+                      />
+                      <datalist id="edge-timeout-vars">
+                        {#each sceneFlowIntVarNames as varName}
+                          <option value={varName}></option>
+                        {/each}
+                      </datalist>
+                    {:else}
+                      <label for="edge-timeout-min">Timeout interval (ms)</label>
+                      <div class="edge-timeout-interval">
+                        <input
+                          id="edge-timeout-min"
+                          type="number"
+                          min="0"
+                          max="60000"
+                          step="1"
+                          placeholder="min"
+                          bind:value={edgeDraft.timeoutMinSpec}
+                          on:input={handleTimeoutIntervalInspectorInput}
+                        />
+                        <span>to</span>
+                        <input
+                          id="edge-timeout-max"
+                          type="number"
+                          min="0"
+                          max="60000"
+                          step="1"
+                          placeholder="max"
+                          bind:value={edgeDraft.timeoutMaxSpec}
+                          on:input={handleTimeoutIntervalInspectorInput}
+                        />
+                      </div>
+                      <p class="muted">Runtime picks one random timeout between min and max when this node becomes active.</p>
+                    {/if}
+                  {:else}
+                    <p class="muted">No editable fields for this edge type yet.</p>
+                  {/if}
+                  <div class:muted={!edgeAltStartEnabled} class="edge-alt-start-panel">
+                    <p class="muted">
+                      Alternative start nodes require a super node target. Below provide a selector of alternative
+                      startnodes if the edge is point at a supernode.
+                    </p>
+                    {#if edgeAltStartEnabled}
+                      {#if edgeAltStartStartNodes.length > 0}
+                        <div class="stack edge-alt-start-list">
+                          {#each edgeAltStartStartNodes as startNode}
+                            <div class="edge-alt-start-row">
+                              <label for={`edge-alt-start-${startNode.id}`}>{displayNodeName(startNode)}</label>
+                              <select
+                                id={`edge-alt-start-${startNode.id}`}
+                                value={edgeAltStartSelections[startNode.id] || ""}
+                                on:change={(event) => handleEdgeAltStartSelection(startNode.id, event)}
+                                disabled={edgeAltStartSelectorMuted}
+                              >
+                                <option value="">Default start node</option>
+                                {#each edgeAltStartChildNodes as candidate}
+                                  <option value={candidate.id}>{displayNodeName(candidate)}</option>
+                                {/each}
+                              </select>
+                            </div>
+                          {/each}
+                        </div>
+                      {:else}
+                        <select disabled>
+                          <option>
+                            {edgeAltStartChildNodes.length === 0 ? "No internal nodes available" : "No start nodes available"}
+                          </option>
+                        </select>
+                      {/if}
+                    {:else}
+                      <select disabled>
+                        <option>Alternative start nodes unavailable</option>
+                      </select>
                     {/if}
                   </div>
-                  <div class="def-actions">
+                </div>
+                <div class="actions">
+                  <button
+                    type="button"
+                    class="ghost"
+                    on:click={normalizeSelectedEdge}
+                    disabled={!wsConnected || sceneFlowBusy}
+                  >
+                    Normalize
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost"
+                    on:click={straightenSelectedEdge}
+                    disabled={!wsConnected || sceneFlowBusy}
+                  >
+                    Relayout
+                  </button>
+                  {#if selectedEdge.type !== "TEDGE" && selectedEdge.type !== "CEDGE" && selectedEdge.type !== "IEDGE"}
+                    <button type="button" class="primary" on:click={applyEdgeEdits} disabled={!wsConnected || sceneFlowBusy}>
+                      Apply
+                    </button>
+                  {/if}
+                  {#if selectedEdge.type !== "CEDGE" && selectedEdge.type !== "IEDGE"}
+                    <button type="button" class="ghost" on:click={resetEdgeDraft} disabled={!edgeDirty}>
+                      Reset
+                    </button>
+                  {/if}
+                </div>
+                {#if edgeEditError}
+                  <p class="error">{edgeEditError}</p>
+                {/if}
+              {:else if sceneFlowSelection?.type === "comment" && selectedComment}
+                <h3 class="inspector-title">Comment</h3>
+                <div class="inspector-meta">
+                  <div class="inspector-row">
+                    <span>Position</span>
+                    <span>{selectedComment.rect?.x ?? 0}, {selectedComment.rect?.y ?? 0}</span>
+                  </div>
+                  <div class="inspector-row">
+                    <span>Size</span>
+                    <span>{selectedComment.rect?.w ?? 0} x {selectedComment.rect?.h ?? 0}</span>
+                  </div>
+                </div>
+              {:else}
+                {#if superNodeDraft}
+                  <div class="node-header">
+                    <input
+                      class="node-title-input"
+                      aria-label="Node name"
+                      bind:value={superNodeDraft.name}
+                    />
                     <button
                       type="button"
-                      class="icon-button start-toggle"
-                      class:active={startListSelectedNode?.isStart}
-                      on:click={() => startListSelectedNode && toggleChildStart(startListSelectedNode)}
-                      aria-pressed={!!startListSelectedNode?.isStart}
+                      class="ghost icon-button start-toggle"
+                      class:active={superNodeDraft.isStart}
+                      on:click={toggleSuperNodeStart}
+                      disabled={superNodeStartLocked}
+                      aria-pressed={superNodeDraft.isStart}
                       aria-label="Toggle start node"
-                      title={startListSelectedNode?.isStart ? "Unset start node" : "Set start node"}
-                      disabled={!startListSelectedNode || !wsConnected || sceneFlowBusy}
+                      title={superNodeStartLocked ? "Start node (locked)" : "Start node"}
                     >
                       <IconStart className="icon" />
                     </button>
                   </div>
+                  {#if superNodeDirty}
+                    <div class="actions">
+                      <button type="button" class="primary" on:click={applySuperNodeEdits} disabled={!wsConnected || sceneFlowBusy}>
+                        Apply
+                      </button>
+                      <button type="button" class="ghost" on:click={resetSuperNodeDraft} disabled={!superNodeDirty}>
+                        Reset
+                      </button>
+                    </div>
+                  {/if}
+                {:else}
+                  <h3 class="inspector-title">{currentSuperName}</h3>
+                {/if}
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Start nodes</h4>
+                    <span class="muted">{startNodes.length}/{superNodeChildren.length}</span>
+                  </header>
+                  <div class="def-table start-node-table">
+                    <div class="def-list">
+                      {#if superNodeStartList.length === 0}
+                        <div class="def-empty">No nodes yet.</div>
+                      {:else}
+                        {#each superNodeStartList as node}
+                          <button
+                            type="button"
+                            class="def-row"
+                            class:selected={startListSelectedId === node.id}
+                            on:click={() => (startListSelectedId = node.id)}
+                            aria-pressed={startListSelectedId === node.id}
+                          >
+                            <span class="def-line">
+                              <span class={node.isStart ? "start-node" : "start-node-inactive"}>
+                                {displayNodeName(node)}
+                              </span>
+                              <span class="muted">({node.type === "Super" ? "Super" : "Basic"})</span>
+                            </span>
+                          </button>
+                        {/each}
+                      {/if}
+                    </div>
+                    <div class="def-actions">
+                      <button
+                        type="button"
+                        class="icon-button start-toggle"
+                        class:active={startListSelectedNode?.isStart}
+                        on:click={() => startListSelectedNode && toggleChildStart(startListSelectedNode)}
+                        aria-pressed={!!startListSelectedNode?.isStart}
+                        aria-label="Toggle start node"
+                        title={startListSelectedNode?.isStart ? "Unset start node" : "Set start node"}
+                        disabled={!startListSelectedNode || !wsConnected || sceneFlowBusy}
+                      >
+                        <IconStart className="icon" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              {#if superNodeEditError}
-                <p class="error">{superNodeEditError}</p>
+                {#if superNodeEditError}
+                  <p class="error">{superNodeEditError}</p>
+                {/if}
               {/if}
+
+              {#if nodeEditorTarget && !multiSelectionActive}
+                <div class="inspector-def-grid" style={`grid-template-rows:${inspectorDefGridStyle};`}>
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Types ({nodeEditorTypeDefs.length})</h4>
+                    <button
+                      type="button"
+                      class="ghost icon-button block-section-toggle"
+                      aria-pressed={!typeDefsCollapsed}
+                      aria-label={typeDefsCollapsed ? "Expand type definitions" : "Collapse type definitions"}
+                      title={typeDefsCollapsed ? "Expand" : "Collapse"}
+                      on:click={() => (typeDefsCollapsed = !typeDefsCollapsed)}
+                    >
+                      {#if typeDefsCollapsed}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      {:else}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                        </svg>
+                      {/if}
+                    </button>
+                  </header>
+                  {#if !typeDefsCollapsed}
+                  <div class="def-table">
+                    <div class="def-list">
+                      {#if nodeEditorTypeDefs.length === 0}
+                        <div class="def-empty">No type definitions yet.</div>
+                      {:else}
+                        {#each nodeEditorTypeDefs as def, index}
+                          <button
+                            type="button"
+                            class="def-row"
+                            class:selected={typeDefSelectedIndex === index}
+                            on:click={() => selectTypeDef(index)}
+                            aria-pressed={typeDefSelectedIndex === index}
+                          >
+                            <span class="def-line">
+                              {typeDefLine(def)}
+                            </span>
+                          </button>
+                        {/each}
+                      {/if}
+                    </div>
+                    <div class="def-actions">
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={startTypeDefAdd}
+                        disabled={!wsConnected || sceneFlowBusy}
+                        aria-label="Add type definition"
+                        title="Add type definition"
+                      >
+                        <IconPlus className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button danger"
+                        on:click={deleteSelectedTypeDef}
+                        disabled={!wsConnected || sceneFlowBusy || typeDefSelectedIndex === null}
+                        aria-label="Remove type definition"
+                        title="Remove type definition"
+                      >
+                        <IconTrash className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={editSelectedTypeDef}
+                        disabled={!wsConnected || sceneFlowBusy || typeDefSelectedIndex === null}
+                        aria-label="Edit type definition"
+                        title="Edit type definition"
+                      >
+                        <IconPencil className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => moveSelectedTypeDef(-1)}
+                        disabled={!wsConnected || sceneFlowBusy || typeDefSelectedIndex === null || typeDefSelectedIndex === 0}
+                        aria-label="Move type definition up"
+                        title="Move up"
+                      >
+                        <IconChevronUp className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => moveSelectedTypeDef(1)}
+                        disabled={
+                          !wsConnected ||
+                          sceneFlowBusy ||
+                          typeDefSelectedIndex === null ||
+                          typeDefSelectedIndex === nodeEditorTypeDefs.length - 1
+                        }
+                        aria-label="Move type definition down"
+                        title="Move down"
+                      >
+                        <IconChevronDown className="icon" />
+                      </button>
+                    </div>
+                  </div>
+                  {/if}
+                </div>
+
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Variables ({nodeEditorVarDefs.length})</h4>
+                    <button
+                      type="button"
+                      class="ghost icon-button block-section-toggle"
+                      aria-pressed={!varDefsCollapsed}
+                      aria-label={varDefsCollapsed ? "Expand variable definitions" : "Collapse variable definitions"}
+                      title={varDefsCollapsed ? "Expand" : "Collapse"}
+                      on:click={() => (varDefsCollapsed = !varDefsCollapsed)}
+                    >
+                      {#if varDefsCollapsed}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      {:else}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                        </svg>
+                      {/if}
+                    </button>
+                  </header>
+                  {#if !varDefsCollapsed}
+                  <div class="var-table">
+                    <div class="var-list">
+                      {#if nodeEditorVarDefs.length === 0}
+                        <div class="var-empty">No variable definitions yet.</div>
+                      {:else}
+                        {#each nodeEditorVarDefs as def, index}
+                          <button
+                            type="button"
+                            class="var-row"
+                            class:selected={varDefSelectedIndex === index}
+                            on:click={() => selectVarDef(index)}
+                            on:dblclick={() => startVarDefEdit(index)}
+                            aria-pressed={varDefSelectedIndex === index}
+                          >
+                            <span class="var-line">
+                              {varDefLine(def)}
+                            </span>
+                          </button>
+                        {/each}
+                      {/if}
+                    </div>
+                    <div class="var-actions">
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={startVarDefAdd}
+                        disabled={!wsConnected || sceneFlowBusy}
+                        aria-label="Add variable definition"
+                        title="Add variable definition"
+                      >
+                        <IconPlus className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button danger"
+                        on:click={deleteSelectedVarDef}
+                        disabled={!wsConnected || sceneFlowBusy || varDefSelectedIndex === null}
+                        aria-label="Remove variable definition"
+                        title="Remove variable definition"
+                      >
+                        <IconTrash className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={editSelectedVarDef}
+                        disabled={!wsConnected || sceneFlowBusy || varDefSelectedIndex === null}
+                        aria-label="Edit variable definition"
+                        title="Edit variable definition"
+                      >
+                        <IconPencil className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => moveSelectedVarDef(-1)}
+                        disabled={!wsConnected || sceneFlowBusy || varDefSelectedIndex === null || varDefSelectedIndex === 0}
+                        aria-label="Move variable definition up"
+                        title="Move up"
+                      >
+                        <IconChevronUp className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => moveSelectedVarDef(1)}
+                        disabled={
+                          !wsConnected ||
+                          sceneFlowBusy ||
+                          varDefSelectedIndex === null ||
+                          varDefSelectedIndex === nodeEditorVarDefs.length - 1
+                        }
+                        aria-label="Move variable definition down"
+                        title="Move down"
+                      >
+                        <IconChevronDown className="icon" />
+                      </button>
+                    </div>
+                  </div>
+                  {/if}
+
+                </div>
+
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Commands ({nodeEditorCommands.length})</h4>
+                    <button
+                      type="button"
+                      class="ghost icon-button block-section-toggle"
+                      aria-pressed={!cmdExecCollapsed}
+                      aria-label={cmdExecCollapsed ? "Expand command executions" : "Collapse command executions"}
+                      title={cmdExecCollapsed ? "Expand" : "Collapse"}
+                      disabled={rootSceneFlowCommandEditingLocked}
+                      on:click={() => (cmdExecCollapsed = !cmdExecCollapsed)}
+                    >
+                      {#if cmdExecCollapsed}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      {:else}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                        </svg>
+                      {/if}
+                    </button>
+                  </header>
+                  {#if !cmdExecCollapsed}
+                  <div class="def-table">
+                    <div
+                      class="def-list"
+                      role="list"
+                      aria-label="Command executions"
+                      on:dragover={handleSceneDropOver}
+                      on:drop={handleCommandSceneDrop}
+                    >
+                      {#if nodeEditorCommands.length === 0}
+                        <div class="def-empty">
+                          {rootSceneFlowCommandEditingLocked ? "No commands allowed here." : "No commands yet."}
+                        </div>
+                      {:else}
+                        {#each nodeEditorCommands as cmd, index}
+                          <button
+                            type="button"
+                            class="def-row"
+                            class:selected={cmdSelectedIndex === index}
+                            on:click={() => selectCmd(index)}
+                            on:dblclick={() => startCmdEdit(index)}
+                            aria-pressed={cmdSelectedIndex === index}
+                          >
+                            <span class="def-line">
+                              {cmdLine(cmd) || "Command"}
+                            </span>
+                          </button>
+                        {/each}
+                      {/if}
+                    </div>
+                    <div class="def-actions">
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={startCmdAdd}
+                        disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked}
+                        data-cmd-add-button="true"
+                        aria-label="Add command"
+                        title="Add command"
+                      >
+                        <IconPlus className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button danger"
+                        on:click={deleteSelectedCmd}
+                        disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null}
+                        aria-label="Remove command"
+                        title="Remove command"
+                      >
+                        <IconTrash className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={editSelectedCmd}
+                        disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null}
+                        aria-label="Edit command"
+                        title="Edit command"
+                      >
+                        <IconPencil className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => moveSelectedCmd(-1)}
+                        disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null || cmdSelectedIndex === 0}
+                        aria-label="Move command up"
+                        title="Move up"
+                      >
+                        <IconChevronUp className="icon" />
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => moveSelectedCmd(1)}
+                        disabled={
+                          !wsConnected ||
+                          sceneFlowBusy ||
+                          rootSceneFlowCommandEditingLocked ||
+                          cmdSelectedIndex === null ||
+                          cmdSelectedIndex === nodeEditorCommands.length - 1
+                        }
+                        aria-label="Move command down"
+                        title="Move down"
+                      >
+                        <IconChevronDown className="icon" />
+                      </button>
+                    </div>
+                  </div>
+                  {/if}
+                </div>
+                </div>
+                {/if}
+              </aside>
+            {:else}
+              <div class="sceneflow-side-placeholder sceneflow-region-right" aria-hidden="true"></div>
             {/if}
-
-            {#if nodeEditorTarget && !multiSelectionActive}
-              <div class="inspector-def-grid" style={`grid-template-rows:${inspectorDefGridStyle};`}>
-              <div class="definition-section">
-                <header class="definition-header">
-                  <h4>Types ({nodeEditorTypeDefs.length})</h4>
-                  <button
-                    type="button"
-                    class="ghost icon-button block-section-toggle"
-                    aria-pressed={!typeDefsCollapsed}
-                    aria-label={typeDefsCollapsed ? "Expand type definitions" : "Collapse type definitions"}
-                    title={typeDefsCollapsed ? "Expand" : "Collapse"}
-                    on:click={() => (typeDefsCollapsed = !typeDefsCollapsed)}
-                  >
-                    {#if typeDefsCollapsed}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                    {:else}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-                      </svg>
-                    {/if}
-                  </button>
-                </header>
-                {#if !typeDefsCollapsed}
-                <div class="def-table">
-                  <div class="def-list">
-                    {#if nodeEditorTypeDefs.length === 0}
-                      <div class="def-empty">No type definitions yet.</div>
-                    {:else}
-                      {#each nodeEditorTypeDefs as def, index}
-                        <button
-                          type="button"
-                          class="def-row"
-                          class:selected={typeDefSelectedIndex === index}
-                          on:click={() => selectTypeDef(index)}
-                          aria-pressed={typeDefSelectedIndex === index}
-                        >
-                          <span class="def-line">
-                            {typeDefLine(def)}
-                          </span>
-                        </button>
-                      {/each}
-                    {/if}
-                  </div>
-                  <div class="def-actions">
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={startTypeDefAdd}
-                      disabled={!wsConnected || sceneFlowBusy}
-                      aria-label="Add type definition"
-                      title="Add type definition"
-                    >
-                      <IconPlus className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button danger"
-                      on:click={deleteSelectedTypeDef}
-                      disabled={!wsConnected || sceneFlowBusy || typeDefSelectedIndex === null}
-                      aria-label="Remove type definition"
-                      title="Remove type definition"
-                    >
-                      <IconTrash className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={editSelectedTypeDef}
-                      disabled={!wsConnected || sceneFlowBusy || typeDefSelectedIndex === null}
-                      aria-label="Edit type definition"
-                      title="Edit type definition"
-                    >
-                      <IconPencil className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={() => moveSelectedTypeDef(-1)}
-                      disabled={!wsConnected || sceneFlowBusy || typeDefSelectedIndex === null || typeDefSelectedIndex === 0}
-                      aria-label="Move type definition up"
-                      title="Move up"
-                    >
-                      <IconChevronUp className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={() => moveSelectedTypeDef(1)}
-                      disabled={
-                        !wsConnected ||
-                        sceneFlowBusy ||
-                        typeDefSelectedIndex === null ||
-                        typeDefSelectedIndex === nodeEditorTypeDefs.length - 1
-                      }
-                      aria-label="Move type definition down"
-                      title="Move down"
-                    >
-                      <IconChevronDown className="icon" />
-                    </button>
-                  </div>
-                </div>
-                {/if}
-              </div>
-
-              <div class="definition-section">
-                <header class="definition-header">
-                  <h4>Variables ({nodeEditorVarDefs.length})</h4>
-                  <button
-                    type="button"
-                    class="ghost icon-button block-section-toggle"
-                    aria-pressed={!varDefsCollapsed}
-                    aria-label={varDefsCollapsed ? "Expand variable definitions" : "Collapse variable definitions"}
-                    title={varDefsCollapsed ? "Expand" : "Collapse"}
-                    on:click={() => (varDefsCollapsed = !varDefsCollapsed)}
-                  >
-                    {#if varDefsCollapsed}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                    {:else}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-                      </svg>
-                    {/if}
-                  </button>
-                </header>
-                {#if !varDefsCollapsed}
-                <div class="var-table">
-                  <div class="var-list">
-                    {#if nodeEditorVarDefs.length === 0}
-                      <div class="var-empty">No variable definitions yet.</div>
-                    {:else}
-                      {#each nodeEditorVarDefs as def, index}
-                        <button
-                          type="button"
-                          class="var-row"
-                          class:selected={varDefSelectedIndex === index}
-                          on:click={() => selectVarDef(index)}
-                          on:dblclick={() => startVarDefEdit(index)}
-                          aria-pressed={varDefSelectedIndex === index}
-                        >
-                          <span class="var-line">
-                            {varDefLine(def)}
-                          </span>
-                        </button>
-                      {/each}
-                    {/if}
-                  </div>
-                  <div class="var-actions">
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={startVarDefAdd}
-                      disabled={!wsConnected || sceneFlowBusy}
-                      aria-label="Add variable definition"
-                      title="Add variable definition"
-                    >
-                      <IconPlus className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button danger"
-                      on:click={deleteSelectedVarDef}
-                      disabled={!wsConnected || sceneFlowBusy || varDefSelectedIndex === null}
-                      aria-label="Remove variable definition"
-                      title="Remove variable definition"
-                    >
-                      <IconTrash className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={editSelectedVarDef}
-                      disabled={!wsConnected || sceneFlowBusy || varDefSelectedIndex === null}
-                      aria-label="Edit variable definition"
-                      title="Edit variable definition"
-                    >
-                      <IconPencil className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={() => moveSelectedVarDef(-1)}
-                      disabled={!wsConnected || sceneFlowBusy || varDefSelectedIndex === null || varDefSelectedIndex === 0}
-                      aria-label="Move variable definition up"
-                      title="Move up"
-                    >
-                      <IconChevronUp className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={() => moveSelectedVarDef(1)}
-                      disabled={
-                        !wsConnected ||
-                        sceneFlowBusy ||
-                        varDefSelectedIndex === null ||
-                        varDefSelectedIndex === nodeEditorVarDefs.length - 1
-                      }
-                      aria-label="Move variable definition down"
-                      title="Move down"
-                    >
-                      <IconChevronDown className="icon" />
-                    </button>
-                  </div>
-                </div>
-                {/if}
-
-              </div>
-
-              <div class="definition-section">
-                <header class="definition-header">
-                  <h4>Commands ({nodeEditorCommands.length})</h4>
-                  <button
-                    type="button"
-                    class="ghost icon-button block-section-toggle"
-                    aria-pressed={!cmdExecCollapsed}
-                    aria-label={cmdExecCollapsed ? "Expand command executions" : "Collapse command executions"}
-                    title={cmdExecCollapsed ? "Expand" : "Collapse"}
-                    disabled={rootSceneFlowCommandEditingLocked}
-                    on:click={() => (cmdExecCollapsed = !cmdExecCollapsed)}
-                  >
-                    {#if cmdExecCollapsed}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                    {:else}
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-                      </svg>
-                    {/if}
-                  </button>
-                </header>
-                {#if !cmdExecCollapsed}
-                <div class="def-table">
-                  <div
-                    class="def-list"
-                    role="list"
-                    aria-label="Command executions"
-                    on:dragover={handleSceneDropOver}
-                    on:drop={handleCommandSceneDrop}
-                  >
-                    {#if nodeEditorCommands.length === 0}
-                      <div class="def-empty">
-                        {rootSceneFlowCommandEditingLocked ? "No commands allowed here." : "No commands yet."}
-                      </div>
-                    {:else}
-                      {#each nodeEditorCommands as cmd, index}
-                        <button
-                          type="button"
-                          class="def-row"
-                          class:selected={cmdSelectedIndex === index}
-                          on:click={() => selectCmd(index)}
-                          on:dblclick={() => startCmdEdit(index)}
-                          aria-pressed={cmdSelectedIndex === index}
-                        >
-                          <span class="def-line">
-                            {cmdLine(cmd) || "Command"}
-                          </span>
-                        </button>
-                      {/each}
-                    {/if}
-                  </div>
-                  <div class="def-actions">
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={startCmdAdd}
-                      disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked}
-                      data-cmd-add-button="true"
-                      aria-label="Add command"
-                      title="Add command"
-                    >
-                      <IconPlus className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button danger"
-                      on:click={deleteSelectedCmd}
-                      disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null}
-                      aria-label="Remove command"
-                      title="Remove command"
-                    >
-                      <IconTrash className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={editSelectedCmd}
-                      disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null}
-                      aria-label="Edit command"
-                      title="Edit command"
-                    >
-                      <IconPencil className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={() => moveSelectedCmd(-1)}
-                      disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null || cmdSelectedIndex === 0}
-                      aria-label="Move command up"
-                      title="Move up"
-                    >
-                      <IconChevronUp className="icon" />
-                    </button>
-                    <button
-                      type="button"
-                      class="ghost icon-button"
-                      on:click={() => moveSelectedCmd(1)}
-                      disabled={
-                        !wsConnected ||
-                        sceneFlowBusy ||
-                        rootSceneFlowCommandEditingLocked ||
-                        cmdSelectedIndex === null ||
-                        cmdSelectedIndex === nodeEditorCommands.length - 1
-                      }
-                      aria-label="Move command down"
-                      title="Move down"
-                    >
-                      <IconChevronDown className="icon" />
-                    </button>
-                  </div>
-                </div>
-                {/if}
-              </div>
-              </div>
-              {/if}
-            </aside>
+            <!-- Anchored to .sceneflow-layout, not .sceneflow-panel: the panel also contains the
+                 scene script below, so its own bottom-right corner is far below this band. The
+                 layout spans the full width whichever side rail is collapsed, so this corner is
+                 stable. -->
+            <div
+              class="sceneflow-resize"
+              title="Drag to resize height · double-click to reset"
+              aria-hidden="true"
+              on:pointerdown|stopPropagation={startSceneFlowPanelResize}
+              on:mousedown|stopPropagation={startSceneFlowPanelResize}
+              on:dblclick|stopPropagation={resetSceneFlowPanelHeight}
+            ></div>
+          </div>
           {:else}
-            <div class="sceneflow-side-placeholder sceneflow-region-right" aria-hidden="true"></div>
+            <p class="muted">No SceneFlow data loaded yet.</p>
           {/if}
-          <!-- Anchored to .sceneflow-layout, not .sceneflow-panel: the panel also contains the
-               scene script below, so its own bottom-right corner is far below this band. The
-               layout spans the full width whichever side rail is collapsed, so this corner is
-               stable. -->
-          <div
-            class="sceneflow-resize"
-            title="Drag to resize height · double-click to reset"
-            aria-hidden="true"
-            on:pointerdown|stopPropagation={startSceneFlowPanelResize}
-            on:mousedown|stopPropagation={startSceneFlowPanelResize}
-            on:dblclick|stopPropagation={resetSceneFlowPanelHeight}
-          ></div>
         </div>
-      {:else}
-        <p class="muted">No SceneFlow data loaded yet.</p>
       {/if}
       {#if selectedProject && scriptAreaVisible}
         <div class="scenescript" bind:this={scenescriptEl}>
