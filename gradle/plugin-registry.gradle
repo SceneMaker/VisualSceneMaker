@@ -1,0 +1,49 @@
+// Build-time plugin registry, shared by every module that builds a fat JAR.
+//
+// Each plugin ships a plugin-properties.json at the root of its jar, so a fat JAR built with
+// duplicatesStrategy = 'exclude' keeps exactly one of them and the rest vanish. Anything reading
+// plugin specs at runtime then sees a single plugin: the capability snapshot's command inventory,
+// pluginIdForClassName behind behaviour-taxonomy classification, and the plugin dashboard.
+//
+// This task aggregates them into vsm-plugin-registry.json, which WebUiServer prefers over scanning
+// the individual files. It reads the applying module's own runtimeClasspath, so each deployment
+// gets a registry describing exactly the plugins it actually bundles, and never advertises a
+// command whose implementation is absent.
+//
+// It lives here rather than in a single build file because it was previously defined only in the
+// root build. runtime-server therefore shipped without a registry and reported one plugin, which is
+// exactly the drift that having one definition prevents. Apply it from every module producing a fat
+// JAR:
+//
+//     apply from: rootProject.file('gradle/plugin-registry.gradle')
+//     jar { dependsOn generatePluginRegistry; from(...) { include 'vsm-plugin-registry.json' } }
+
+tasks.register('generatePluginRegistry') {
+    group = 'build'
+    description = 'Aggregates the plugin-properties.json of every bundled plugin into vsm-plugin-registry.json'
+    inputs.files(project.configurations.runtimeClasspath.filter { it.isFile() })
+    def registryFile = layout.buildDirectory.file('generated-resources/vsm-plugin-registry.json')
+    outputs.file(registryFile)
+    doLast {
+        def plugins = []
+        project.configurations.runtimeClasspath
+                .filter { it.isFile() && it.name.endsWith('.jar') }
+                .each { jar ->
+                    new java.util.zip.ZipFile(jar).withCloseable { zf ->
+                        def entry = zf.getEntry('plugin-properties.json')
+                        if (entry != null) {
+                            try {
+                                def text = new java.io.InputStreamReader(zf.getInputStream(entry), 'UTF-8').text
+                                plugins << new groovy.json.JsonSlurper().parseText(text)
+                            } catch (Exception e) {
+                                logger.warn("generatePluginRegistry: skipping ${jar.name}: ${e.message}")
+                            }
+                        }
+                    }
+                }
+        def out = registryFile.get().asFile
+        out.parentFile.mkdirs()
+        out.text = groovy.json.JsonOutput.toJson(plugins)
+        logger.lifecycle("generatePluginRegistry: wrote ${plugins.size()} plugin entries for ${project.path}")
+    }
+}

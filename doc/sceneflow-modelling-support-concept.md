@@ -350,14 +350,18 @@ cheap to fix once someone is in the relevant file. Semantics findings live separ
   `<Command>` elements, which the XML never contains: the real children are `PlayAction`, `PlayScene`
   and `Assignment`. A consumer asking whether a node does anything always got no. Fixed by reading
   the model, 2026-08-14.
-- **The runtime-server deployment can only see one plugin's declared properties.** Its jar bundles
-  the plugin classes but carries no `vsm-plugin-registry.json`, because the task that aggregates the
-  per-plugin `plugin-properties.json` files is wired into the root module's build only. Fat-jar
-  deduplication then keeps exactly one `plugin-properties.json`, which happens to be the timer's, so
-  every consumer of plugin specs is blind to the rest: the capability snapshot's command inventory,
-  `pluginIdForClassName` behind behavior-taxonomy classification, and the plugin dashboard. Predates
-  the snapshot work and surfaced by it. The fix is to wire `generatePluginRegistry` into
-  `runtime-server`'s jar as the root module already does.
+- ~~**The runtime-server deployment can only see one plugin's declared properties.**~~ *(fixed
+  2026-08-15.)* Its jar bundled the plugin classes but carried no `vsm-plugin-registry.json`, because
+  the task aggregating the per-plugin `plugin-properties.json` files was defined in the root build
+  only. Fat-jar deduplication kept exactly one of them, the timer's, so every consumer of plugin
+  specs was blind to the rest: the capability snapshot's command inventory, `pluginIdForClassName`
+  behind behaviour-taxonomy classification, and the plugin dashboard. The aggregation now lives in
+  `gradle/plugin-registry.gradle` and both fat JARs apply it, so there is one definition rather than
+  two that can drift. Because it reads the applying module's own runtime classpath, each deployment
+  gets a registry of exactly the plugins it bundles and never advertises a command whose
+  implementation is absent: the root jar describes 29 plugins, runtime-server's four.
+
+  **Any new module that builds a fat JAR has to apply that script**, or it will reproduce this bug.
 - **The authored order of start nodes is not recoverable from the model.** `SuperNode` holds them in
   a `HashMap`, so the order in `project.xml` is lost on load. The Groovy generator appeared to
   preserve it only because it read the XML text; a snapshot of a live project never could. Start node

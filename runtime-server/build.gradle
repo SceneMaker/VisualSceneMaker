@@ -43,7 +43,12 @@ tasks.named('run') {
     }
 }
 
+// Plugin registry aggregation, shared with the root build.
+apply from: rootProject.file('gradle/plugin-registry.gradle')
+
 jar {
+    dependsOn generatePluginRegistry
+
     manifest {
         attributes(
             'Main-Class': 'de.dfki.vsm.runtime.RuntimeMain'
@@ -55,6 +60,12 @@ jar {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     duplicatesStrategy = 'exclude'
+
+    // Without this, duplicatesStrategy keeps exactly one plugin-properties.json and the server can
+    // see only that plugin's declared commands and variables.
+    from(layout.buildDirectory.dir('generated-resources')) {
+        include 'vsm-plugin-registry.json'
+    }
 }
 
 // Task to create distribution

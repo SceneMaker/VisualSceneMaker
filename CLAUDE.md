@@ -199,7 +199,9 @@ VisualSceneMaker/
   commands, agents, scenes, screens with their variable bindings, and flow shape (built by
   `CapabilitySnapshotBuilder`; the contract is `doc/capability-snapshot.schema.json`). The command
   inventory reflects the plugin specs on the **serving deployment's** classpath, so a deployment
-  missing a plugin jar reports that plugin with no commands.
+  missing a plugin jar reports that plugin with no commands. Fat JARs get those specs from
+  `vsm-plugin-registry.json`, aggregated by `gradle/plugin-registry.gradle`; any module building a
+  fat JAR must apply that script, or deduplication leaves it seeing a single plugin.
 - `GET /api/v1/projects/{pid}/runtime` - Get runtime state
 
 **Editor-only endpoints** (FULL_EDITOR mode):
