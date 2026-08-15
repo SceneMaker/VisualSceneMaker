@@ -13,6 +13,8 @@ import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,10 +71,21 @@ public final class SceneFlowNarrativeExplainer {
             patterns.put(waitPattern);
             summary.put(waitPattern.optString("description", ""));
         }
-        // Chains are detected before the per-node pass so their hops can be suppressed there: a
-        // three-step sequence should read as one finding, not as two unrelated transitions.
-        final Set<String> sequencedHopSources = new LinkedHashSet<>();
-        for (JSONObject chain : detectSequenceChains(flow, nodeById, effectiveStyle, sequencedHopSources)) {
+        // Composite shapes are detected before the per-node pass so the findings they subsume can be
+        // suppressed there. A question that waits for its answer should read as one thing, not as a
+        // transition plus an unexplained polling loop.
+        final Set<String> hopsAlreadyNarrated = new LinkedHashSet<>();
+        final Set<String> waitLoopsAlreadyNarrated = new LinkedHashSet<>();
+        final Set<String> claimedByAskAndWait = new LinkedHashSet<>();
+        for (JSONObject asking : detectAskAndWaitPatterns(flow, nodeById, effectiveStyle,
+                hopsAlreadyNarrated, waitLoopsAlreadyNarrated, claimedByAskAndWait)) {
+            patterns.put(asking);
+            summary.put(asking.optString("description", ""));
+        }
+
+        // Chains are detected next, and must not absorb nodes an ask-and-wait already accounts for.
+        for (JSONObject chain : detectSequenceChains(flow, nodeById, effectiveStyle,
+                hopsAlreadyNarrated, claimedByAskAndWait)) {
             patterns.put(chain);
             summary.put(chain.optString("description", ""));
         }
@@ -103,6 +116,10 @@ public final class SceneFlowNarrativeExplainer {
                 continue;
             }
 
+            if (waitLoopsAlreadyNarrated.contains(node.getId())) {
+                // Already narrated as the waiting half of an ask-and-wait.
+                continue;
+            }
             final JSONObject guardedWaitPattern = detectNodeGuardedWaitPattern(node, nodeById, effectiveStyle);
             if (guardedWaitPattern != null) {
                 patterns.put(guardedWaitPattern);
@@ -116,8 +133,8 @@ public final class SceneFlowNarrativeExplainer {
                 summary.put(conditionalChoicePattern.optString("description", ""));
             }
 
-            if (sequencedHopSources.contains(node.getId())) {
-                // Already narrated as one step of a sequence.
+            if (hopsAlreadyNarrated.contains(node.getId())) {
+                // Already narrated as part of a sequence or an ask-and-wait.
                 continue;
             }
             final JSONObject unconditionalTransitionPattern = detectUnconditionalTransitionPattern(node, nodeById, effectiveStyle);
@@ -506,6 +523,210 @@ public final class SceneFlowNarrativeExplainer {
     }
 
     /**
+     * Finds a question that waits for its own answer: a node that asks, a node that waits, and a node
+     * that keeps what arrived.
+     *
+     * <p>The discriminator is the reset. A node that sets a variable to empty and then hands to a node
+     * that waits for that same variable to become non-empty is unmistakably asking and waiting, and no
+     * other shape does that. Matching on "a node with commands followed by a polling node" would also
+     * catch every unrelated wait that happens to follow an action.
+     *
+     * <p>Reported instead of the guarded wait loop and the transition into it, which are the same
+     * thing described one edge at a time.
+     *
+     * @param hopsAlreadyNarrated collects the asking node, whose hop this subsumes
+     * @param waitLoopsAlreadyNarrated collects the waiting node, whose polling loop this subsumes
+     * @param claimed collects all three nodes, so a sequence chain does not absorb them
+     */
+    private List<JSONObject> detectAskAndWaitPatterns(
+            final SceneFlow flow,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style,
+            final Set<String> hopsAlreadyNarrated,
+            final Set<String> waitLoopsAlreadyNarrated,
+            final Set<String> claimed) {
+        final List<JSONObject> found = new ArrayList<>();
+        final List<BasicNode> nodes = collectBasicNodes(flow);
+
+        for (BasicNode wait : nodes) {
+            if (wait instanceof SuperNode || !wait.getCmdList().isEmpty()) {
+                continue;
+            }
+            if (!(wait.getDedge() instanceof TimeoutEdge poll)
+                    || !wait.getId().equals(poll.getTargetUnid())
+                    || isEmpty(wait.getCEdgeList())) {
+                continue;
+            }
+            final GuargedEdge exit = wait.getCEdgeList().get(0);
+            final String condition = expressionToText(exit.getCondition());
+            final String channel = channelAwaitedIn(condition);
+            if (channel.isEmpty()) {
+                continue;
+            }
+
+            final BasicNode ask = askingNodeFor(wait, channel, nodes);
+            if (ask == null) {
+                continue;
+            }
+            final BasicNode store = nodeById.get(exit.getTargetUnid());
+
+            found.add(describeAskAndWait(ask, wait, store, channel, condition, poll.getTimeout(), style));
+            hopsAlreadyNarrated.add(ask.getId());
+            waitLoopsAlreadyNarrated.add(wait.getId());
+            claimed.add(ask.getId());
+            claimed.add(wait.getId());
+            if (store != null) {
+                claimed.add(store.getId());
+            }
+        }
+        return found;
+    }
+
+    /** The variable a guard waits to become non-empty, or empty when the guard is something else. */
+    private String channelAwaitedIn(final String condition) {
+        if (condition == null || !condition.contains("!=")) {
+            return "";
+        }
+        final String[] sides = condition.split("!=", 2);
+        final String left = sides[0].trim();
+        final String right = sides[1].trim();
+        if (!right.equals("\"\"") || left.isEmpty() || !left.matches("[A-Za-z_][A-Za-z0-9_]*")) {
+            return "";
+        }
+        return left;
+    }
+
+    /** The node that hands to this wait node after clearing the very variable it waits on. */
+    private BasicNode askingNodeFor(
+            final BasicNode wait, final String channel, final List<BasicNode> nodes) {
+        for (BasicNode candidate : nodes) {
+            if (candidate instanceof SuperNode || candidate.getCmdList().isEmpty()) {
+                continue;
+            }
+            if (!(candidate.getDedge() instanceof EpsilonEdge hop)
+                    || !wait.getId().equals(hop.getTargetUnid())) {
+                continue;
+            }
+            for (Command command : candidate.getCmdList()) {
+                final String text = command == null ? "" : nonBlank(command.getConcreteSyntax(), "");
+                final String normalised = text.replace(" ", "");
+                if (normalised.equals(channel + "=\"\"")) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
+    }
+
+    private JSONObject describeAskAndWait(
+            final BasicNode ask,
+            final BasicNode wait,
+            final BasicNode store,
+            final String channel,
+            final String condition,
+            final long pollIntervalMs,
+            final NarrativeStyle style) {
+        final String scene = scenePlayedBy(ask);
+        final StringBuilder description = new StringBuilder()
+                .append(label("Node", ask.getName(), ask.getId(), style))
+                .append(scene.isEmpty() ? " asks a question" : " plays " + quoted(scene) + " to ask")
+                .append(" and then waits for an answer in ")
+                .append(quoted(channel))
+                .append(", checking every ")
+                .append(pollIntervalMs)
+                .append(" ms.");
+        // A node existing where the answer arrives is not the same as one that does something with
+        // it. There are three cases and they matter to an author: the answer is copied somewhere of
+        // its own, it is used straight away and then no longer needed, or it is simply dropped.
+        final String handling = answerHandling(store, channel);
+        switch (handling) {
+            case "kept" -> description.append(" Once an answer arrives it is kept at ")
+                    .append(label("node", store.getName(), store.getId(), style, true))
+                    .append(", so the next question cannot overwrite it.");
+            case "used" -> description.append(" Once an answer arrives it is used straight away at ")
+                    .append(label("node", store.getName(), store.getId(), style, true))
+                    .append(", so it is never needed again.");
+            default -> description.append(" Nothing keeps the answer, so the next question will "
+                    + "overwrite it before it can be used.");
+        }
+
+        return new JSONObject()
+                .put("patternType", "ask_and_wait")
+                .put("description", description.toString())
+                .put("evidence", new JSONObject()
+                        .put("askNodeId", ask.getId())
+                        .put("waitNodeId", wait.getId())
+                        .put("storeNodeId", store == null ? "" : store.getId())
+                        .put("answerHandling", answerHandling(store, channel))
+                        .put("channel", channel)
+                        .put("condition", condition)
+                        .put("questionScene", scene)
+                        .put("pollIntervalMs", pollIntervalMs));
+    }
+
+    /**
+     * What becomes of the answer: {@code kept} in a variable of its own, {@code used} straight away as
+     * an argument, or {@code dropped}.
+     */
+    private String answerHandling(final BasicNode store, final String channel) {
+        if (store == null) {
+            return "dropped";
+        }
+        if (copiesFrom(store, channel)) {
+            return "kept";
+        }
+        return passesAsArgument(store, channel) ? "used" : "dropped";
+    }
+
+    /** Whether a node hands the channel straight to a scene, as doc/IntakeInterview does with its summary. */
+    private boolean passesAsArgument(final BasicNode node, final String channel) {
+        for (Command command : node.getCmdList()) {
+            if (!(command instanceof PlayScenesActivity play)) {
+                continue;
+            }
+            for (Expression argument : play.getArgList()) {
+                if (!(argument instanceof StructExpression struct)) {
+                    continue;
+                }
+                for (Assignment field : struct.getExpList()) {
+                    final Expression value = field.getInitExpression();
+                    if (value != null && channel.equals(nonBlank(value.getConcreteSyntax(), "").trim())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Whether a node copies the channel into something of its own. */
+    private boolean copiesFrom(final BasicNode node, final String channel) {
+        for (Command command : node.getCmdList()) {
+            if (!(command instanceof Assignment assignment)) {
+                continue;
+            }
+            final Expression value = assignment.getInitExpression();
+            if (value != null && channel.equals(nonBlank(value.getConcreteSyntax(), "").trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The scene a node plays, when it plays exactly one, else empty. */
+    private String scenePlayedBy(final BasicNode node) {
+        for (Command command : node.getCmdList()) {
+            final String text = command == null ? "" : nonBlank(command.getConcreteSyntax(), "");
+            final java.util.regex.Matcher matcher =
+                    java.util.regex.Pattern.compile("^PlayScene\\s*\\(\\s*\"([^\"]*)\"").matcher(text.trim());
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        }
+        return "";
+    }
+
+    /**
      * Finds maximal runs of nodes joined by unconditional edges, so that a sequence reads as one
      * finding rather than as a scatter of separate transitions.
      *
@@ -525,10 +746,11 @@ public final class SceneFlowNarrativeExplainer {
             final SceneFlow flow,
             final Map<String, BasicNode> nodeById,
             final NarrativeStyle style,
-            final Set<String> sequencedHopSources) {
+            final Set<String> sequencedHopSources,
+            final Set<String> alreadyClaimed) {
         final List<JSONObject> chains = new ArrayList<>();
         final Map<String, Integer> inDegree = countIncomingEdges(flow);
-        final Set<String> consumed = new LinkedHashSet<>();
+        final Set<String> consumed = new LinkedHashSet<>(alreadyClaimed);
 
         for (BasicNode node : collectBasicNodes(flow)) {
             if (consumed.contains(node.getId())) {

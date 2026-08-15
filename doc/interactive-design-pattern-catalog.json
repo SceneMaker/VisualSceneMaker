@@ -1,5 +1,5 @@
 {
-  "catalogVersion": "1.5",
+  "catalogVersion": "1.6",
   "updatedAt": "2026-08-15",
   "purpose": "Scientific grounding and executable mapping for constrained activity modeling in SceneFlow generation.",
   "metaModel": {
@@ -310,7 +310,8 @@
       "runtimeSemantics": "Three details decide whether this works, all visible in doc/IntakeInterview. The channel is cleared in the node that asks, never in the node that waits, because a reset in the wait node would run on every poll and the answer would never be seen. The wait node carries no commands, because a guard is only evaluated after a node's commands have finished, so anything blocking there delays the check by its own duration. And the answer is copied out before the next question is asked, because the channel is shared. See doc/patterns/1.1-fixed-sequence.md section 2.3 for the underlying execution order.",
       "knownLimitations": [
         "The convention that an empty channel means \"no answer yet\" makes an empty answer indistinguishable from silence.",
-        "With polling, the agent notices an answer up to one interval late. Immediate reaction needs the channel to be an Event variable."
+        "With polling, the agent notices an answer up to one interval late. Immediate reaction needs the channel to be an Event variable.",
+        "Where a project fuses the store of one question with the ask of the next, as doc/IntakeInterview does, the detector reports the shared node as the asking node of the following question, which is accurate but reads oddly against its name."
       ],
       "scientificSources": [
         {
@@ -325,7 +326,9 @@
           "relevance": "The adjacency pair, a first action making a particular second action expectable, is the conversational structure this pattern realises: the agent asks and then withholds its own next action until the answer arrives.",
           "verifyReference": true
         }
-      ]
+      ],
+      "detectedAs": "ask_and_wait",
+      "detectionRule": "A node that sets a variable to empty and hands to a node that waits for that same variable to become non-empty. The reset is the discriminator: a wait whose variable nothing clears is waiting for a condition rather than for an answer it invited. What becomes of the answer is reported as kept in a variable of its own, used straight away as a scene argument, or dropped."
     },
     {
       "id": "constrained_activity_base",

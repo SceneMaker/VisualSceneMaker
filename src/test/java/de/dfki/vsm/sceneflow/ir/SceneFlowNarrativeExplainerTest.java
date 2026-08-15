@@ -361,4 +361,138 @@ class SceneFlowNarrativeExplainerTest {
                 .explain(file, new SceneFlowNarrativeExplainer.NarrativeStyle(false, "technical"));
         assertTrue(firstPatternOfType(report, "sequence").getString("description").contains("EEDGE"));
     }
+
+    // ---- ask and wait ----
+
+    private static String askWaitStore(final String channel, final long pollMs, final boolean withStore) {
+        return node("N1", "AskName",
+                "<Commands><PlayScene><StringLiteral><![CDATA[ask_name]]></StringLiteral></PlayScene>"
+                + "<Assignment><SimpleVariable name=\"" + channel + "\"/><Expression>"
+                + "<StringLiteral><![CDATA[]]></StringLiteral></Expression></Assignment></Commands>"
+                + "<EEdge target=\"N2\" start=\"\"></EEdge>")
+            + "<Node id=\"N2\" name=\"WaitName\" history=\"false\">"
+                + "<Define></Define><Declare></Declare><Commands></Commands>"
+                + "<CEdge target=\"N3\" start=\"\"><Neq><SimpleVariable name=\"" + channel + "\"/>"
+                + "<StringLiteral><![CDATA[]]></StringLiteral></Neq></CEdge>"
+                + "<TEdge target=\"N2\" start=\"\" timeout=\"" + pollMs + "\"></TEdge></Node>\n"
+            + node("N3", "StoreName", withStore
+                ? "<Commands><Assignment><SimpleVariable name=\"kept\"/><Expression>"
+                  + "<SimpleVariable name=\"" + channel + "\"/></Expression></Assignment></Commands>"
+                : "");
+    }
+
+    /** The reset is what identifies this shape, so a node clearing what the next node waits for. */
+    @Test
+    void aQuestionThatWaitsForItsAnswerIsOneFinding() throws Exception {
+        JSONObject report = explainFlow(askWaitStore("user_input", 500, true));
+
+        JSONObject asking = firstPatternOfType(report, "ask_and_wait");
+        assertNotNull(asking, "Expected an ask_and_wait finding");
+        assertEquals("user_input", asking.getJSONObject("evidence").getString("channel"));
+        assertEquals("ask_name", asking.getJSONObject("evidence").getString("questionScene"));
+        assertEquals(500, asking.getJSONObject("evidence").getInt("pollIntervalMs"));
+    }
+
+    /** The polling loop and the hop into it are the same thing described one edge at a time. */
+    @Test
+    void theWaitLoopAndTheHopIntoItAreNotReportedSeparately() throws Exception {
+        JSONObject report = explainFlow(askWaitStore("user_input", 500, true));
+
+        assertEquals(0, countPatternsOfType(report, "node_guarded_wait_loop"),
+                "The waiting half is part of the ask_and_wait finding");
+        assertEquals(0, countPatternsOfType(report, "unconditional_transition"),
+                "The hop from asking to waiting is part of it too");
+    }
+
+    /** A description an author reads must say what happens, not which edges carry it. */
+    @Test
+    void theFindingIsPhrasedAsAQuestionAndAnAnswer() throws Exception {
+        String description = firstPatternOfType(explainFlow(askWaitStore("user_input", 500, true)),
+                "ask_and_wait").getString("description");
+
+        assertTrue(description.contains("waits for an answer"), description);
+        assertFalse(description.contains("CEDGE") || description.contains("TEDGE"), description);
+    }
+
+    /**
+     * A wait whose variable nothing clears is a different pattern: it waits for a condition rather
+     * than for an answer it just invited. WaitForGui in doc/IntakeInterview is the real example.
+     */
+    @Test
+    void aWaitNobodyInvitedIsStillAPlainGuardedWait() throws Exception {
+        JSONObject report = explainFlow(
+                node("N1", "Setup", "<Commands><PlayScene><StringLiteral><![CDATA[intro]]>"
+                        + "</StringLiteral></PlayScene></Commands><EEdge target=\"N2\" start=\"\"></EEdge>")
+                + "<Node id=\"N2\" name=\"WaitForGui\" history=\"false\">"
+                + "<Define></Define><Declare></Declare><Commands></Commands>"
+                + "<CEdge target=\"N3\" start=\"\"><Neq><SimpleVariable name=\"gui_connected\"/>"
+                + "<StringLiteral><![CDATA[]]></StringLiteral></Neq></CEdge>"
+                + "<TEdge target=\"N2\" start=\"\" timeout=\"500\"></TEdge></Node>\n"
+                + node("N3", "Go", ""));
+
+        assertNull(firstPatternOfType(report, "ask_and_wait"),
+                "Nothing cleared gui_connected, so nothing asked for it");
+        assertEquals(1, countPatternsOfType(report, "node_guarded_wait_loop"));
+    }
+
+    /** Without a store the answer is lost when the next question clears the channel. */
+    @Test
+    void anAnswerThatIsNotKeptIsCalledOut() throws Exception {
+        JSONObject report = explainFlow(askWaitStore("user_input", 500, false));
+        JSONObject asking = firstPatternOfType(report, "ask_and_wait");
+
+        assertEquals("dropped", asking.getJSONObject("evidence").getString("answerHandling"));
+        assertTrue(asking.getString("description").contains("Nothing keeps the answer"),
+                asking.getString("description"));
+    }
+
+    /**
+     * An answer handed straight to a scene is neither kept nor lost, and calling it lost would be
+     * wrong. doc/IntakeInterview does exactly this with its generated summary.
+     */
+    @Test
+    void anAnswerUsedStraightAwayIsNotReportedAsLost() throws Exception {
+        String ask = node("N1", "AskSummary",
+                "<Commands><PlayScene><StringLiteral><![CDATA[thinking]]></StringLiteral></PlayScene>"
+                + "<Assignment><SimpleVariable name=\"llm_summary\"/><Expression>"
+                + "<StringLiteral><![CDATA[]]></StringLiteral></Expression></Assignment></Commands>"
+                + "<EEdge target=\"N2\" start=\"\"></EEdge>");
+        String wait = "<Node id=\"N2\" name=\"WaitSummary\" history=\"false\">"
+                + "<Define></Define><Declare></Declare><Commands></Commands>"
+                + "<CEdge target=\"N3\" start=\"\"><Neq><SimpleVariable name=\"llm_summary\"/>"
+                + "<StringLiteral><![CDATA[]]></StringLiteral></Neq></CEdge>"
+                + "<TEdge target=\"N2\" start=\"\" timeout=\"1000\"></TEdge></Node>\n";
+        String show = node("N3", "ShowSummary",
+                "<Commands><PlayScene><StringLiteral><![CDATA[show_summary]]></StringLiteral>"
+                + "<StructExpression><Assignment><SimpleVariable name=\"summary\"/><Expression>"
+                + "<SimpleVariable name=\"llm_summary\"/></Expression></Assignment>"
+                + "</StructExpression></PlayScene></Commands>");
+
+        JSONObject asking = firstPatternOfType(explainFlow(ask + wait + show), "ask_and_wait");
+        assertNotNull(asking);
+        assertEquals("used", asking.getJSONObject("evidence").getString("answerHandling"));
+        assertTrue(asking.getString("description").contains("used straight away"),
+                asking.getString("description"));
+    }
+
+    /** The same shape waiting on a service rather than a person needs no special case. */
+    @Test
+    void waitingForASlowServiceIsTheSameFinding() throws Exception {
+        JSONObject report = explainFlow(askWaitStore("llm_summary", 1000, true));
+
+        JSONObject asking = firstPatternOfType(report, "ask_and_wait");
+        assertNotNull(asking);
+        assertEquals("llm_summary", asking.getJSONObject("evidence").getString("channel"));
+        assertEquals(1000, asking.getJSONObject("evidence").getInt("pollIntervalMs"));
+    }
+
+    /** A chain must not swallow nodes an ask-and-wait already accounts for. */
+    @Test
+    void aSequenceDoesNotAbsorbAnAskAndWait() throws Exception {
+        JSONObject report = explainFlow(askWaitStore("user_input", 500, true));
+
+        assertNotNull(firstPatternOfType(report, "ask_and_wait"));
+        assertNull(firstPatternOfType(report, "sequence"),
+                "Ask, wait and store are already narrated together");
+    }
 }
