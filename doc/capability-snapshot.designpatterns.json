@@ -1,12 +1,107 @@
 {
-  "generatedAt": "2026-08-14T22:04:26+02:00",
+  "screens": {"screens": []},
+  "generatedAt": "2026-08-15T09:23:31+02:00",
   "project": {
     "androidProject": false,
     "plugins": [{
       "load": true,
       "name": "TimerExecutor",
       "className": "de.dfki.vsm.xtension.timer.TimerExecutor",
-      "type": "device"
+      "readsVariables": [],
+      "type": "device",
+      "writesVariables": [],
+      "commands": [
+        {
+          "summary": "Clear all timers",
+          "name": "clear",
+          "type": "action",
+          "params": []
+        },
+        {
+          "summary": "Initialize a timer",
+          "name": "init",
+          "type": "action",
+          "params": [{
+            "name": "id",
+            "type": "string",
+            "required": true
+          }]
+        },
+        {
+          "summary": "Get elapsed time",
+          "name": "time",
+          "type": "action",
+          "params": [
+            {
+              "name": "id",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "var",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "summary": "Get system time",
+          "name": "systime",
+          "type": "action",
+          "params": [{
+            "name": "var",
+            "type": "string",
+            "required": true
+          }]
+        },
+        {
+          "summary": "Calculate time difference",
+          "name": "timediff",
+          "type": "action",
+          "params": [
+            {
+              "name": "lasttime",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "var",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "summary": "Get current day",
+          "name": "day",
+          "type": "action",
+          "params": [{
+            "name": "var",
+            "type": "string",
+            "required": true
+          }]
+        },
+        {
+          "summary": "Get current day (verbose)",
+          "name": "dayverbose",
+          "type": "action",
+          "params": [{
+            "name": "var",
+            "type": "string",
+            "required": true
+          }]
+        },
+        {
+          "summary": "Get part of day (morning, afternoon, evening, night)",
+          "name": "partofday",
+          "type": "action",
+          "params": [{
+            "name": "var",
+            "type": "string",
+            "required": true
+          }]
+        }
+      ]
     }],
     "name": "DesignPatterns",
     "agents": [{
@@ -15,7 +110,7 @@
       "device": "TimerExecutor"
     }]
   },
-  "snapshotVersion": "1.1",
+  "snapshotVersion": "1.2",
   "source": "/Users/gebhard/Code/Repo/VisualSceneMaker/doc/DesignPatterns",
   "script": {
     "scenes": [{

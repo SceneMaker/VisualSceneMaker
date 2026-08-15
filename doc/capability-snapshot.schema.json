@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://scenemaker.dfki.de/schema/sceneflow-ir/v1/capability-snapshot.schema.json",
-  "title": "SceneFlow Capability Snapshot v1.1",
+  "title": "SceneFlow Capability Snapshot v1.2",
   "description": "Runtime/project capability context used to constrain LLM IR generation and semantic validation.",
   "type": "object",
   "additionalProperties": false,
@@ -14,7 +14,7 @@
   "properties": {
     "snapshotVersion": {
       "type": "string",
-      "const": "1.1"
+      "const": "1.2"
     },
     "generatedAt": {
       "type": "string",
@@ -129,6 +129,46 @@
         }
       }
     },
+    "screens": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Screens defined in screens.json beside the project, with the variables each is wired to. Absent screens.json yields an empty list rather than an error.",
+      "properties": {
+        "screens": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "readsVariables": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Variables the screen displays, via bindVar, dataVar or srcVar. These have to hold a value before the screen is shown."
+              },
+              "writesVariables": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Variables the screen sets, via sendsVar. A control such as a button or slider hands the value back to the flow."
+              }
+            }
+          }
+        },
+        "characterSrcVariable": {
+          "type": "string",
+          "description": "Variable supplying the character frame source, a project-level binding rather than one belonging to a single screen."
+        }
+      }
+    },
     "flow": {
       "type": "object",
       "additionalProperties": false,
@@ -235,6 +275,96 @@
         },
         "load": {
           "type": "boolean"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string",
+                "description": "One line. Full prose and examples stay in plugin-properties.json."
+              },
+              "params": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Declared parameter type, e.g. string, int, boolean."
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "enum": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Allowed values, when the parameter is constrained to a set."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "description": "Commands this plugin declares. An agent reaches them through agent.device -> plugin.name -> plugin.commands."
+        },
+        "writesVariables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "SceneFlow variables the plugin sets at runtime."
+        },
+        "readsVariables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "SceneFlow variables the plugin expects to be set."
         }
       }
     },

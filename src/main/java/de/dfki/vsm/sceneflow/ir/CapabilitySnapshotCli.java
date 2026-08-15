@@ -103,6 +103,15 @@ public final class CapabilitySnapshotCli {
             }
         }
 
+        // Nested item shapes drift too. A new field on a plugin entry would otherwise slip through,
+        // because the section-level walk above only compares each section's own keys.
+        compareItemKeys(properties, snapshot, "project", "plugins", drift);
+        compareItemKeys(properties, snapshot, "project", "agents", drift);
+        compareItemKeys(properties, snapshot, "screens", "screens", drift);
+        compareItemKeys(properties, snapshot, "flow", "nodes", drift);
+        compareItemKeys(properties, snapshot, "flow", "edges", drift);
+        compareItemKeys(properties, snapshot, "flow", "variables", drift);
+
         final String pinnedVersion = properties.optJSONObject("snapshotVersion") == null
                 ? null
                 : properties.getJSONObject("snapshotVersion").optString("const", null);
@@ -111,6 +120,30 @@ public final class CapabilitySnapshotCli {
             drift.add("snapshotVersion is " + actualVersion + " but the schema pins " + pinnedVersion);
         }
         return drift;
+    }
+
+    /** Compares the first element of an array against the item shape the schema declares for it. */
+    private static void compareItemKeys(
+            final JSONObject schemaProperties,
+            final JSONObject snapshot,
+            final String section,
+            final String arrayName,
+            final List<String> drift) {
+        final JSONObject sectionSchema = schemaProperties.optJSONObject(section);
+        final JSONObject sectionProps = sectionSchema == null ? null : sectionSchema.optJSONObject("properties");
+        final JSONObject arraySchema = sectionProps == null ? null : sectionProps.optJSONObject(arrayName);
+        final JSONObject itemSchema = arraySchema == null ? null : arraySchema.optJSONObject("items");
+        final JSONObject declared = itemSchema == null ? null : itemSchema.optJSONObject("properties");
+
+        final JSONObject sectionValue = snapshot.optJSONObject(section);
+        final JSONArray emitted = sectionValue == null ? null : sectionValue.optJSONArray(arrayName);
+        if (declared == null || emitted == null || emitted.isEmpty()) {
+            return;
+        }
+        final JSONObject first = emitted.optJSONObject(0);
+        if (first != null) {
+            compareKeys(section + "." + arrayName + "[]", declared, first, drift);
+        }
     }
 
     private static void compareKeys(

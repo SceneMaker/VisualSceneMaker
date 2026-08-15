@@ -195,8 +195,11 @@ VisualSceneMaker/
 - `GET /api/v1/info` - Server info (includes `mode` field)
 - `GET /api/v1/projects` - List active projects
 - `GET /api/v1/projects/{pid}/sceneflow` - Get SceneFlow graph snapshot
-- `GET /api/v1/projects/{pid}/capabilities` - Capability snapshot: plugins, agents, scenes, flow shape
-  (built by `CapabilitySnapshotBuilder`; the contract is `doc/capability-snapshot.schema.json`)
+- `GET /api/v1/projects/{pid}/capabilities` - Capability snapshot: plugins with their declared
+  commands, agents, scenes, screens with their variable bindings, and flow shape (built by
+  `CapabilitySnapshotBuilder`; the contract is `doc/capability-snapshot.schema.json`). The command
+  inventory reflects the plugin specs on the **serving deployment's** classpath, so a deployment
+  missing a plugin jar reports that plugin with no commands.
 - `GET /api/v1/projects/{pid}/runtime` - Get runtime state
 
 **Editor-only endpoints** (FULL_EDITOR mode):

@@ -2149,6 +2149,33 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return ref == null ? null : ref.runtimeProject;
     }
 
+    /**
+     * The commands a plugin class declares, or an empty list if it declares no plugin-properties.json.
+     *
+     * <p>Static and self-loading so a headless caller such as the capability snapshot CLI can reach
+     * the registry without starting a server.
+     */
+    static List<PluginCommand> pluginCommandsForClassName(String className) {
+        ExportablePropertyEntry entry = exportableEntryFor(className);
+        return entry == null ? List.of() : entry.getParsedCommands();
+    }
+
+    /** The {@code variables.writes} / {@code variables.reads} a plugin class declares, or null. */
+    static JSONObject pluginVariablesForClassName(String className) {
+        ExportablePropertyEntry entry = exportableEntryFor(className);
+        return entry == null ? null : entry.variables;
+    }
+
+    private static ExportablePropertyEntry exportableEntryFor(String className) {
+        if (className == null || className.isBlank()) {
+            return null;
+        }
+        if (EXPORTABLE_PROPERTY_PROVIDERS.isEmpty()) {
+            loadExportablePropertyProviders();
+        }
+        return EXPORTABLE_PROPERTY_PROVIDERS.get(className.trim());
+    }
+
     public String pluginIdForClassName(String className) {
         if (className == null || className.isBlank()) {
             return null;
@@ -5055,7 +5082,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             return;
         }
         try {
-            writeJson(ctx, CapabilitySnapshotBuilder.build(ref.runtimeProject, pid));
+            java.nio.file.Path dir = ref.path == null || ref.path.isBlank()
+                    ? null
+                    : java.nio.file.Paths.get(ref.path);
+            writeJson(ctx, CapabilitySnapshotBuilder.build(ref.runtimeProject, pid, dir));
         } catch (RuntimeException exc) {
             sLogger.failure("Cannot build capability snapshot for " + pid + ": " + exc.getMessage());
             ctx.status(500).result("Cannot build capability snapshot: " + exc.getMessage());
@@ -6216,12 +6246,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         writeJson(ctx, response);
     }
 
-    private void loadExportablePropertyProviders() {
+    private static void loadExportablePropertyProviders() {
         EXPORTABLE_PROPERTY_PROVIDERS.clear();
         // In a fat JAR, duplicatesStrategy=EXCLUDE keeps only one plugin-properties.json.
         // The build aggregates all plugin descriptors into vsm-plugin-registry.json (JSON array).
         // Prefer that file; fall back to scanning individual files (dev classpath mode).
-        ClassLoader cl = getClass().getClassLoader();
+        ClassLoader cl = WebUiServer.class.getClassLoader();
         URL registryUrl = cl.getResource("vsm-plugin-registry.json");
         if (registryUrl != null) {
             try (InputStream stream = registryUrl.openStream()) {
@@ -6312,7 +6342,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     /**
      * Parses unified plugin-properties.json format.
      */
-    private ExportablePropertyEntry parseUnifiedPluginProperties(JSONObject root, JSONObject pluginMeta) {
+    private static ExportablePropertyEntry parseUnifiedPluginProperties(JSONObject root, JSONObject pluginMeta) {
         // Extract config section
         JSONObject config = root.optJSONObject("config");
         JSONObject pluginSpec = null;

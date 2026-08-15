@@ -268,10 +268,15 @@ Ordered roughly by dependency:
    top-level `script` section (scene group name, language variants, speakers, turn and word counts,
    parameters, referenced agents, inline commands) at version `1.1`.
 
-   Still missing from the snapshot: **per-agent plugin command inventories and screens with their
-   variable bindings**, both listed as intended in `llm-supported-flow-generation.md` and never
-   delivered. Note also that node positions are absent, which is why a generated patch cannot avoid
-   overlapping existing nodes (see `patterns/1.1-fixed-sequence.md` §6).
+   *Completed 2026-08-15 at snapshot version `1.2`:* **plugin command inventories** sit on each
+   plugin entry (name, type, summary, and each parameter's type, whether it is required, and any
+   enum), reached from an agent through `agent.device` to `plugin.name`; and **screens** form a
+   top-level section listing, per screen, the variables it reads (`bindVar`, `dataVar`, `srcVar`) and
+   the ones it writes (`sendsVar`). The direction is the useful part: a variable a screen reads has to
+   hold a value before the screen is shown, while one it writes is set by the person using it.
+
+   Still missing: node positions, which is why a generated patch cannot avoid overlapping existing
+   nodes (see `patterns/1.1-fixed-sequence.md` §6).
 2. **Move/expose the IR pipeline.** `de.dfki.vsm.sceneflow.ir` lives in the root `src/` module
    with CLI entry points only. It must become reachable from the web server and get REST/WS routes
    for: situation → candidates, candidate → preview explanation, candidate → apply.
@@ -345,6 +350,14 @@ cheap to fix once someone is in the relevant file. Semantics findings live separ
   `<Command>` elements, which the XML never contains: the real children are `PlayAction`, `PlayScene`
   and `Assignment`. A consumer asking whether a node does anything always got no. Fixed by reading
   the model, 2026-08-14.
+- **The runtime-server deployment can only see one plugin's declared properties.** Its jar bundles
+  the plugin classes but carries no `vsm-plugin-registry.json`, because the task that aggregates the
+  per-plugin `plugin-properties.json` files is wired into the root module's build only. Fat-jar
+  deduplication then keeps exactly one `plugin-properties.json`, which happens to be the timer's, so
+  every consumer of plugin specs is blind to the rest: the capability snapshot's command inventory,
+  `pluginIdForClassName` behind behavior-taxonomy classification, and the plugin dashboard. Predates
+  the snapshot work and surfaced by it. The fix is to wire `generatePluginRegistry` into
+  `runtime-server`'s jar as the root module already does.
 - **The authored order of start nodes is not recoverable from the model.** `SuperNode` holds them in
   a `HashMap`, so the order in `project.xml` is lost on load. The Groovy generator appeared to
   preserve it only because it read the XML text; a snapshot of a live project never could. Start node

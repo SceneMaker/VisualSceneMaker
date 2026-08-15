@@ -3,6 +3,8 @@ package de.dfki.vsm.web;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.plugin.CommandParam;
+import de.dfki.vsm.model.plugin.PluginCommand;
 import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.scenescript.ActionObject;
 import de.dfki.vsm.model.scenescript.SceneObject;
@@ -54,7 +56,7 @@ import java.util.Set;
  */
 public final class CapabilitySnapshotBuilder {
 
-    public static final String SNAPSHOT_VERSION = "1.1";
+    public static final String SNAPSHOT_VERSION = "1.2";
 
     /** Edge types the model can express, reported so a generator knows what it may emit. */
     private static final List<String> ALLOWED_EDGE_TYPES =
@@ -70,6 +72,16 @@ public final class CapabilitySnapshotBuilder {
      *               live one, recorded so a consumer can tell where a snapshot came from
      */
     public static JSONObject build(final RunTimeProject project, final String source) {
+        return build(project, source, null);
+    }
+
+    /**
+     * @param projectDirectory where screens.json lives, or null when unavailable. Screens are stored
+     *                         beside the project rather than in the model, so without this the
+     *                         snapshot simply reports none.
+     */
+    public static JSONObject build(
+            final RunTimeProject project, final String source, final Path projectDirectory) {
         if (project == null) {
             throw new IllegalArgumentException("Cannot build a capability snapshot without a project");
         }
@@ -79,6 +91,7 @@ public final class CapabilitySnapshotBuilder {
                 .put("source", source == null ? "" : source)
                 .put("project", buildProject(project))
                 .put("script", buildScript(project.getSceneScript()))
+                .put("screens", buildScreens(projectDirectory))
                 .put("flow", buildFlow(project.getSceneFlow()));
     }
 
@@ -100,7 +113,7 @@ public final class CapabilitySnapshotBuilder {
         if (!project.parseForInformation(projectDirectory.toAbsolutePath().toString())) {
             throw new IllegalStateException("Cannot read project for information: " + projectDirectory);
         }
-        return build(project, projectDirectory.toAbsolutePath().toString());
+        return build(project, projectDirectory.toAbsolutePath().toString(), projectDirectory);
     }
 
     private static JSONObject buildProject(final RunTimeProject project) {
@@ -110,11 +123,15 @@ public final class CapabilitySnapshotBuilder {
 
         if (config != null) {
             for (PluginConfig plugin : config.getPluginConfigList()) {
+                final String className = nullToEmpty(plugin.getClassName());
                 plugins.put(new JSONObject()
                         .put("name", nullToEmpty(plugin.getPluginName()))
-                        .put("className", nullToEmpty(plugin.getClassName()))
+                        .put("className", className)
                         .put("type", nullToEmpty(plugin.getPluginType()))
-                        .put("load", plugin.isMarkedtoLoad()));
+                        .put("load", plugin.isMarkedtoLoad())
+                        .put("commands", declaredCommands(className))
+                        .put("writesVariables", declaredVariables(className, "writes"))
+                        .put("readsVariables", declaredVariables(className, "reads")));
             }
             for (AgentConfig agent : config.getAgentConfigList()) {
                 final JSONArray features = new JSONArray();
@@ -135,6 +152,144 @@ public final class CapabilitySnapshotBuilder {
                 .put("androidProject", config != null && config.isAndroidProject())
                 .put("plugins", plugins)
                 .put("agents", agents);
+    }
+
+    /**
+     * The commands a plugin declares, so a consumer knows what it may ask an agent to do.
+     *
+     * <p>An agent reaches its commands through {@code agent.device -> plugin.name -> plugin.commands}.
+     * They are reported once per plugin rather than repeated on every agent, because two agents on
+     * the same plugin offer exactly the same commands.
+     *
+     * <p>Trimmed to what a caller needs in order to build a call: prose descriptions and worked
+     * examples are left in plugin-properties.json, since a project using htmlgui-ws declares 21
+     * commands and carrying their full text would dominate the snapshot.
+     */
+    private static JSONArray declaredCommands(final String className) {
+        final JSONArray out = new JSONArray();
+        for (PluginCommand command : WebUiServer.pluginCommandsForClassName(className)) {
+            final JSONArray params = new JSONArray();
+            for (CommandParam param : command.getParams()) {
+                final JSONObject entry = new JSONObject()
+                        .put("name", nullToEmpty(param.getName()))
+                        .put("type", nullToEmpty(param.getType()))
+                        .put("required", param.isRequired());
+                if (param.getEnum() != null && !param.getEnum().isEmpty()) {
+                    entry.put("enum", new JSONArray(param.getEnum()));
+                }
+                params.put(entry);
+            }
+            out.put(new JSONObject()
+                    .put("name", nullToEmpty(command.getName()))
+                    .put("type", nullToEmpty(command.getType()))
+                    .put("summary", nullToEmpty(command.getSummary()))
+                    .put("params", params));
+        }
+        return out;
+    }
+
+    /** The variables a plugin declares it writes or reads, from its plugin-properties.json. */
+    private static JSONArray declaredVariables(final String className, final String direction) {
+        final JSONArray out = new JSONArray();
+        final JSONObject variables = WebUiServer.pluginVariablesForClassName(className);
+        final JSONArray declared = variables == null ? null : variables.optJSONArray(direction);
+        for (int i = 0; declared != null && i < declared.length(); i++) {
+            final JSONObject entry = declared.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            final String name = trimmed(entry.optString("var", entry.optString("name", "")));
+            if (name.isEmpty()) {
+                continue;
+            }
+            out.put(new JSONObject()
+                    .put("name", name)
+                    .put("type", nullToEmpty(entry.optString("type", ""))));
+        }
+        return out;
+    }
+
+    /**
+     * The screens a project defines and the variables each one is wired to.
+     *
+     * <p>A screen reads a variable through {@code bindVar}, {@code dataVar} or {@code srcVar}, and
+     * writes one through {@code sendsVar}, which is how a control such as a button or slider hands a
+     * value back to the flow. The direction is the point: it tells a consumer whether a variable has
+     * to be set before the screen is shown, or will be set by the person using it.
+     *
+     * <p>Screens live in screens.json beside the project rather than in the model, so this returns an
+     * empty inventory when no directory is available.
+     */
+    private static JSONObject buildScreens(final Path projectDirectory) {
+        final JSONArray screens = new JSONArray();
+        final JSONObject out = new JSONObject().put("screens", screens);
+        if (projectDirectory == null) {
+            return out;
+        }
+        final Path screensFile = projectDirectory.resolve("screens.json");
+        if (!Files.isRegularFile(screensFile)) {
+            return out;
+        }
+        try {
+            final JSONObject root = new JSONObject(Files.readString(screensFile));
+            final JSONObject defined = root.optJSONObject("screens");
+            if (defined != null) {
+                for (String name : sortedNames(defined)) {
+                    final Set<String> reads = new LinkedHashSet<>();
+                    final Set<String> writes = new LinkedHashSet<>();
+                    collectBindings(defined.opt(name), reads, writes);
+                    screens.put(new JSONObject()
+                            .put("name", name)
+                            .put("readsVariables", new JSONArray(sortedList(reads)))
+                            .put("writesVariables", new JSONArray(sortedList(writes))));
+                }
+            }
+            // The character frame can take its source from a variable too, which is a project-level
+            // binding rather than one belonging to any single screen.
+            final JSONObject character = root.optJSONObject("character");
+            final String characterSrcVar = character == null ? "" : trimmed(character.optString("srcVar", ""));
+            if (!characterSrcVar.isEmpty()) {
+                out.put("characterSrcVariable", characterSrcVar);
+            }
+        } catch (Exception malformed) {
+            // A screens.json a consumer cannot parse is reported as no screens rather than failing
+            // the whole snapshot, which is still useful without them.
+            return new JSONObject().put("screens", new JSONArray());
+        }
+        return out;
+    }
+
+    private static void collectBindings(
+            final Object node, final Set<String> reads, final Set<String> writes) {
+        if (node instanceof JSONObject object) {
+            for (String key : object.keySet()) {
+                final Object value = object.opt(key);
+                if (value instanceof String text && !text.isBlank()) {
+                    switch (key) {
+                        case "bindVar", "dataVar", "srcVar" -> reads.add(text.trim());
+                        case "sendsVar" -> writes.add(text.trim());
+                        default -> { }
+                    }
+                }
+                collectBindings(value, reads, writes);
+            }
+        } else if (node instanceof JSONArray array) {
+            for (int i = 0; i < array.length(); i++) {
+                collectBindings(array.opt(i), reads, writes);
+            }
+        }
+    }
+
+    private static List<String> sortedNames(final JSONObject object) {
+        final List<String> names = new ArrayList<>(object.keySet());
+        names.sort(String::compareTo);
+        return names;
+    }
+
+    private static List<String> sortedList(final Set<String> values) {
+        final List<String> out = new ArrayList<>(values);
+        out.sort(String::compareTo);
+        return out;
     }
 
     /**

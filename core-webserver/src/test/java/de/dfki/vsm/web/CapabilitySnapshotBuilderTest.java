@@ -11,6 +11,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -41,8 +42,12 @@ class CapabilitySnapshotBuilderTest {
         JSONObject actual = CapabilitySnapshotBuilder.buildFromDirectory(DESIGN_PATTERNS);
 
         assertEquals(expected.getString("snapshotVersion"), actual.getString("snapshotVersion"));
-        assertEquals(expected.getJSONObject("project").toString(),
-                actual.getJSONObject("project").toString(), "project section");
+        // The command inventory is read from plugin jars on the classpath. This module does not
+        // depend on the plugins, so it is compared separately in the root module where they are
+        // present; here the rest of the project section has to match exactly.
+        assertEquals(withoutClasspathDependentFields(expected.getJSONObject("project")).toString(),
+                withoutClasspathDependentFields(actual.getJSONObject("project")).toString(),
+                "project section");
         assertEquals(expected.getJSONObject("script").toString(),
                 actual.getJSONObject("script").toString(), "script section");
 
@@ -197,5 +202,119 @@ class CapabilitySnapshotBuilderTest {
         }
         out.sort(String::compareTo);
         return out;
+    }
+
+    // ---- plugin command inventory and screen bindings ----
+
+    /**
+     * Every plugin carries the three inventory fields, whether or not this runtime can fill them.
+     *
+     * <p>Their contents come from plugin-properties.json on the classpath, which this module does not
+     * depend on, so a snapshot built here reports no commands. That is the same thing a deployment
+     * without plugin jars would report, and it is why the contents are asserted in the root module
+     * instead, in CapabilitySnapshotCommandInventoryTest.
+     */
+    @Test
+    void everyPluginCarriesTheInventoryFields() throws Exception {
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(DESIGN_PATTERNS);
+        JSONObject timer = pluginNamed(snapshot, "TimerExecutor");
+
+        assertNotNull(timer, "DesignPatterns declares the timer plugin");
+        for (String field : new String[] {"commands", "writesVariables", "readsVariables"}) {
+            assertNotNull(timer.optJSONArray(field), field + " must always be present");
+        }
+    }
+
+    /** The agent to plugin join has to actually resolve, or the inventory is unusable. */
+    @Test
+    void everyAgentResolvesToAPluginThatDeclaresCommands() throws Exception {
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(DESIGN_PATTERNS);
+        JSONArray agents = snapshot.getJSONObject("project").getJSONArray("agents");
+
+        assertFalse(agents.isEmpty());
+        for (int i = 0; i < agents.length(); i++) {
+            String device = agents.getJSONObject(i).getString("device");
+            assertNotNull(pluginNamed(snapshot, device),
+                    "Agent " + agents.getJSONObject(i).getString("name")
+                            + " names device " + device + ", which no plugin provides");
+        }
+    }
+
+    /**
+     * The direction is the point: a variable a screen reads has to hold a value before the screen is
+     * shown, while one it writes is set by the person using it.
+     */
+    @Test
+    void screensReportWhichVariablesTheyReadAndWrite() throws Exception {
+        Path example = REPO_ROOT.resolve("plugins/charamel-embed/ExampleProject");
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(example);
+        JSONArray screens = snapshot.getJSONObject("screens").getJSONArray("screens");
+
+        assertFalse(screens.isEmpty(), "ExampleProject defines screens");
+        JSONObject start = screens.getJSONObject(0);
+
+        // Sliders bind a variable for display; buttons send one back to the flow.
+        assertTrue(start.getJSONArray("readsVariables").toList().contains("emo_intensity"),
+                "A slider bound to emo_intensity reads it");
+        assertTrue(start.getJSONArray("writesVariables").toList().contains("emo_type"),
+                "A button sending emo_type writes it");
+        assertFalse(start.getJSONArray("readsVariables").toList().contains("emo_type"),
+                "A variable a control sends must not be reported as one the screen reads");
+    }
+
+    @Test
+    void theCharacterFrameSourceVariableIsReportedSeparately() throws Exception {
+        Path example = REPO_ROOT.resolve("plugins/charamel-embed/ExampleProject");
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(example);
+
+        assertEquals("character_url",
+                snapshot.getJSONObject("screens").getString("characterSrcVariable"),
+                "The character frame binding belongs to the project, not to a single screen");
+    }
+
+    /** A project without screens.json is normal and must not fail the snapshot. */
+    @Test
+    void aProjectWithoutScreensReportsNone() throws Exception {
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(DESIGN_PATTERNS);
+        assertTrue(snapshot.getJSONObject("screens").getJSONArray("screens").isEmpty());
+    }
+
+    /** A snapshot without its screens is still worth having, so a broken file must not fail it. */
+    @Test
+    void anUnreadableScreensFileDoesNotFailTheSnapshot() throws Exception {
+        Path copy = Files.createTempDirectory("snapshot-bad-screens");
+        try (var entries = Files.list(DESIGN_PATTERNS)) {
+            for (Path entry : entries.filter(Files::isRegularFile).toList()) {
+                Files.copy(entry, copy.resolve(entry.getFileName()));
+            }
+        }
+        Files.writeString(copy.resolve("screens.json"), "{ this is not json");
+
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(copy);
+        assertTrue(snapshot.getJSONObject("screens").getJSONArray("screens").isEmpty());
+        assertFalse(snapshot.getJSONObject("flow").getJSONArray("nodes").isEmpty(),
+                "The rest of the snapshot must still be there");
+    }
+
+    private JSONObject withoutClasspathDependentFields(final JSONObject project) {
+        JSONObject copy = new JSONObject(project.toString());
+        JSONArray plugins = copy.optJSONArray("plugins");
+        for (int i = 0; plugins != null && i < plugins.length(); i++) {
+            JSONObject plugin = plugins.getJSONObject(i);
+            plugin.remove("commands");
+            plugin.remove("writesVariables");
+            plugin.remove("readsVariables");
+        }
+        return copy;
+    }
+
+    private JSONObject pluginNamed(final JSONObject snapshot, final String name) {
+        JSONArray plugins = snapshot.getJSONObject("project").getJSONArray("plugins");
+        for (int i = 0; i < plugins.length(); i++) {
+            if (name.equals(plugins.getJSONObject(i).getString("name"))) {
+                return plugins.getJSONObject(i);
+            }
+        }
+        return null;
     }
 }
