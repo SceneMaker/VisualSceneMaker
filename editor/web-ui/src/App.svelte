@@ -18615,22 +18615,22 @@ Sentence:
             {:else}
               <div class="sceneflow-side-placeholder sceneflow-region-right" aria-hidden="true"></div>
             {/if}
-            <!-- Anchored to .sceneflow-layout, not .sceneflow-panel: the panel also contains the
-                 scene script below, so its own bottom-right corner is far below this band. The
-                 layout spans the full width whichever side rail is collapsed, so this corner is
-                 stable. -->
-            <div
-              class="sceneflow-resize"
-              title="Drag to resize height · double-click to reset"
-              aria-hidden="true"
-              on:pointerdown|stopPropagation={startSceneFlowPanelResize}
-              on:mousedown|stopPropagation={startSceneFlowPanelResize}
-              on:dblclick|stopPropagation={resetSceneFlowPanelHeight}
-            ></div>
           </div>
           {:else}
             <p class="muted">No SceneFlow data loaded yet.</p>
           {/if}
+          <!-- Anchored to .sceneflow-area — the whole panel — rather than to .sceneflow-layout
+               inside it, so the grip sits in the panel's own bottom-right corner instead of
+               appearing to belong to the inspector, which is merely the rightmost column of that
+               layout. It still resizes the layout's height; only its placement moved. -->
+          <div
+            class="sceneflow-resize"
+            title="Drag to resize height · double-click to reset"
+            aria-hidden="true"
+            on:pointerdown|stopPropagation={startSceneFlowPanelResize}
+            on:mousedown|stopPropagation={startSceneFlowPanelResize}
+            on:dblclick|stopPropagation={resetSceneFlowPanelHeight}
+          ></div>
         </div>
       {/if}
       {#if selectedProject && scriptAreaVisible}

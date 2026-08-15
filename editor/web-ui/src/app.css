@@ -2502,10 +2502,16 @@ a.export-link {
    carries no card of its own. Same here, so each menu bar reads as belonging to the thing it acts
    on rather than floating above it. */
 .sceneflow-area {
+  position: relative; /* positioning context for .sceneflow-resize */
   background: #e7e1d8;
   border: var(--sf-area-border) dashed var(--stroke);
   border-radius: var(--radius-md);
-  padding: var(--sf-area-pad-y) var(--sf-area-pad);
+  /* Bottom inset is reduced by the graph frame's own padding so the tan strip below the panel
+     matches the one below the script editor. The script's inner frame has no padding of its own,
+     so there a full --sf-area-pad-y is exactly what shows; here the frame already contributes
+     --sf-frame-pad, and without this the strip came out ~9px deeper than the script's. */
+  padding: var(--sf-area-pad-y) var(--sf-area-pad)
+           calc(var(--sf-area-pad-y) - var(--sf-frame-pad)) var(--sf-area-pad);
   display: grid;
   gap: 0.65rem;
   box-sizing: border-box;
@@ -2777,9 +2783,9 @@ a.export-link {
   box-sizing: border-box;
 }
 
-/* Height grip, same visual language and placement as .script-editor-resize: tucked into the frame's
-   own bottom-right corner, inside its border radius. Above the canvas/inspector so a drag starting
-   on it isn't swallowed by the SVG's own pointer handling. */
+/* Height grip, same visual language as .script-editor-resize, tucked into the bottom-right corner of
+   the SceneFlow panel itself (.sceneflow-area). Above the canvas/inspector so a drag starting on it
+   isn't swallowed by the SVG's own pointer handling. */
 .sceneflow-resize {
   position: absolute;
   bottom: 2px;
@@ -2844,6 +2850,9 @@ a.export-link {
   --sf-section-floor: 104px;
   background: #e7e1d8;
   border: 1px dashed var(--stroke);
+  /* No outer edge: it would sit a couple of pixels inside the panel's own border, doubling the
+     line and costing width the palette can use. Mirrored on the inspector's right edge. */
+  border-left: none;
   border-radius: var(--radius-md);
   padding: 1rem 1rem 0.6rem;
   height: 100%;
@@ -3208,6 +3217,7 @@ a.export-link {
 .sceneflow-inspector {
   background: #e7e1d8;
   border: 1px dashed var(--stroke);
+  border-right: none; /* see .sceneflow-blocks' border-left */
   border-radius: var(--radius-md);
   padding: 0.5rem;
   display: flex;
