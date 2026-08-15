@@ -329,14 +329,30 @@ Ordered roughly by dependency:
 
    Still missing: node positions, which is why a generated patch cannot avoid overlapping existing
    nodes (see `patterns/1.1-fixed-sequence.md` §6).
-2. **Move/expose the IR pipeline.** `de.dfki.vsm.sceneflow.ir` lives in the root `src/` module
-   with CLI entry points only. It must become reachable from the web server and get REST/WS routes
-   for: situation → candidates, candidate → preview explanation, candidate → apply.
-   *Verified 2026-08-13:* the package's only VSM dependencies are `model.sceneflow.*`,
-   `util.xml.XMLUtilities` and `util.llm.LLMSupport` — all in `core` — plus `org.json`. So it
-   relocates to **`core-webserver`** (Java 21, already depends on `core` + `org.json`) with no new
-   dependencies. The Java-17 rule does **not** apply: the assistant is an *authoring* feature, and
-   Android deploys the runtime, not the editor. Keep it out of `core` for exactly that reason.
+2. ~~**Move/expose the IR pipeline.**~~ *(done 2026-08-15.)* `de.dfki.vsm.sceneflow.ir` moved from
+   the root `src/` module to **`core-webserver`** (Java 21, already depends on `core` + `org.json`,
+   so no new dependencies). The Java-17 rule does not apply: the assistant is an *authoring*
+   feature, and Android deploys the runtime, not the editor. The two JSON documents the generator
+   is configured by are copied onto the classpath by `processResources`, read through
+   `AuthoringResources`, which prefers an explicit path, then the classpath, then `doc/` in a
+   checkout, so the Gradle CLI tasks keep working unchanged.
+
+   `FlowAssistantService` sits on top and is what the server calls. Four routes, all
+   `FULL_EDITOR` only:
+
+   | Route | Does |
+   | --- | --- |
+   | `GET /api/v1/sceneflow/patterns` | the catalogue, reduced to label, description, level, availability and the questions the assistant asks |
+   | `POST /api/v1/projects/{pid}/flow-assistant/propose` | situation → a proposal; changes nothing |
+   | `POST /api/v1/projects/{pid}/flow-assistant/apply` | puts a proposal onto the canvas as one undoable step |
+   | `POST /api/v1/projects/{pid}/flow-assistant/discard` | drops a proposal the author turned down |
+
+   The proposal is generated against the flow **as it stands in the editor**, not the file on disk,
+   so unsaved work is taken into account and cannot be silently discarded. The compiled result stays
+   on the server, keyed by a proposal id, for thirty minutes; only the author-facing view crosses
+   the wire. The IR is never sent to a client: a `FlowAssistantServiceTest` case asserts that the
+   author-facing view contains none of the generator's vocabulary, which is what caught the sequence
+   template stating its own assumption in terms of `EEDGE`.
 3. **Extend the catalogue** per §4: `level`, `resourceRequirements`, `assistantScript`,
    `tutorialScript`; add the missing Level-1/2 entries (sequence, ask-and-wait, branch, fork,
    timed cue, idle loop) as executable templates — these are simpler than the constrained-activity
@@ -348,6 +364,14 @@ Ordered roughly by dependency:
 5. **Assistant UI** in the web UI (panel + gallery), reusing ActionForm, InsertActionDialog,
    ScreenEditor template picker, and the suggestion accept/dismiss idioms; shared provenance
    tagging (`origin: assistant-generated`).
+
+   *Started 2026-08-15:* the Flow Assistant panel sits between the SceneFlow menu bar and the
+   editing area, so what it proposes and the canvas it would change stay on screen together. It
+   leads with the describe box, shows a proposal as three lists (what this adds, what it needs with
+   the four outcomes as pills, what I assumed), and offers add or discard. What the project already
+   offers folds away underneath. Still to come: the gallery, provenance tagging, and the ordered
+   apply plan of §4b, which today stops at reporting the resources rather than creating the
+   creatable ones.
 6. **Tutorial mode** on top of the pattern detector (extend detector coverage beyond the
    constrained-activity wait pattern — branching, retries, parallel launch) + tour framework (B3)
    + first tutorial-shelf content.

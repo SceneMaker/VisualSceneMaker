@@ -110,10 +110,18 @@ public final class CapabilitySnapshotBuilder {
         }
         final RunTimeProject project = new RunTimeProject();
         project.setPersistGeneratedUUID(false);
-        if (!project.parseForInformation(projectDirectory.toAbsolutePath().toString())) {
-            throw new IllegalStateException("Cannot read project for information: " + projectDirectory);
+        try {
+            if (!project.parseForInformation(projectDirectory.toAbsolutePath().toString())) {
+                throw new IllegalStateException("Cannot read project for information: " + projectDirectory);
+            }
+            return build(project, projectDirectory.toAbsolutePath().toString(), projectDirectory);
+        } finally {
+            // Every RunTimeProject brings its own event dispatcher, whose timer thread is not a
+            // daemon. A project opened only to be read is never stopped by anything else, so
+            // without this a command-line snapshot writes its output and then hangs forever with
+            // nothing left to do.
+            project.getEventDispatcher().abort();
         }
-        return build(project, projectDirectory.toAbsolutePath().toString(), projectDirectory);
     }
 
     private static JSONObject buildProject(final RunTimeProject project) {

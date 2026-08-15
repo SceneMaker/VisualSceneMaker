@@ -462,6 +462,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     // ~20-concurrent-session load test).
     private final Map<String, ProjectRef> projectStore = new ConcurrentHashMap<>();
     private final Map<String, WsCommandHandler> wsCommandRegistry = new HashMap<>();
+    private final FlowAssistantService flowAssistantService = new FlowAssistantService();
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
 
     // Auto-exit: when all browser clients disconnect and no new one reconnects within the
@@ -3180,6 +3181,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             mApp.post(API_PREFIX + "/projects/opened", this::handleProjectOpened);
             mApp.post(API_PREFIX + "/projects/saved", this::handleProjectSaved);
             mApp.post(API_PREFIX + "/projects/{pid}/script/diagnostics", this::handleScriptDiagnostics);
+            // Flow Assistant: describing a situation produces a proposal, which stays on the server
+            // until the author applies or discards it. Editing endpoints, so FULL_EDITOR only.
+            mApp.get(API_PREFIX + "/sceneflow/patterns", this::handleFlowAssistantPatterns);
+            mApp.post(API_PREFIX + "/projects/{pid}/flow-assistant/propose", this::handleFlowAssistantPropose);
+            mApp.post(API_PREFIX + "/projects/{pid}/flow-assistant/apply", this::handleFlowAssistantApply);
+            mApp.post(API_PREFIX + "/projects/{pid}/flow-assistant/discard", this::handleFlowAssistantDiscard);
             mApp.get("/images/{file}", this::handleImage);
             // Phase 3 (doc/vsm-workspace-platform-plan.md): admin-only project assignment
             // management, so this no longer requires hand-editing the flat file directly.
@@ -5074,6 +5081,109 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      *
      * <p>Read-only, so it is served in both server modes.
      */
+    /** The interaction patterns the assistant can build, whether or not a project is open. */
+    private void handleFlowAssistantPatterns(Context ctx) {
+        writeJson(ctx, flowAssistantService.catalogue());
+    }
+
+    /**
+     * Generates a flow for a situation the author described, without changing anything.
+     *
+     * <p>The proposal is generated against the flow as it currently stands in the editor rather than
+     * the file on disk, so unsaved work is taken into account and the proposal cannot silently
+     * discard it.
+     */
+    private void handleFlowAssistantPropose(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404).result("Project not found");
+            return;
+        }
+        JSONObject body = new JSONObject(ctx.body());
+        String situation = body.optString("situation", "").trim();
+        if (situation.isEmpty()) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Describe what should happen first."));
+            return;
+        }
+        try {
+            java.nio.file.Path dir = ref.path == null || ref.path.isBlank()
+                    ? null
+                    : java.nio.file.Paths.get(ref.path);
+            JSONObject capabilities = CapabilitySnapshotBuilder.build(ref.runtimeProject, pid, dir);
+            String baseXml = serializeSceneFlowXml(ref.runtimeProject.getSceneFlow());
+            FlowAssistantService.Proposal proposal =
+                    flowAssistantService.propose(pid, capabilities, baseXml, situation);
+            writeJson(ctx, proposal.authorView());
+        } catch (java.io.IOException | RuntimeException exc) {
+            sLogger.failure("Flow Assistant cannot propose for " + pid + ": " + exc.getMessage());
+            writeJson(ctx, errorResponse("PROPOSE_FAILED",
+                    "The proposal could not be generated: " + exc.getMessage()));
+        }
+    }
+
+    /**
+     * Puts a proposal onto the canvas.
+     *
+     * <p>Recorded as one undoable step, so an author who does not like the result gets back exactly
+     * the flow they had. Resources the proposal reported as missing are not created here: the
+     * representation has no operation for creating a scene or a screen, so those stay with the
+     * author (see doc/sceneflow-modelling-support-concept.md section 4b).
+     */
+    private void handleFlowAssistantApply(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404).result("Project not found");
+            return;
+        }
+        JSONObject body = new JSONObject(ctx.body());
+        String proposalId = body.optString("proposalId", "").trim();
+        FlowAssistantService.Proposal proposal = flowAssistantService.take(proposalId, pid);
+        if (proposal == null) {
+            writeJson(ctx, errorResponse("PROPOSAL_NOT_FOUND",
+                    "This proposal is no longer available. Describe the situation again."));
+            return;
+        }
+        if (!proposal.isApplicable()) {
+            writeJson(ctx, errorResponse("PROPOSAL_NOT_APPLICABLE",
+                    "This proposal produced no flow, so there is nothing to apply."));
+            return;
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        if (!applySceneFlowXml(sceneFlow, proposal.sceneFlowXml())) {
+            writeJson(ctx, errorResponse("APPLY_FAILED", "The proposed flow could not be loaded."));
+            return;
+        }
+        refreshSceneFlowDerivedState(ref);
+        ref.dirty = true;
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, sceneFlow, sceneFlow);
+        broadcastSceneFlowSnapshot(message -> broadcastToProjectOrAll(pid, message), pid, snapshot);
+        JSONObject dirtyEvent = new JSONObject()
+                .put("type", "event")
+                .put("event", "project.dirty")
+                .put("projectId", pid)
+                .put("areas", new JSONArray().put("sceneflow"));
+        broadcastToProjectOrAll(pid, dirtyEvent.toString());
+        recordHistory(ref, "SceneFlow.FlowAssistant.Apply");
+        recordCommand(ref, "SceneFlow.FlowAssistant.Apply",
+                new JSONObject().put("projectId", pid).put("proposalId", proposalId));
+        flowAssistantService.discard(proposalId);
+
+        writeJson(ctx, new JSONObject()
+                .put("status", "ok")
+                .put("proposalId", proposalId)
+                .put("snapshot", snapshot));
+    }
+
+    private void handleFlowAssistantDiscard(Context ctx) {
+        JSONObject body = new JSONObject(ctx.body());
+        flowAssistantService.discard(body.optString("proposalId", "").trim());
+        writeJson(ctx, new JSONObject().put("status", "ok"));
+    }
+
     private void handleCapabilitySnapshot(Context ctx) {
         String pid = ctx.pathParam("pid");
         ProjectRef ref = projectStore.get(pid);
@@ -11632,6 +11742,25 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
     }
 
+    /**
+     * Rebuilds everything the server caches about a flow after the flow itself was replaced wholesale.
+     *
+     * <p>Both callers, undo and the Flow Assistant, swap the whole graph rather than editing it, so
+     * the id counters, the serialized node and edge lists and the edge dock points all describe a
+     * graph that no longer exists. Leaving any of them behind shows up as duplicate node ids or edges
+     * drawn to nowhere.
+     */
+    private void refreshSceneFlowDerivedState(ProjectRef ref) {
+        normalizeSceneFlowIds(ref);
+        ref.nodes = serializeNodes(ref.runtimeProject);
+        ref.edges = serializeEdges(ref.runtimeProject);
+        ref.comments = serializeComments(ref.runtimeProject);
+        ref.nextNodeIndex = computeNextNodeIndex(ref.runtimeProject);
+        ref.nextSuperNodeIndex = computeNextSuperNodeIndex(ref.runtimeProject);
+        mEdgeLayout.clearDockPointsRecursive(ref.runtimeProject.getSceneFlow());
+        initializeDockPointsForProject(ref);
+    }
+
     private boolean applyHistoryEntry(ProjectRef ref, HistoryEntry entry) {
         if (ref == null || ref.runtimeProject == null || entry == null) {
             return false;
@@ -11640,14 +11769,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         if (!applySceneFlowXml(sceneFlow, entry.sceneFlowXml)) {
             return false;
         }
-        normalizeSceneFlowIds(ref);
-        ref.nodes = serializeNodes(ref.runtimeProject);
-        ref.edges = serializeEdges(ref.runtimeProject);
-        ref.comments = serializeComments(ref.runtimeProject);
-        ref.nextNodeIndex = computeNextNodeIndex(ref.runtimeProject);
-        ref.nextSuperNodeIndex = computeNextSuperNodeIndex(ref.runtimeProject);
-        mEdgeLayout.clearDockPointsRecursive(sceneFlow);
-        initializeDockPointsForProject(ref);
+        refreshSceneFlowDerivedState(ref);
 
         String script = entry.scriptText == null ? "" : entry.scriptText;
         applyScriptText(ref.runtimeProject, script);

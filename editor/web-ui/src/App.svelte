@@ -6702,6 +6702,123 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     flowAssistantError = "";
   }
 
+  // ── Describing a situation ────────────────────────────────────────────────
+  let flowAssistantSituation = "";
+  let flowAssistantProposal = null;
+  let flowAssistantProposing = false;
+  let flowAssistantApplying = false;
+  let flowAssistantProposeError = "";
+  let flowAssistantPatterns = [];
+  let flowAssistantPatternsLoaded = false;
+
+  // The patterns are the same for every project, so they are fetched once, the first time the
+  // panel opens, rather than on every project switch.
+  $: if (flowAssistantOpen && !flowAssistantPatternsLoaded) {
+    loadFlowAssistantPatterns();
+  }
+
+  async function loadFlowAssistantPatterns() {
+    flowAssistantPatternsLoaded = true;
+    try {
+      const catalogue = await apiGet("/api/v1/sceneflow/patterns");
+      flowAssistantPatterns = (catalogue.patterns || []).filter((pattern) => pattern.available);
+    } catch (err) {
+      // Not being able to list the patterns does not stop anyone from describing a situation, so
+      // this stays quiet rather than showing an error over the part that still works.
+      flowAssistantPatterns = [];
+    }
+  }
+
+  async function proposeFlow() {
+    const pid = selectedProjectId;
+    const situation = flowAssistantSituation.trim();
+    if (!pid || !situation || flowAssistantProposing) return;
+    flowAssistantProposing = true;
+    flowAssistantProposeError = "";
+    flowAssistantProposal = null;
+    try {
+      const proposal = await apiPost(
+        `/api/v1/projects/${encodeURIComponent(pid)}/flow-assistant/propose`,
+        { situation }
+      );
+      if (pid !== selectedProjectId) return;
+      if (proposal.error) {
+        flowAssistantProposeError = proposal.message || "The proposal could not be generated.";
+        return;
+      }
+      flowAssistantProposal = { ...proposal, forProjectId: pid };
+    } catch (err) {
+      flowAssistantProposeError = err && err.message ? err.message : String(err);
+    } finally {
+      flowAssistantProposing = false;
+    }
+  }
+
+  // A proposal was generated against one project's flow and capabilities, so switching project
+  // drops it rather than leaving something applicable that was never checked against what is now
+  // on screen. The assignment makes the condition false, so this settles after one pass.
+  $: if (flowAssistantProposal && flowAssistantProposal.forProjectId !== selectedProjectId) {
+    flowAssistantProposal = null;
+  }
+
+  async function applyProposedFlow() {
+    const pid = selectedProjectId;
+    const proposal = flowAssistantProposal;
+    if (!pid || !proposal || !proposal.proposalId || flowAssistantApplying) return;
+    flowAssistantApplying = true;
+    flowAssistantProposeError = "";
+    try {
+      const result = await apiPost(
+        `/api/v1/projects/${encodeURIComponent(pid)}/flow-assistant/apply`,
+        { proposalId: proposal.proposalId }
+      );
+      if (result.error) {
+        flowAssistantProposeError = result.message || "The proposal could not be applied.";
+        return;
+      }
+      // The server broadcasts the new flow to every client including this one, so the canvas is
+      // already up to date. Clearing the proposal keeps a proposal that has been used from looking
+      // as though it is still waiting for a decision.
+      flowAssistantProposal = null;
+      flowAssistantSituation = "";
+      // What the flow now contains is part of what the next proposal is checked against.
+      flowAssistantProjectId = "";
+    } catch (err) {
+      flowAssistantProposeError = err && err.message ? err.message : String(err);
+    } finally {
+      flowAssistantApplying = false;
+    }
+  }
+
+  async function discardProposedFlow() {
+    const pid = selectedProjectId;
+    const proposal = flowAssistantProposal;
+    flowAssistantProposal = null;
+    if (!pid || !proposal || !proposal.proposalId) return;
+    try {
+      await apiPost(
+        `/api/v1/projects/${encodeURIComponent(pid)}/flow-assistant/discard`,
+        { proposalId: proposal.proposalId }
+      );
+    } catch (err) {
+      // The proposal is already gone from the panel and expires on the server by itself, so a
+      // failed discard has nothing the author needs to do about it.
+    }
+  }
+
+  // Plain words for the four outcomes a requirement can have. "blocked" is the one worth being
+  // explicit about: the flow is still created, so the gap has to be visible rather than absent.
+  const FLOW_ASSISTANT_RESOURCE_LABELS = {
+    present: "already there",
+    creatable: "I add this",
+    author_only: "you write this",
+    blocked: "nothing here can do this"
+  };
+
+  function resourceLabel(status) {
+    return FLOW_ASSISTANT_RESOURCE_LABELS[status] || status;
+  }
+
   // What an agent can be asked to do is its plugin's commands, reached through the device it is
   // bound to. Reported once per plugin in the snapshot, since two agents on one plugin share them.
   $: flowAssistantAgents = (() => {
@@ -17052,8 +17169,9 @@ Sentence:
               <header class="flow-assistant-head">
                 <h3>Flow Assistant</h3>
                 <p class="flow-assistant-lede">
-                  Describe what should happen and I will propose the steps. First, what this project
-                  already offers, since anything I propose has to use it or ask you to add it.
+                  Describe what should happen and I will propose the steps. Nothing changes until
+                  you say so, and anything I propose either uses what this project already has or
+                  says what still has to be added.
                 </p>
                 <button
                   type="button"
@@ -17078,88 +17196,207 @@ Sentence:
                   Try again
                 </button>
               {:else if flowAssistantCapabilities}
-                <div class="flow-assistant-caps">
-                  <section class="flow-assistant-cap">
-                    <h4>Who can act</h4>
-                    {#if flowAssistantAgents.length === 0}
-                      <p class="muted">No agents. A step that speaks or acts needs one.</p>
-                    {:else}
-                      <ul>
-                        {#each flowAssistantAgents as agent}
-                          <li>
-                            <strong>{agent.name}</strong>
-                            {#if agent.unresolved}
-                              <span class="flow-assistant-gap">
-                                needs {agent.device}, which this project does not declare
-                              </span>
-                            {:else if agent.unavailableHere}
-                              <span class="flow-assistant-gap">
-                                {agent.device} is not available here, so nothing can be asked of it
-                              </span>
-                            {:else}
-                              <span class="muted">{agent.commandCount} things it can do</span>
-                            {/if}
-                          </li>
-                        {/each}
-                      </ul>
-                    {/if}
-                  </section>
 
-                  <section class="flow-assistant-cap">
-                    <h4>What it can say</h4>
-                    {#if (flowAssistantCapabilities.script?.scenes || []).length === 0}
-                      <p class="muted">No scenes yet. I can name the ones a pattern needs.</p>
-                    {:else}
-                      <ul>
-                        {#each flowAssistantCapabilities.script.scenes.slice(0, 6) as scene}
-                          <li>
-                            <strong>{scene.name}</strong>
-                            {#if (scene.parameters || []).length > 0}
-                              <span class="flow-assistant-gap">
-                                needs {scene.parameters.join(", ")}
-                              </span>
-                            {/if}
-                          </li>
-                        {/each}
-                        {#if flowAssistantCapabilities.script.scenes.length > 6}
-                          <li class="muted">
-                            and {flowAssistantCapabilities.script.scenes.length - 6} more
-                          </li>
-                        {/if}
-                      </ul>
+                <div class="flow-assistant-ask">
+                  <label class="flow-assistant-ask-label" for="flow-assistant-situation">
+                    What should happen?
+                  </label>
+                  <textarea
+                    id="flow-assistant-situation"
+                    class="flow-assistant-situation"
+                    rows="2"
+                    bind:value={flowAssistantSituation}
+                    placeholder="first greet, then explain the study, then close"
+                    disabled={flowAssistantProposing || flowAssistantApplying}
+                  ></textarea>
+                  <div class="flow-assistant-ask-row">
+                    <button
+                      type="button"
+                      class="primary"
+                      on:click={proposeFlow}
+                      disabled={!flowAssistantSituation.trim() || flowAssistantProposing || flowAssistantApplying}
+                    >
+                      {flowAssistantProposing ? "Working…" : "Propose"}
+                    </button>
+                    {#if flowAssistantPatterns.length > 0}
+                      <span class="muted flow-assistant-can">
+                        I can build: {flowAssistantPatterns.map((pattern) => pattern.label).join(", ")}
+                      </span>
                     {/if}
-                  </section>
-
-                  <section class="flow-assistant-cap">
-                    <h4>How someone answers</h4>
-                    {#if (flowAssistantCapabilities.screens?.screens || []).length === 0}
-                      <p class="muted">
-                        No screens. A pattern that waits for an answer needs something that writes
-                        one, so I would offer to add a screen.
-                      </p>
-                    {:else}
-                      <ul>
-                        {#each flowAssistantCapabilities.screens.screens as screen}
-                          <li>
-                            <strong>{screen.name}</strong>
-                            {#if (screen.writesVariables || []).length > 0}
-                              <span class="muted">
-                                sets {screen.writesVariables.join(", ")}
-                              </span>
-                            {:else}
-                              <span class="flow-assistant-gap">shows only, sets nothing</span>
-                            {/if}
-                          </li>
-                        {/each}
-                      </ul>
-                    {/if}
-                  </section>
+                  </div>
+                  {#if flowAssistantProposeError}
+                    <p class="flow-assistant-error">{flowAssistantProposeError}</p>
+                  {/if}
                 </div>
 
-                <p class="flow-assistant-next muted">
-                  Describing a situation comes next. The patterns and the generator are built and
-                  tested; they are not yet reachable from here.
-                </p>
+                {#if flowAssistantProposal}
+                  {#if flowAssistantProposal.status === "ready"}
+                    <section class="flow-assistant-proposal" aria-label="Proposal">
+                      <h4>
+                        {flowAssistantProposal.pattern?.label || "Proposal"}
+                      </h4>
+                      {#if flowAssistantProposal.pattern?.description}
+                        <p class="muted">{flowAssistantProposal.pattern.description}</p>
+                      {/if}
+
+                      <h5>What this adds</h5>
+                      <ul class="flow-assistant-changes">
+                        {#each flowAssistantProposal.changes || [] as change}
+                          <li>{change}</li>
+                        {/each}
+                      </ul>
+
+                      {#if (flowAssistantProposal.resources || []).length > 0}
+                        <h5>What it needs</h5>
+                        <ul class="flow-assistant-resources">
+                          {#each flowAssistantProposal.resources as resource}
+                            <li class={"flow-assistant-resource status-" + resource.status}>
+                              <span class="flow-assistant-resource-status">
+                                {resourceLabel(resource.status)}
+                              </span>
+                              <span>{resource.detail}</span>
+                            </li>
+                          {/each}
+                        </ul>
+                      {/if}
+
+                      {#if (flowAssistantProposal.assumptions || []).length > 0}
+                        <details class="flow-assistant-assumptions">
+                          <summary>What I assumed</summary>
+                          <ul>
+                            {#each flowAssistantProposal.assumptions as assumption}
+                              <li>{assumption}</li>
+                            {/each}
+                          </ul>
+                        </details>
+                      {/if}
+
+                      <div class="flow-assistant-decide">
+                        <button
+                          type="button"
+                          class="primary"
+                          on:click={applyProposedFlow}
+                          disabled={flowAssistantApplying}
+                        >
+                          {flowAssistantApplying ? "Adding…" : "Add to the flow"}
+                        </button>
+                        <button
+                          type="button"
+                          class="ghost"
+                          on:click={discardProposedFlow}
+                          disabled={flowAssistantApplying}
+                        >
+                          Discard
+                        </button>
+                        <span class="muted">You can undo this afterwards.</span>
+                      </div>
+                    </section>
+                  {:else if flowAssistantProposal.status === "no_pattern_matched"}
+                    <section class="flow-assistant-proposal" aria-label="Proposal">
+                      <p>{flowAssistantProposal.message}</p>
+                      {#if (flowAssistantProposal.recognisedSituations || []).length > 0}
+                        <p class="muted">Try describing it like one of these:</p>
+                        <ul class="flow-assistant-changes">
+                          {#each flowAssistantProposal.recognisedSituations as hint}
+                            <li>{hint}</li>
+                          {/each}
+                        </ul>
+                      {/if}
+                    </section>
+                  {:else}
+                    <section class="flow-assistant-proposal" aria-label="Proposal">
+                      <p>{flowAssistantProposal.message || "Nothing could be proposed for this."}</p>
+                      {#if (flowAssistantProposal.problems || []).length > 0}
+                        <ul class="flow-assistant-changes">
+                          {#each flowAssistantProposal.problems as problem}
+                            <li>{problem}</li>
+                          {/each}
+                        </ul>
+                      {/if}
+                    </section>
+                  {/if}
+                {/if}
+
+                <details class="flow-assistant-caps-details">
+                  <summary>What this project already offers</summary>
+                  <div class="flow-assistant-caps">
+                    <section class="flow-assistant-cap">
+                      <h4>Who can act</h4>
+                      {#if flowAssistantAgents.length === 0}
+                        <p class="muted">No agents. A step that speaks or acts needs one.</p>
+                      {:else}
+                        <ul>
+                          {#each flowAssistantAgents as agent}
+                            <li>
+                              <strong>{agent.name}</strong>
+                              {#if agent.unresolved}
+                                <span class="flow-assistant-gap">
+                                  needs {agent.device}, which this project does not declare
+                                </span>
+                              {:else if agent.unavailableHere}
+                                <span class="flow-assistant-gap">
+                                  {agent.device} is not available here, so nothing can be asked of it
+                                </span>
+                              {:else}
+                                <span class="muted">{agent.commandCount} things it can do</span>
+                              {/if}
+                            </li>
+                          {/each}
+                        </ul>
+                      {/if}
+                    </section>
+
+                    <section class="flow-assistant-cap">
+                      <h4>What it can say</h4>
+                      {#if (flowAssistantCapabilities.script?.scenes || []).length === 0}
+                        <p class="muted">No scenes yet. I can name the ones a pattern needs.</p>
+                      {:else}
+                        <ul>
+                          {#each flowAssistantCapabilities.script.scenes.slice(0, 6) as scene}
+                            <li>
+                              <strong>{scene.name}</strong>
+                              {#if (scene.parameters || []).length > 0}
+                                <span class="flow-assistant-gap">
+                                  needs {scene.parameters.join(", ")}
+                                </span>
+                              {/if}
+                            </li>
+                          {/each}
+                          {#if flowAssistantCapabilities.script.scenes.length > 6}
+                            <li class="muted">
+                              and {flowAssistantCapabilities.script.scenes.length - 6} more
+                            </li>
+                          {/if}
+                        </ul>
+                      {/if}
+                    </section>
+
+                    <section class="flow-assistant-cap">
+                      <h4>How someone answers</h4>
+                      {#if (flowAssistantCapabilities.screens?.screens || []).length === 0}
+                        <p class="muted">
+                          No screens. A pattern that waits for an answer needs something that writes
+                          one, so I would offer to add a screen.
+                        </p>
+                      {:else}
+                        <ul>
+                          {#each flowAssistantCapabilities.screens.screens as screen}
+                            <li>
+                              <strong>{screen.name}</strong>
+                              {#if (screen.writesVariables || []).length > 0}
+                                <span class="muted">
+                                  sets {screen.writesVariables.join(", ")}
+                                </span>
+                              {:else}
+                                <span class="flow-assistant-gap">shows only, sets nothing</span>
+                              {/if}
+                            </li>
+                          {/each}
+                        </ul>
+                      {/if}
+                    </section>
+                  </div>
+                </details>
               {/if}
             </section>
           {/if}

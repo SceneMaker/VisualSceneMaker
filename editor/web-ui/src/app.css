@@ -2649,11 +2649,163 @@ a.export-link {
   font-size: 0.8125rem;
 }
 
-.flow-assistant-next {
-  margin: 0;
+/* Describing a situation is the panel's main job, so it leads and the capability list folds away
+   underneath it. */
+.flow-assistant-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.flow-assistant-ask-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.flow-assistant-situation {
+  width: 100%;
+  resize: vertical;
+  font: inherit;
+  font-size: 0.875rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+  color: inherit;
+}
+
+.flow-assistant-ask-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.flow-assistant-can {
   font-size: 0.75rem;
+}
+
+.flow-assistant-proposal {
+  background: var(--panel-soft);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.flow-assistant-proposal h4 {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.flow-assistant-proposal h5 {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.flow-assistant-proposal p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.flow-assistant-changes,
+.flow-assistant-resources {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.flow-assistant-resource {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+/* The four outcomes read at a glance: nothing to do, I do it, you do it, nobody here can. */
+.flow-assistant-resource-status {
+  flex: none;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  color: var(--muted);
+  background: var(--panel);
+}
+
+.flow-assistant-resource.status-creatable .flow-assistant-resource-status {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.flow-assistant-resource.status-author_only .flow-assistant-resource-status {
+  border-color: #c08a3e;
+  color: #8a5a1b;
+}
+
+.flow-assistant-resource.status-blocked .flow-assistant-resource-status {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.flow-assistant-assumptions {
+  font-size: 0.8125rem;
+}
+
+.flow-assistant-assumptions summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.flow-assistant-assumptions ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  line-height: 1.45;
+}
+
+.flow-assistant-decide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 0.2rem;
+}
+
+.flow-assistant-decide .muted {
+  font-size: 0.75rem;
+}
+
+.flow-assistant-caps-details {
   border-top: 1px solid var(--stroke);
   padding-top: 0.6rem;
+}
+
+.flow-assistant-caps-details summary {
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.flow-assistant-caps-details .flow-assistant-caps {
+  margin-top: 0.6rem;
 }
 
 .sceneflow-context-cluster {

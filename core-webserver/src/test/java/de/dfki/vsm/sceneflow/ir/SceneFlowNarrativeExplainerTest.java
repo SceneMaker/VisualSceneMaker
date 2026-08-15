@@ -1,5 +1,7 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import de.dfki.vsm.testsupport.TestRepoPaths;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,7 @@ class SceneFlowNarrativeExplainerTest {
     @Test
     void conceptsMatchDesignPatternsSnapshot() throws Exception {
         JSONObject report = new SceneFlowNarrativeExplainer()
-                .explain(Path.of("doc/DesignPatterns/sceneflow.xml"));
+                .explain(TestRepoPaths.doc("DesignPatterns/sceneflow.xml"));
         String actual = joinLines(report.getJSONArray("concepts"));
         String expected = loadSnapshot("designpatterns-concepts.txt");
         assertEquals(expected, actual);
@@ -30,7 +32,7 @@ class SceneFlowNarrativeExplainerTest {
     @Test
     void detectsConstrainedActivityWaitPatternInDesignPatternsSceneFlow() throws Exception {
         JSONObject report = new SceneFlowNarrativeExplainer()
-                .explain(Path.of("doc/DesignPatterns/sceneflow.xml"));
+                .explain(TestRepoPaths.doc("DesignPatterns/sceneflow.xml"));
 
         assertEquals("SceneFlow", report.optString("sceneFlowId"));
         assertTrue(report.optJSONArray("patterns").length() >= 1);
@@ -163,7 +165,7 @@ class SceneFlowNarrativeExplainerTest {
     void includeIdsStyleAddsIdsInBrackets() throws Exception {
         JSONObject report = new SceneFlowNarrativeExplainer()
                 .explain(
-                        Path.of("doc/DesignPatterns/sceneflow.xml"),
+                        TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                         new SceneFlowNarrativeExplainer.NarrativeStyle(true));
         assertTrue(report.getJSONArray("summary").toString().contains("(S5)"));
         assertTrue(report.getJSONArray("summary").toString().contains("(N1)"));

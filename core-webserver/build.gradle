@@ -30,6 +30,17 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.3.2'
 }
 
+// The pattern catalogue and the semantic-rule mapping are authored in doc/ and read at runtime by
+// the SceneFlow IR pipeline, which no longer runs from the repository root now that it lives here.
+// Copying them onto the classpath keeps doc/ authoritative instead of forking a second copy.
+processResources {
+    from(rootProject.file('doc')) {
+        include 'interactive-design-pattern-catalog.json'
+        include 'meta-to-sceneflow-mapping.json'
+        into 'sceneflow'
+    }
+}
+
 test {
     useJUnitPlatform()
 }

@@ -1,5 +1,7 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import de.dfki.vsm.testsupport.TestRepoPaths;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -19,7 +21,7 @@ class SceneFlowIrTemplateLibraryTest {
 
     @Test
     void waitForEventTemplateIsSemanticallyValidAgainstDesignPatternsSnapshot() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         SceneFlowIrTemplateLibrary library = new SceneFlowIrTemplateLibrary();
         List<JSONObject> candidates = library.generateCandidates(
                 "Wait until the user pressed the Okay button", snapshot);
@@ -38,7 +40,7 @@ class SceneFlowIrTemplateLibraryTest {
 
     @Test
     void constrainedActivityTemplateUsesReminderLoopWhenPromptMentionsReminder() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "Wait until the user pressed the Okay button and remind every 5 seconds", snapshot);
 
@@ -65,7 +67,7 @@ class SceneFlowIrTemplateLibraryTest {
 
     @Test
     void plannedOnlyActivityKindsFallbackToImplementedBasePattern() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "Wait until the user pressed the Okay button while playing music", snapshot);
 
@@ -89,7 +91,7 @@ class SceneFlowIrTemplateLibraryTest {
 
     @Test
     void timeoutRetryTemplateIsGeneratedWhenPromptMatches() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "On timeout retry again until success", snapshot);
 
@@ -101,7 +103,7 @@ class SceneFlowIrTemplateLibraryTest {
 
     @Test
     void commandOnConditionTemplateIsGeneratedWhenPromptMatches() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "If an event arrives then increment retry counter", snapshot);
 
@@ -113,7 +115,7 @@ class SceneFlowIrTemplateLibraryTest {
 
     @Test
     void waitForMultipleButtonsGeneratesOneInterruptEdgePerButton() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "Wait until the user pressed the Okay button or the Cancel button", snapshot);
 
@@ -142,7 +144,7 @@ class SceneFlowIrTemplateLibraryTest {
 
     @Test
     void unresolvedButtonLabelIsReportedInConstraintResolutionMetadata() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "Wait until the user pressed the Foobar button",
                 snapshot,
@@ -162,7 +164,7 @@ class SceneFlowIrTemplateLibraryTest {
 
     @Test
     void promptResolutionReportsAmbiguityAndConfidenceForMixedSignals() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "Wait and remind the user while showing pictures",
                 snapshot,
@@ -184,7 +186,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void sequenceSituationProducesAChainRatherThanAWaitSupernode() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "first greet the visitor, then explain the study, then ask for consent", snapshot);
 
@@ -205,7 +207,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void sequenceStepsAreChainedWithEpsilonEdgesInOrder() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
                 "first greet, then explain, then close", snapshot), "template-sequence");
 
@@ -235,7 +237,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void sequenceReusesExistingScenesAndReportsTheOnesToAuthor() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         // DesignPatterns declares exactly one scene, "Welcome".
         JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
                 "first welcome, then explain the study", snapshot), "template-sequence");
@@ -253,7 +255,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void sceneNamesAreDoubleQuotedBecauseSingleQuotesSilentlyBecomeVariables() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
                 "first greet, then close", snapshot), "template-sequence");
 
@@ -266,7 +268,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void prosePassingNoStepsIsNotTreatedAsASequence() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
                 "the agent should greet the visitor", snapshot);
         assertNull(candidateFromSource(candidates, "template-sequence"),
@@ -276,7 +278,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void generatedStepIdsDoNotCollideWithNodesAlreadyInTheProject() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
                 "first greet, then explain, then close", snapshot), "template-sequence");
 
@@ -334,7 +336,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void unrecognisedSituationProducesNoCandidateAtAll() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary()
                 .generateCandidates("make the avatar happy", snapshot);
 
@@ -347,7 +349,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void anEmptySituationIsAMissRatherThanAWaitTemplate() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         assertTrue(new SceneFlowIrTemplateLibrary().generateCandidates("", snapshot).isEmpty());
     }
 
@@ -470,7 +472,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void sequenceCandidateIsAttributedToTheSequenceCatalogueEntry() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         JSONObject sequence = candidateFromSource(new SceneFlowIrTemplateLibrary().generateCandidates(
                 "first greet, then explain, then close", snapshot), "template-sequence");
 
@@ -491,7 +493,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void askingAndWaitingProducesTheAskWaitStoreShape() throws Exception {
         JSONObject candidate = askAndWaitFor("Ask the person for their name and wait for the reply",
-                "doc/capability-snapshot.designpatterns.json");
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json").toString());
         assertNotNull(candidate);
 
         assertEquals(3, countOps(candidate, "create_node"));
@@ -522,7 +524,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void theChannelIsClearedWhereTheQuestionIsAskedNotWhereItWaits() throws Exception {
         JSONObject candidate = askAndWaitFor("Ask for the name and wait for an answer",
-                "doc/capability-snapshot.designpatterns.json");
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json").toString());
         String channel = candidate.getJSONObject("metadata").getString("answerChannel");
 
         JSONArray ops = candidate.getJSONArray("operations");
@@ -549,7 +551,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void theAnswerIsCopiedIntoAVariableOfItsOwn() throws Exception {
         JSONObject candidate = askAndWaitFor("Ask for the name and wait for an answer",
-                "doc/capability-snapshot.designpatterns.json");
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json").toString());
         JSONObject metadata = candidate.getJSONObject("metadata");
         String channel = metadata.getString("answerChannel");
         String store = metadata.getString("answerStore");
@@ -561,7 +563,7 @@ class SceneFlowIrTemplateLibraryTest {
     /** Reuse what the project already has rather than inventing a near-duplicate beside it. */
     @Test
     void anExistingSceneAndChannelAreReusedRatherThanRecreated() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.intakeinterview.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.intakeinterview.json")));
         JSONObject candidate = candidateFromSource(new SceneFlowIrTemplateLibrary()
                 .generateCandidates("Ask the visitor for their name and wait for the answer", snapshot),
                 "template-ask-and-wait");
@@ -584,7 +586,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void withNothingToReuseTheChannelIsCreatedAndTheSceneIsRecorded() throws Exception {
         JSONObject candidate = askAndWaitFor("Ask the person for their name and wait for the reply",
-                "doc/capability-snapshot.designpatterns.json");
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json").toString());
 
         assertTrue(createdVariables(candidate).contains("user_input"),
                 "The channel is creatable, so it is created");
@@ -598,7 +600,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void anAskingSituationDoesNotAlsoProduceABareWaitTemplate() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary()
                 .generateCandidates("Ask the person for their name and wait for the reply", snapshot);
 
@@ -610,7 +612,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void aPlainWaitStillProducesTheConstrainedActivityTemplate() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         List<JSONObject> candidates = new SceneFlowIrTemplateLibrary()
                 .generateCandidates("Wait until the user pressed the Okay button", snapshot);
 
@@ -621,7 +623,7 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void thePollIntervalCanBeTakenFromTheSituation() throws Exception {
         JSONObject candidate = askAndWaitFor("Ask for the name and wait for an answer, checking every 2 seconds",
-                "doc/capability-snapshot.designpatterns.json");
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json").toString());
         JSONArray ops = candidate.getJSONArray("operations");
         int timeout = -1;
         for (int i = 0; i < ops.length(); i++) {

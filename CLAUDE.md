@@ -207,6 +207,12 @@ VisualSceneMaker/
 **Editor-only endpoints** (FULL_EDITOR mode):
 - `POST /api/v1/projects/open` - Open project file
 - `POST /api/v1/projects/{pid}/save` - Save project
+- `GET /api/v1/sceneflow/patterns` - Interaction patterns the Flow Assistant can build
+- `POST /api/v1/projects/{pid}/flow-assistant/propose` - Situation text → a proposal; changes nothing.
+  Generated against the flow **as it stands in the editor**, not the file on disk. The compiled result
+  stays server-side keyed by a proposal id; only the author-facing view is sent (never the IR).
+- `POST /api/v1/projects/{pid}/flow-assistant/apply` / `discard` - Take or drop a proposal. Apply is
+  one undoable step (`SceneFlow.FlowAssistant.Apply`), and consumes the proposal.
 
 **Runtime-only endpoints** (RUNTIME_ONLY mode):
 - `POST /api/v1/runtime/load` - Load project by path
@@ -299,7 +305,14 @@ mLogger.failure("Error message");
   (what a project offers: plugins, agents, scenes, flow shape). Used by both the REST endpoint and
   `./gradlew generateCapabilitySnapshot`, so build-time and served snapshots cannot drift. Build it
   from a loaded project, or from a directory via `buildFromDirectory`, which uses
-  `parseForInformation` so that describing a project never launches its plugins.
+  `parseForInformation` so that describing a project never launches its plugins, and aborts the
+  project's event dispatcher afterwards (its timer thread is not a daemon, so a CLI would otherwise
+  write its output and then hang).
+- `core-webserver/src/main/java/de/dfki/vsm/web/FlowAssistantService.java` - Situation → proposal,
+  on top of `de.dfki.vsm.sceneflow.ir` (which lives in this module, not the root one). Holds the
+  compiled flow until the author applies or discards it, and translates the generated operations
+  into author-facing sentences. The IR must never reach a client; a test asserts the author-facing
+  view carries none of the generator's vocabulary.
 - `core/src/main/java/de/dfki/vsm/ui/protocol/UiEventBridge.java` - Domain → UI event translation
 
 ### Model Layer

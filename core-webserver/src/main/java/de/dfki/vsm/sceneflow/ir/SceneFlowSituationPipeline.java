@@ -22,7 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class SceneFlowSituationPipeline {
-    private static final Path INTERACTIVE_PATTERN_CATALOG_PATH = Path.of("doc", "interactive-design-pattern-catalog.json");
+    private static final String INTERACTIVE_PATTERN_CATALOG_FILE = "interactive-design-pattern-catalog.json";
     private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("\\b[A-Za-z_][A-Za-z0-9_]*\\b");
     private static final Set<String> RESERVED_TOKENS = Set.of(
             "true", "false", "null", "and", "or", "not", "in", "if", "then", "else");
@@ -275,7 +275,7 @@ public final class SceneFlowSituationPipeline {
                 .put("candidateMode", effectiveSettings.mode().name().toLowerCase(Locale.ROOT))
                 .put("outputMode", effectiveSettings.outputMode().name().toLowerCase(Locale.ROOT))
                 .put("availableGraphConfig", summarizeSnapshotGraph(snapshot))
-                .put("interactivePatternCatalogPath", INTERACTIVE_PATTERN_CATALOG_PATH.toAbsolutePath().toString())
+                .put("interactivePatternCatalog", INTERACTIVE_PATTERN_CATALOG_FILE)
                 .put("activeSemanticRulesSummary", activeRulesSummary)
                 .put("semanticRuleExecutionSummary", ruleExecutionSummary)
                 .put("executedRuleCount", ruleExecutionSummary.optInt("executedRuleCount", 0))
@@ -592,10 +592,10 @@ public final class SceneFlowSituationPipeline {
     private Map<String, JSONObject> loadPatternCatalogById() {
         final Map<String, JSONObject> byId = new HashMap<>();
         try {
-            if (!Files.exists(INTERACTIVE_PATTERN_CATALOG_PATH)) {
+            final JSONObject catalog = AuthoringResources.read(null, INTERACTIVE_PATTERN_CATALOG_FILE);
+            if (catalog == null) {
                 return byId;
             }
-            final JSONObject catalog = readJson(INTERACTIVE_PATTERN_CATALOG_PATH);
             final JSONArray patterns = catalog.optJSONArray("patternLibrary");
             if (patterns == null) {
                 return byId;
@@ -610,7 +610,7 @@ public final class SceneFlowSituationPipeline {
                     byId.put(id, pattern);
                 }
             }
-        } catch (SceneFlowIrCompileException ignored) {
+        } catch (RuntimeException ignored) {
             return byId;
         }
         return byId;

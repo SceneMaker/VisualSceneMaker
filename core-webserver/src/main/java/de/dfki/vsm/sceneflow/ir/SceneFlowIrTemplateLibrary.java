@@ -18,11 +18,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class SceneFlowIrTemplateLibrary {
-    private static final Path DEFAULT_PATTERN_CATALOG_PATH = Path.of("doc", "interactive-design-pattern-catalog.json");
+    static final String PATTERN_CATALOG_FILE = "interactive-design-pattern-catalog.json";
     private final List<CatalogPattern> catalogPatterns;
 
     public SceneFlowIrTemplateLibrary() {
-        this(DEFAULT_PATTERN_CATALOG_PATH);
+        this(null);
     }
 
     SceneFlowIrTemplateLibrary(final Path catalogPath) {
@@ -685,10 +685,12 @@ public final class SceneFlowIrTemplateLibrary {
         }
 
         final JSONArray assumptions = new JSONArray()
-                .put("Steps are chained with EEDGE, which gives true step-after-step ordering because "
-                        + "playing a scene blocks the node until the scene has finished. A step that "
-                        + "runs a fire-and-forget plugin action instead would overlap the next step "
-                        + "and needs a completion handshake.")
+                // Assumptions are shown to authors, so they name what a step does rather than the
+                // edge type that carries it.
+                .put("Each step waits for the one before it. That holds because playing a scene "
+                        + "keeps the step busy until the scene has finished. A step that starts a "
+                        + "plugin action and does not wait for it would overlap the next step, and "
+                        + "would need the plugin to report back when it is done.")
                 .put("The first step is marked as a start node, so the sequence begins when the "
                         + "project starts. Attach it to an existing node instead if it should run "
                         + "at a particular point.")
@@ -1177,59 +1179,56 @@ public final class SceneFlowIrTemplateLibrary {
     }
 
     private List<CatalogPattern> loadCatalogPatterns(final Path catalogPath) {
-        if (catalogPath != null) {
-            try {
-                if (Files.exists(catalogPath)) {
-                    final JSONObject root = new JSONObject(Files.readString(catalogPath));
-                    final JSONArray patterns = root.optJSONArray("patternLibrary");
-                    if (patterns != null) {
-                        final List<CatalogPattern> parsed = new ArrayList<>();
-                        for (int i = 0; i < patterns.length(); i++) {
-                            final JSONObject p = patterns.optJSONObject(i);
-                            if (p == null) {
-                                continue;
-                            }
-                            final String id = p.optString("id", "").trim();
-                            if (id.isBlank()) {
-                                continue;
-                            }
-                            final boolean implemented = "implemented".equalsIgnoreCase(p.optString("status", ""));
-                            final JSONObject supportsMeta = p.optJSONObject("supportsMeta");
-                            final Map<String, List<String>> criteria = new LinkedHashMap<>();
-                            if (supportsMeta != null) {
-                                for (String key : supportsMeta.keySet()) {
-                                    // Only arrays are constraints. A scalar such as
-                                    // "parsed_from_text_or_default" documents where a value comes from
-                                    // and is not something to match against.
-                                    final Object raw = supportsMeta.opt(key);
-                                    if (!(raw instanceof JSONArray values)) {
-                                        continue;
-                                    }
-                                    final List<String> allowed = new ArrayList<>();
-                                    for (int j = 0; j < values.length(); j++) {
-                                        final String value = values.optString(j, "").trim();
-                                        if (!value.isBlank()) {
-                                            allowed.add(value);
-                                        }
-                                    }
-                                    if (!allowed.isEmpty()) {
-                                        criteria.put(key, allowed);
-                                    }
-                                }
-                            }
-                            parsed.add(new CatalogPattern(
-                                    id, implemented, criteria, p.optString("fallbackTo", "").trim()));
+        final JSONObject root = AuthoringResources.read(catalogPath, PATTERN_CATALOG_FILE);
+        if (root == null) {
+            return fallbackCatalogPatterns();
+        }
+        try {
+            final JSONArray patterns = root.optJSONArray("patternLibrary");
+            if (patterns == null) {
+                return fallbackCatalogPatterns();
+            }
+            final List<CatalogPattern> parsed = new ArrayList<>();
+            for (int i = 0; i < patterns.length(); i++) {
+                final JSONObject pattern = patterns.optJSONObject(i);
+                if (pattern == null) {
+                    continue;
+                }
+                final String id = pattern.optString("id", "").trim();
+                if (id.isBlank()) {
+                    continue;
+                }
+                final boolean implemented =
+                        "implemented".equalsIgnoreCase(pattern.optString("status", ""));
+                final Map<String, List<String>> criteria = new LinkedHashMap<>();
+                final JSONObject supportsMeta = pattern.optJSONObject("supportsMeta");
+                if (supportsMeta != null) {
+                    for (String key : supportsMeta.keySet()) {
+                        // Only arrays are constraints. A scalar such as
+                        // "parsed_from_text_or_default" documents where a value comes from and is
+                        // not something to match against.
+                        if (!(supportsMeta.opt(key) instanceof JSONArray values)) {
+                            continue;
                         }
-                        if (!parsed.isEmpty()) {
-                            return parsed;
+                        final List<String> allowed = new ArrayList<>();
+                        for (int j = 0; j < values.length(); j++) {
+                            final String value = values.optString(j, "").trim();
+                            if (!value.isBlank()) {
+                                allowed.add(value);
+                            }
+                        }
+                        if (!allowed.isEmpty()) {
+                            criteria.put(key, allowed);
                         }
                     }
                 }
-            } catch (IOException | RuntimeException ignored) {
-                // fall through to static fallback patterns
+                parsed.add(new CatalogPattern(
+                        id, implemented, criteria, pattern.optString("fallbackTo", "").trim()));
             }
+            return parsed.isEmpty() ? fallbackCatalogPatterns() : parsed;
+        } catch (RuntimeException malformed) {
+            return fallbackCatalogPatterns();
         }
-        return fallbackCatalogPatterns();
     }
 
     private List<CatalogPattern> fallbackCatalogPatterns() {

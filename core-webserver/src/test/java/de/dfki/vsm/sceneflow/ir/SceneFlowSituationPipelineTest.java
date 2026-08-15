@@ -1,5 +1,7 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import de.dfki.vsm.testsupport.TestRepoPaths;
+
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
@@ -24,8 +26,8 @@ class SceneFlowSituationPipelineTest {
         Path outProjectDir = tempDir.resolve("generated-project");
 
         JSONObject report = new SceneFlowSituationPipeline().run(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 outXml,
                 reportJson,
                 "Wait until the user pressed the Okay button",
@@ -50,7 +52,7 @@ class SceneFlowSituationPipelineTest {
         assertTrue(report.has("semanticRuleExecutionSummary"));
         assertTrue(report.has("executedRuleCount"));
         assertTrue(report.has("violatedRuleCount"));
-        assertTrue(report.has("interactivePatternCatalogPath"));
+        assertTrue(report.has("interactivePatternCatalog"));
         assertEquals(outProjectDir.toAbsolutePath().toString(), report.optString("generatedProjectPath"));
         assertTrue(Files.exists(outProjectDir.resolve("project.xml")));
         assertTrue(Files.exists(outProjectDir.resolve("sceneflow.xml")));
@@ -91,8 +93,8 @@ class SceneFlowSituationPipelineTest {
         Path reportJson = tempDir.resolve("report.json");
 
         JSONObject report = new SceneFlowSituationPipeline().run(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 outXml,
                 reportJson,
                 "Wait and remind while showing pictures",
@@ -115,8 +117,8 @@ class SceneFlowSituationPipelineTest {
         Path reportJson = tempDir.resolve("report.json");
 
         JSONObject report = new SceneFlowSituationPipeline().run(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 outXml,
                 reportJson,
                 "Wait until the user pressed the Okay button and remind the user every 5 seconds",
@@ -149,8 +151,8 @@ class SceneFlowSituationPipelineTest {
         );
 
         JSONObject report = new SceneFlowSituationPipeline().run(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 outXml,
                 reportJson,
                 "Wait until the user pressed the Okay button",
@@ -170,8 +172,8 @@ class SceneFlowSituationPipelineTest {
         Path reportJson = tempDir.resolve("report.json");
 
         JSONObject report = new SceneFlowSituationPipeline().run(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 outXml,
                 reportJson,
                 "Wait until the user pressed the Okay button",
@@ -180,7 +182,7 @@ class SceneFlowSituationPipelineTest {
                         SceneFlowSituationPipeline.OutputMode.STANDALONE,
                         null));
 
-        JSONObject mapping = new JSONObject(Files.readString(Path.of("doc/meta-to-sceneflow-mapping.json")));
+        JSONObject mapping = new JSONObject(Files.readString(TestRepoPaths.doc("meta-to-sceneflow-mapping.json")));
         Set<String> configuredRuleIds = new HashSet<>();
         var defs = mapping.optJSONArray("ruleDefinitions");
         for (int i = 0; i < defs.length(); i++) {
@@ -201,7 +203,7 @@ class SceneFlowSituationPipelineTest {
 
     @Test
     void canonicalizationRewritesAllSupernodeInterruptTargetsOutsideScope() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         JSONObject candidate = new JSONObject()
                 .put("irVersion", "1.0")
                 .put("mode", "patch")
@@ -298,7 +300,7 @@ class SceneFlowSituationPipelineTest {
 
     @Test
     void canonicalizationAddsSelfTimeoutForFlatInterruptWaitNode() throws Exception {
-        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject snapshot = new JSONObject(Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         JSONObject candidate = new JSONObject()
                 .put("irVersion", "1.0")
                 .put("mode", "patch")
@@ -374,8 +376,8 @@ class SceneFlowSituationPipelineTest {
         Path reportJson = tempDir.resolve("report.json");
 
         JSONObject report = new SceneFlowSituationPipeline().run(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 outXml,
                 reportJson,
                 "Wait until the user pressed the Foobar button",
@@ -398,8 +400,8 @@ class SceneFlowSituationPipelineTest {
         Path report = Files.createTempFile("pipeline-nomatch-report", ".json");
 
         JSONObject result = new SceneFlowSituationPipeline().run(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 outXml,
                 report,
                 "make the avatar happy",

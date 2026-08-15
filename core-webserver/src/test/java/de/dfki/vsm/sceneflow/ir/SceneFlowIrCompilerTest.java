@@ -1,5 +1,7 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import de.dfki.vsm.testsupport.TestRepoPaths;
+
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
@@ -25,7 +27,7 @@ class SceneFlowIrCompilerTest {
     @Test
     void compilesExampleIrAndRoundTripsDesignPatterns() throws Exception {
         SceneFlow base = loadDesignPatternsSceneFlow();
-        JSONObject ir = readJson(Path.of("doc/sceneflow-ir.wait-for-ok-button.example.json"));
+        JSONObject ir = readJson(TestRepoPaths.doc("sceneflow-ir.wait-for-ok-button.example.json"));
 
         SceneFlow compiled = new SceneFlowIrCompiler().compilePatch(ir, base);
 
@@ -87,7 +89,7 @@ class SceneFlowIrCompilerTest {
 
     private SceneFlow loadDesignPatternsSceneFlow() {
         SceneFlow flow = new SceneFlow();
-        assertTrue(XMLUtilities.parseFromXMLFile(flow, Path.of("doc/DesignPatterns/sceneflow.xml").toFile()));
+        assertTrue(XMLUtilities.parseFromXMLFile(flow, TestRepoPaths.doc("DesignPatterns/sceneflow.xml").toFile()));
         flow.establishStartNodes();
         flow.establishTargetNodes();
         flow.establishAltStartNodes();

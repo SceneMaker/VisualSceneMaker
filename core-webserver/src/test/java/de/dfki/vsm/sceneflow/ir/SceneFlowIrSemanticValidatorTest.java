@@ -1,5 +1,7 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import de.dfki.vsm.testsupport.TestRepoPaths;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -247,7 +249,7 @@ class SceneFlowIrSemanticValidatorTest {
 
     @Test
     void mappingRuleDefinitionsAreKnownToValidator() throws Exception {
-        JSONObject mapping = new JSONObject(Files.readString(Path.of("doc/meta-to-sceneflow-mapping.json")));
+        JSONObject mapping = new JSONObject(Files.readString(TestRepoPaths.doc("meta-to-sceneflow-mapping.json")));
         JSONArray defs = mapping.optJSONArray("ruleDefinitions");
         assertNotNull(defs);
         Set<String> known = SceneFlowIrSemanticValidator.knownRuleIds();
@@ -478,7 +480,7 @@ class SceneFlowIrSemanticValidatorTest {
     void detectsADefaultEdgeAddedToANodeThatAlreadyHasOne() throws Exception {
         // DesignPatterns N31 already leaves via an epsilon edge to N32.
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         JSONObject ir = irWithOps(new JSONArray()
                 .put(edge("extra", "EEDGE", "N31", "N32")));
 
@@ -495,7 +497,7 @@ class SceneFlowIrSemanticValidatorTest {
     @Test
     void doesNotGuessAboutDefaultEdgesWhenThePatchDeletesEdges() throws Exception {
         JSONObject snapshot = new JSONObject(
-                Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+                Files.readString(TestRepoPaths.doc("capability-snapshot.designpatterns.json")));
         JSONObject ir = irWithOps(new JSONArray()
                 .put(new JSONObject().put("op", "delete_edge").put("edgeId", "whichever"))
                 .put(edge("replacement", "EEDGE", "N31", "N32")));

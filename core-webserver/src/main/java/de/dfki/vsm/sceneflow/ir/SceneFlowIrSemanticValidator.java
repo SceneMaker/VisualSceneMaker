@@ -26,7 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class SceneFlowIrSemanticValidator {
-    private static final Path DEFAULT_META_MAPPING_PATH = Path.of("doc", "meta-to-sceneflow-mapping.json");
+    static final String META_MAPPING_FILE = "meta-to-sceneflow-mapping.json";
 
     private static final Set<String> EDGE_TYPES = Set.of("EEDGE", "CEDGE", "PEDGE", "TEDGE", "FEDGE", "IEDGE");
     private static final Set<String> VARIABLE_TYPES = Set.of("Int", "Bool", "Float", "String", "Event");
@@ -78,7 +78,7 @@ public final class SceneFlowIrSemanticValidator {
     private final Map<String, OperationRuleHandler> operationRuleHandlers;
 
     public SceneFlowIrSemanticValidator() {
-        this(DEFAULT_META_MAPPING_PATH);
+        this(null);
     }
 
     SceneFlowIrSemanticValidator(final Path metaMappingPath) {
@@ -1199,14 +1199,11 @@ public final class SceneFlowIrSemanticValidator {
 
     private RuleConfig loadRuleConfig(final Path mappingPath) {
         final RuleConfig defaultConfig = defaultRuleConfig();
-        if (mappingPath == null || !Files.exists(mappingPath)) {
+        final JSONObject mapping = AuthoringResources.read(mappingPath, META_MAPPING_FILE);
+        if (mapping == null) {
             return defaultConfig;
         }
         try {
-            final JSONObject mapping;
-            try (var reader = Files.newBufferedReader(mappingPath)) {
-                mapping = new JSONObject(new JSONTokener(reader));
-            }
             final JSONArray definitions = mapping.optJSONArray("ruleDefinitions");
             final Set<String> disabledRules = new HashSet<>();
             final JSONArray disabled = mapping.optJSONArray("disabledRules");
@@ -1255,7 +1252,7 @@ public final class SceneFlowIrSemanticValidator {
                 return defaultConfig;
             }
             return new RuleConfig(rules, disabledRules, severityByRuleId);
-        } catch (IOException | RuntimeException ignored) {
+        } catch (RuntimeException ignored) {
             return defaultConfig;
         }
     }

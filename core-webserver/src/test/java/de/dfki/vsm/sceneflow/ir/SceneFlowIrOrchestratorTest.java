@@ -1,5 +1,7 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import de.dfki.vsm.testsupport.TestRepoPaths;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -34,14 +36,14 @@ class SceneFlowIrOrchestratorTest {
                                 .put("targetNodeId", "N1")
                                 .put("payload", new JSONObject()
                                         .put("timeoutMs", -1))));
-        JSONObject valid = new JSONObject(Files.readString(Path.of("doc/sceneflow-ir.wait-for-ok-button.example.json")));
+        JSONObject valid = new JSONObject(Files.readString(TestRepoPaths.doc("sceneflow-ir.wait-for-ok-button.example.json")));
 
         Files.writeString(badIr, invalid.toString(2));
         Files.writeString(goodIr, valid.toString(2));
 
         SceneFlowGenerationResult result = new SceneFlowIrOrchestrator().generateFlowFromSituation(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 out,
                 List.of(badIr, goodIr));
 
@@ -74,8 +76,8 @@ class SceneFlowIrOrchestratorTest {
         Files.writeString(badIr, invalid.toString(2));
 
         SceneFlowGenerationResult result = new SceneFlowIrOrchestrator().generateFlowFromSituation(
-                Path.of("doc/capability-snapshot.designpatterns.json"),
-                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json"),
+                TestRepoPaths.doc("DesignPatterns/sceneflow.xml"),
                 out,
                 List.of(badIr));
 
