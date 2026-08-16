@@ -66,7 +66,8 @@ main.editor-view .sceneflow-panel {
 }
 
 main.editor-view .sceneflow-blocks {
-  padding: 0.5rem 0.5rem 0.3rem;
+  /* No left padding: the palette runs flush to the panel's outer edge. See .sceneflow-blocks. */
+  padding: 0.5rem 0.5rem 0.3rem 0;
 }
 
 .hero {
@@ -2332,13 +2333,14 @@ a.export-link {
   /* Inset of .sceneflow-area, the card that holds the menu bar and the graph frame together
      (matching .scenescript's own 0.75rem 0.9rem). Subtracted from --sf-canvas-width below for the
      same reason as the frame's own inset: it sits between the panel and the canvas. */
-  --sf-area-pad: 0.9rem;
+  --sf-area-pad: 0.9rem;   /* == .scenescript's own horizontal padding, so the two cards' side
+                              insets match and the panels line up vertically */
   --sf-area-pad-y: 0.75rem;
   --sf-area-border: 1px;
   /* Same scrollbar-width correction as .panel-wide above — margin-left/right (below) don't need
      it, only the width, since the scrollbar only ever overshoots the right edge. */
   --sf-viewport-width: calc(100vw - var(--scrollbar-width, 0px) - (2 * var(--sf-side-margin)));
-  --sf-canvas-width: calc(var(--sf-viewport-width) - (2 * var(--sf-panel-pad)) - (2 * var(--sf-area-pad)) - (2 * var(--sf-area-border)) - (2 * var(--sf-frame-pad)) - (2 * var(--sf-frame-border)) - (2 * var(--sf-side-width)) - (2 * var(--sf-gap)));
+  --sf-canvas-width: calc(var(--sf-viewport-width) - (2 * var(--sf-panel-pad)) - (2 * var(--sf-area-pad)) - (2 * var(--sf-area-border)) - (2 * var(--sf-frame-border)) - (2 * var(--sf-side-width)) - (2 * var(--sf-gap)));
   --sf-canvas-height: var(--sf-canvas-width);
   grid-column: 1 / -1;
   user-select: none;
@@ -3081,7 +3083,7 @@ a.export-link {
   background: #e7e1d8;
   border: var(--sf-frame-border) solid var(--stroke);
   border-radius: 12px;
-  padding: var(--sf-frame-pad);
+  padding: var(--sf-frame-pad) 0;
   box-sizing: border-box;
 }
 
@@ -3156,7 +3158,7 @@ a.export-link {
      line and costing width the palette can use. Mirrored on the inspector's right edge. */
   border-left: none;
   border-radius: var(--radius-md);
-  padding: 1rem 1rem 0.6rem;
+  padding: 1rem 1rem 0.6rem 0;
   height: 100%;
   min-height: 0;
   /* auto, not hidden: this panel used to silently CLIP anything past its box while the inspector
@@ -3521,7 +3523,7 @@ a.export-link {
   border: 1px dashed var(--stroke);
   border-right: none; /* see .sceneflow-blocks' border-left */
   border-radius: var(--radius-md);
-  padding: 0.5rem;
+  padding: 0.5rem 0 0.5rem 0.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
