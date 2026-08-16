@@ -50,6 +50,22 @@ public final class FlowAssistantService {
 
     private final Map<String, Proposal> mProposals = new ConcurrentHashMap<>();
 
+    /**
+     * The plugin classes this deployment carries, as {@code className -> display name}.
+     *
+     * <p>Supplied rather than read, so the service stays usable without a server behind it. Empty by
+     * default, which makes every unmet capability read as a dead end, so a caller that has a registry
+     * has to say so.
+     */
+    private java.util.function.Supplier<Map<String, String>> mInstalledPlugins = Map::of;
+
+    /** Tells the service which plugins exist on this deployment but are not in the project. */
+    public FlowAssistantService withInstalledPlugins(
+            final java.util.function.Supplier<Map<String, String>> installedPlugins) {
+        this.mInstalledPlugins = installedPlugins == null ? Map::of : installedPlugins;
+        return this;
+    }
+
     /** A generated flow the author has not decided about yet. */
     public static final class Proposal {
 
@@ -411,8 +427,11 @@ public final class FlowAssistantService {
         detail.append("An agent that has not finished starting up accepts what it is told and does "
                 + "nothing with it, which looks like a flow that is broken for no reason.");
         if (onlyConnects) {
-            detail.append(" One of them reports only that it has connected, which can happen a "
-                    + "moment before it is really usable.");
+            detail.append(agents.size() == 1
+                    ? " It reports only that it has connected, which can happen a moment before it "
+                            + "is really usable."
+                    : " One of them reports only that it has connected, which can happen a moment "
+                            + "before it is really usable.");
         }
 
         return Optional.of(new JSONObject()
@@ -768,8 +787,12 @@ public final class FlowAssistantService {
                             ? "The project has an agent."
                             : "The project has " + joinQuoted(names) + ".");
         }
-        return result.put("status", statusForMissing(requirement))
-                .put("detail", "The project has no agent yet.");
+        // onMissing says "create", but nothing here creates an agent: it needs a device, which is a
+        // project setting rather than anything the flow can express. Saying "I add this" and then
+        // not doing it is worse than saying who has to.
+        return result.put("status", "author_only")
+                .put("detail", "This project has no agent yet. Add a device under the project's "
+                        + "settings and give it an agent, then it can be told to do things.");
     }
 
     /**
@@ -830,6 +853,16 @@ public final class FlowAssistantService {
             return result.put("status", "creatable")
                     .put("detail", "Nothing writes " + quoted(channel) + " yet. A screen with a "
                             + "control that sends it can be created from a template.");
+        }
+        // A capability the project lacks and a capability nobody shipped are different problems.
+        // Telling an author with an empty project that nothing can ever answer would be both wrong
+        // and the end of the road, when the plugin they need is one dialog away.
+        final String installed = installedProviderOfUserInput();
+        if (!installed.isEmpty()) {
+            return result.put("status", "author_only")
+                    .put("detail", "Nothing in this project can hand an answer back yet. Add the "
+                            + quoted(installed) + " device under the project's settings, which brings "
+                            + "a screen you can put a control on.");
         }
         return result.put("status", "blocked")
                 .put("detail", "No plugin in this installation can hand an answer back to the flow, "
@@ -963,21 +996,35 @@ public final class FlowAssistantService {
         return names;
     }
 
-    /** Whether any plugin present can put a control in front of the person using the flow. */
+    /** Whether any plugin the project uses can put a control in front of the person using the flow. */
     private boolean providesUserInput(final JSONObject capabilities) {
         final JSONObject project = capabilities.optJSONObject("project");
         final JSONArray plugins = project == null ? null : project.optJSONArray("plugins");
         for (int i = 0; plugins != null && i < plugins.length(); i++) {
             final JSONObject plugin = plugins.optJSONObject(i);
-            if (plugin == null) {
-                continue;
-            }
-            final String className = plugin.optString("className", "").toLowerCase(Locale.ROOT);
-            if (className.contains("htmlgui")) {
+            if (plugin != null && offersUserInput(plugin.optString("className", ""))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * The same capability among the plugins this deployment carries but the project does not use.
+     *
+     * @return the display name of one such plugin, or empty when there is none
+     */
+    private String installedProviderOfUserInput() {
+        for (Map.Entry<String, String> installed : mInstalledPlugins.get().entrySet()) {
+            if (offersUserInput(installed.getKey())) {
+                return installed.getValue();
+            }
+        }
+        return "";
+    }
+
+    private boolean offersUserInput(final String className) {
+        return className != null && className.toLowerCase(Locale.ROOT).contains("htmlgui");
     }
 
     private void addStrings(final Set<String> target, final JSONArray source) {

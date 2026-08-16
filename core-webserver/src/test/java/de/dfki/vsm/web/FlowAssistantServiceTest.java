@@ -142,6 +142,52 @@ class FlowAssistantServiceTest {
         assertTrue(answerSource.getString("detail").contains("wait forever"));
     }
 
+    /**
+     * A plugin nobody shipped and a plugin the project has not added are different problems.
+     *
+     * <p>Telling someone with an empty project that nothing can ever answer is both wrong and the
+     * end of the road, when the plugin they need is one dialog away. This is what a newcomer meets
+     * first, so it has to point somewhere.
+     */
+    @Test
+    void aCapabilityThatIsInstalledButUnusedSaysWhatToAddRatherThanThatItIsHopeless() throws Exception {
+        JSONObject view = new FlowAssistantService()
+                .withInstalledPlugins(() -> java.util.Map.of(
+                        "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor", "HTML GUI"))
+                .propose("p1", snapshot(), baseFlow(),
+                        "Ask the person for their name and wait for the reply")
+                .authorView();
+
+        JSONObject answerSource = requirement(view, "answer-source");
+        assertEquals("author_only", answerSource.getString("status"));
+        assertTrue(answerSource.getString("detail").contains("HTML GUI"),
+                "The author has to be told which device to add: " + answerSource.getString("detail"));
+        assertFalse(answerSource.getString("detail").contains("wait forever"));
+    }
+
+    /** An agent needs a device, which no flow can express, so the assistant must not claim it will. */
+    @Test
+    void anEmptyProjectIsToldWhoHasToAddTheAgent() throws Exception {
+        JSONObject view = new FlowAssistantService()
+                .propose("p1", snapshot(), baseFlow(), "first greet, then explain, then close")
+                .authorView();
+
+        JSONObject speaker = requirement(view, "speaker");
+        assertEquals("present", speaker.getString("status"),
+                "DesignPatterns declares a timer agent, so this one is met");
+
+        JSONObject noAgents = new JSONObject(snapshot().toString());
+        noAgents.getJSONObject("project").put("agents", new JSONArray());
+        JSONObject withoutAgents = new FlowAssistantService()
+                .propose("p1", noAgents, baseFlow(), "first greet, then explain, then close")
+                .authorView();
+
+        JSONObject missing = requirement(withoutAgents, "speaker");
+        assertEquals("author_only", missing.getString("status"),
+                "Nothing here creates an agent, so it must not be reported as something I add");
+        assertTrue(missing.getString("detail").contains("Add a device"));
+    }
+
     @Test
     void variablesThePatternNeedsAreCreatedRatherThanAskedFor() throws Exception {
         JSONObject view = new FlowAssistantService().propose(

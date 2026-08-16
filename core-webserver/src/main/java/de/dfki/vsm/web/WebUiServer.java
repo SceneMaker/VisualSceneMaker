@@ -462,7 +462,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     // ~20-concurrent-session load test).
     private final Map<String, ProjectRef> projectStore = new ConcurrentHashMap<>();
     private final Map<String, WsCommandHandler> wsCommandRegistry = new HashMap<>();
-    private final FlowAssistantService flowAssistantService = new FlowAssistantService();
+    private final FlowAssistantService flowAssistantService =
+            new FlowAssistantService().withInstalledPlugins(WebUiServer::installedPlugins);
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
 
     // Auto-exit: when all browser clients disconnect and no new one reconnects within the
@@ -2159,6 +2160,26 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     static List<PluginCommand> pluginCommandsForClassName(String className) {
         ExportablePropertyEntry entry = exportableEntryFor(className);
         return entry == null ? List.of() : entry.getParsedCommands();
+    }
+
+    /**
+     * Every plugin class this deployment carries, as {@code className -> display name}.
+     *
+     * <p>Distinct from the plugins a project uses. A capability a project cannot satisfy is a
+     * different thing depending on which of the two is missing: a plugin nobody shipped is a dead
+     * end, while a plugin sitting unused on the classpath is one dialog away.
+     */
+    static Map<String, String> installedPlugins() {
+        if (EXPORTABLE_PROPERTY_PROVIDERS.isEmpty()) {
+            loadExportablePropertyProviders();
+        }
+        Map<String, String> out = new java.util.LinkedHashMap<>();
+        for (Map.Entry<String, ExportablePropertyEntry> entry : EXPORTABLE_PROPERTY_PROVIDERS.entrySet()) {
+            JSONObject meta = entry.getValue().pluginMeta;
+            String name = meta == null ? "" : meta.optString("name", "");
+            out.put(entry.getKey(), name.isBlank() ? entry.getKey() : name);
+        }
+        return out;
     }
 
     /** The {@code variables.writes} / {@code variables.reads} a plugin class declares, or null. */
