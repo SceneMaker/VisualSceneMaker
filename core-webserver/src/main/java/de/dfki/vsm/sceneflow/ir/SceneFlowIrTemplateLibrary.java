@@ -46,13 +46,20 @@ public final class SceneFlowIrTemplateLibrary {
                 : constraintResolutionMode;
 
         final List<JSONObject> candidates = new ArrayList<>();
-        final boolean askAndWait = looksLikeAskAndWait(lower);
+        // Offered before the other waiting predicates, which match on "wait" and "until" alone and
+        // would otherwise answer "wait until Xenia is ready" with a wait for a button press.
+        final List<ReadinessSignal> awaited = readinessSignalsNamedIn(lower, snapshot);
+        final boolean waitUntilReady = !awaited.isEmpty() && looksLikeWaitUntilReady(lower);
+        if (waitUntilReady) {
+            candidates.add(waitUntilReadyTemplate(prompt, rootId, snapshot, awaited, null));
+        }
+        final boolean askAndWait = !waitUntilReady && looksLikeAskAndWait(lower);
         if (askAndWait) {
             candidates.add(askAndWaitTemplate(prompt, rootId, snapshot));
         }
         // The wait predicate matches on "wait" and "until" alone, so without this an asking
         // situation would also produce a bare wait supernode that asks nothing and stores nothing.
-        if (!askAndWait && looksLikeWaitForEvent(lower)) {
+        if (!askAndWait && !waitUntilReady && looksLikeWaitForEvent(lower)) {
             final ConstrainedActivitySpec spec = constrainedActivitySpec(prompt, rootId, eventVar, snapshot, mode);
             candidates.add(constrainedActivityTemplate(spec, snapshot));
         }
@@ -83,6 +90,8 @@ public final class SceneFlowIrTemplateLibrary {
      */
     public static List<String> recognisedSituationHints() {
         return List.of(
+                "Waiting until the agents are ready before anything starts: mention ready or "
+                        + "connected, and name an agent if only one should be waited for.",
                 "Waiting for something to happen: mention waiting, until, or a button being pressed.",
                 "Retrying after a delay: mention retry, or timeout together with again.",
                 "Acting on a condition: mention if or when.",
@@ -107,6 +116,191 @@ public final class SceneFlowIrTemplateLibrary {
         final boolean waits = lower.contains("answer") || lower.contains("reply")
                 || lower.contains("response") || lower.contains("wait") || lower.contains("until");
         return asks && waits;
+    }
+
+    /**
+     * Recognises waiting for the agents themselves rather than for something a person does.
+     *
+     * <p>Needs a readiness cue. A bare "wait until" is the constrained-activity wait, and an agent
+     * name alone is usually a step that speaks rather than a gate in front of one.
+     */
+    private boolean looksLikeWaitUntilReady(final String lower) {
+        final boolean readiness = lower.contains("ready") || lower.contains("connect")
+                || lower.contains("available");
+        final boolean waits = lower.contains("wait") || lower.contains("until")
+                || lower.contains("before") || lower.contains("start");
+        return readiness && waits;
+    }
+
+    /**
+     * The readiness signals a situation is about, which is all of them unless it names some.
+     *
+     * <p>Waiting for every agent is the safe default, and it is what the two-character example
+     * project does. Naming one is how an author asks for less.
+     */
+    private List<ReadinessSignal> readinessSignalsNamedIn(
+            final String lower, final JSONObject snapshot) {
+        final List<ReadinessSignal> all = readinessSignals(snapshot);
+        final List<ReadinessSignal> named = new ArrayList<>();
+        for (ReadinessSignal signal : all) {
+            final String agent = signal.agentName().toLowerCase(Locale.ROOT);
+            if (!agent.isBlank() && lower.contains(agent)) {
+                named.add(signal);
+            }
+        }
+        return named.isEmpty() ? all : named;
+    }
+
+    /**
+     * A gate the flow waits in until every agent it needs can act.
+     *
+     * <p>{@code continuationNodeId} is what the flow would otherwise have started with, so the gate
+     * goes in front of it rather than beside it. Passing null means nothing follows yet, and an empty
+     * node is created for the author to carry on from.
+     */
+    /**
+     * The gate on its own, to be put in front of a flow that is being generated anyway.
+     *
+     * <p>{@code reservedIds} are the ids that flow is about to use. They are not in the snapshot yet,
+     * and a gate allocating over them would collide with nodes that do not exist so far.
+     *
+     * @return null when this project has nothing that reports readiness, in which case there is
+     *         nothing to wait for and a gate would never open
+     */
+    JSONObject readinessGateFor(
+            final String situation,
+            final String rootId,
+            final JSONObject snapshot,
+            final String continuationNodeId,
+            final Set<String> reservedIds) {
+        final List<ReadinessSignal> signals = readinessSignals(snapshot);
+        if (signals.isEmpty()) {
+            return null;
+        }
+        return waitUntilReadyTemplate(situation, rootId, snapshot, signals, continuationNodeId, reservedIds);
+    }
+
+    private JSONObject waitUntilReadyTemplate(
+            final String situation,
+            final String rootId,
+            final JSONObject snapshot,
+            final List<ReadinessSignal> awaited,
+            final String continuationNodeId) {
+        return waitUntilReadyTemplate(situation, rootId, snapshot, awaited, continuationNodeId, Set.of());
+    }
+
+    private JSONObject waitUntilReadyTemplate(
+            final String situation,
+            final String rootId,
+            final JSONObject snapshot,
+            final List<ReadinessSignal> awaited,
+            final String continuationNodeId,
+            final Set<String> reservedIds) {
+        final Set<String> existingNodeIds = new LinkedHashSet<>(snapshotNodeIds(snapshot, rootId));
+        existingNodeIds.addAll(reservedIds);
+        final String superNodeId = "S" + nextIdIndex(existingNodeIds, "S", 100);
+        final int nextNodeIdx = nextIdIndex(existingNodeIds, "N", 1000);
+        final String waitNodeId = "N" + nextNodeIdx;
+        final String afterNodeId = continuationNodeId == null || continuationNodeId.isBlank()
+                ? "N" + (nextNodeIdx + 1)
+                : continuationNodeId;
+
+        final StringBuilder condition = new StringBuilder();
+        final JSONArray waitedFor = new JSONArray();
+        for (ReadinessSignal signal : awaited) {
+            if (condition.length() > 0) {
+                condition.append(" && ");
+            }
+            condition.append(signal.variable());
+            waitedFor.put(new JSONObject()
+                    .put("agent", signal.agentName())
+                    .put("variable", signal.variable())
+                    .put("meansCanAct", signal.meansCanAct()));
+        }
+
+        final JSONArray operations = new JSONArray()
+                .put(new JSONObject()
+                        .put("op", "create_supernode")
+                        .put("opId", "gate-" + superNodeId)
+                        .put("reason", "Somewhere for the flow to be while it waits.")
+                        .put("parentSuperNodeId", rootId)
+                        .put("superNodeId", superNodeId)
+                        .put("name", "WaitUntilReady")
+                        .put("isStartNode", true))
+                .put(new JSONObject()
+                        .put("op", "create_node")
+                        .put("opId", "gate-wait-" + waitNodeId)
+                        .put("reason", "The flow has to occupy a node while the gate is closed.")
+                        .put("parentSuperNodeId", superNodeId)
+                        .put("nodeId", waitNodeId)
+                        .put("name", "Waiting")
+                        .put("isStartNode", true))
+                .put(new JSONObject()
+                        .put("op", "create_edge")
+                        .put("opId", "gate-tick-" + waitNodeId)
+                        .put("reason", "Keeps the flow inside the gate. The interval decides nothing "
+                                + "about how quickly readiness is noticed.")
+                        .put("edgeId", "WaitUntilReady_Tick")
+                        .put("edgeType", "TEDGE")
+                        .put("sourceNodeId", waitNodeId)
+                        .put("targetNodeId", waitNodeId)
+                        .put("payload", new JSONObject().put("timeoutMs", 1000)));
+
+        if (continuationNodeId == null || continuationNodeId.isBlank()) {
+            operations.put(new JSONObject()
+                    .put("op", "create_node")
+                    .put("opId", "gate-after-" + afterNodeId)
+                    .put("reason", "Where the flow carries on once everything is ready.")
+                    .put("parentSuperNodeId", rootId)
+                    .put("nodeId", afterNodeId)
+                    .put("name", "Ready"));
+        }
+
+        operations.put(new JSONObject()
+                .put("op", "create_edge")
+                .put("opId", "gate-release-" + superNodeId)
+                .put("reason", "On the supernode rather than on the waiting node, so it fires the "
+                        + "moment every agent is ready instead of at the next tick.")
+                .put("edgeId", "WaitUntilReady_Release")
+                .put("edgeType", "IEDGE")
+                .put("sourceNodeId", superNodeId)
+                .put("targetNodeId", afterNodeId)
+                .put("payload", new JSONObject().put("conditionText", condition.toString())));
+
+        final JSONArray assumptions = new JSONArray();
+        assumptions.put(awaited.size() == 1
+                ? "The flow waits for " + awaited.get(0).agentName() + " and starts as soon as it "
+                        + "is ready."
+                : "The flow waits for all " + awaited.size() + " agents and starts only once every "
+                        + "one of them is ready. This is one condition rather than several separate "
+                        + "waits.");
+        for (ReadinessSignal signal : awaited) {
+            if (!signal.meansCanAct()) {
+                assumptions.put(signal.agentName() + " reports only that it has connected, not that "
+                        + "it can act yet. Speaking too early can fail without any sign of it.");
+            }
+        }
+        assumptions.put("Nothing says how long the wait may take. A gate whose condition never "
+                + "becomes true looks exactly like one that is merely slow.");
+        assumptions.put("The waiting node does nothing. Put a scene inside the gate if the person "
+                + "should be told that something is coming.");
+
+        final PatternSelection selection = selectPattern(Map.of("situation.shape", "wait-until-ready"));
+        return new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("metadata", metadata("template-wait-until-ready", situation)
+                        .put("interactiveDesignPattern", new JSONObject()
+                                .put("selectedPatternId", selection.patternId())
+                                .put("selectionReason", selection.reason())
+                                .put("resolvedMeta", new JSONObject()
+                                        .put("situation", new JSONObject().put("shape", "wait-until-ready"))
+                                        .put("agentCount", awaited.size())))
+                        .put("waitsFor", waitedFor)
+                        .put("gateSuperNodeId", superNodeId)
+                        .put("continuationNodeId", afterNodeId))
+                .put("assumptions", assumptions)
+                .put("operations", operations);
     }
 
     private boolean looksLikeTimeoutRetry(final String lower) {
@@ -802,6 +996,86 @@ public final class SceneFlowIrTemplateLibrary {
             }
         }
         return "UIEvent";
+    }
+
+    /** An agent, and the variable whose becoming true means it can act. */
+    record ReadinessSignal(String agentName, String variable, String description, boolean meansCanAct) {
+    }
+
+    /**
+     * The agents this project can wait for, and the variable that says so for each.
+     *
+     * <p>The chain is agent to device to plugin to the variable that plugin instance is bound to.
+     * The binding is the part that matters: two characters running on one plugin class declare the
+     * same key and bind it to different variables, so the declared name alone cannot tell them apart.
+     *
+     * <p>Where a plugin reports both connecting and being able to act, the latter wins. charamel-embed
+     * sets one when the character page connects and the other only once the model is loaded and audio
+     * is unlocked, and speaking in between fails silently.
+     */
+    List<ReadinessSignal> readinessSignals(final JSONObject snapshot) {
+        final JSONObject project = snapshot == null ? null : snapshot.optJSONObject("project");
+        final JSONArray plugins = project == null ? null : project.optJSONArray("plugins");
+        final JSONArray agents = project == null ? null : project.optJSONArray("agents");
+        if (plugins == null) {
+            return List.of();
+        }
+
+        final Map<String, ReadinessSignal> byPlugin = new LinkedHashMap<>();
+        for (int i = 0; i < plugins.length(); i++) {
+            final JSONObject plugin = plugins.optJSONObject(i);
+            if (plugin == null) {
+                continue;
+            }
+            final JSONArray writes = plugin.optJSONArray("writesVariables");
+            ReadinessSignal best = null;
+            for (int j = 0; writes != null && j < writes.length(); j++) {
+                final JSONObject entry = writes.optJSONObject(j);
+                if (entry == null || !"Bool".equalsIgnoreCase(entry.optString("type", ""))) {
+                    continue;
+                }
+                final String variable = entry.optString("boundTo", "").trim();
+                if (variable.isEmpty()) {
+                    continue;
+                }
+                final String name = entry.optString("name", "");
+                final String description = entry.optString("description", "");
+                final String haystack = (name + " " + description).toLowerCase(Locale.ROOT);
+                final boolean canAct = haystack.contains("ready");
+                final boolean connects = haystack.contains("connect");
+                if (!canAct && !connects) {
+                    continue;
+                }
+                if (best == null || (canAct && !best.meansCanAct())) {
+                    best = new ReadinessSignal(
+                            plugin.optString("name", ""), variable, description, canAct);
+                }
+            }
+            if (best != null) {
+                byPlugin.put(plugin.optString("name", ""), best);
+            }
+        }
+
+        // Name each signal after the agent that speaks through it, since that is what an author
+        // recognises. A plugin carrying no agent, a screen for instance, keeps its own name.
+        final List<ReadinessSignal> out = new ArrayList<>();
+        final Set<String> claimed = new LinkedHashSet<>();
+        for (int i = 0; agents != null && i < agents.length(); i++) {
+            final JSONObject agent = agents.optJSONObject(i);
+            final String device = agent == null ? "" : agent.optString("device", "");
+            final ReadinessSignal signal = byPlugin.get(device);
+            if (signal == null || !claimed.add(device)) {
+                continue;
+            }
+            out.add(new ReadinessSignal(agent.optString("name", device), signal.variable(),
+                    signal.description(), signal.meansCanAct()));
+        }
+        for (Map.Entry<String, ReadinessSignal> remaining : byPlugin.entrySet()) {
+            if (!claimed.contains(remaining.getKey())) {
+                out.add(remaining.getValue());
+            }
+        }
+        return out;
     }
 
     private ConstrainedActivitySpec constrainedActivitySpec(

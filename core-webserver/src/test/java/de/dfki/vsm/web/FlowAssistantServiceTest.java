@@ -1,5 +1,6 @@
 package de.dfki.vsm.web;
 
+import de.dfki.vsm.sceneflow.ir.SceneFlowIrLlmCandidateProvider;
 import de.dfki.vsm.testsupport.TestRepoPaths;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -190,6 +191,136 @@ class FlowAssistantServiceTest {
 
         service.discard(proposal.id());
         assertNull(service.take(proposal.id(), "p1"));
+    }
+
+    /**
+     * The wait for the agents is described as one thing, in the words of what it does.
+     *
+     * <p>Its parts read as noise separately: a supernode, an empty node, a loop onto itself and a
+     * condition over variables an author has never seen. All four are the generator's vocabulary,
+     * which is exactly what must not reach a proposal.
+     */
+    @Test
+    void theWaitForTheAgentsIsSaidAsOneThingInPlainWords() throws Exception {
+        JSONObject view = new FlowAssistantService()
+                .propose("p1", twoAgentSnapshot(), twoAgentFlow(),
+                        "first greet, then explain, then close")
+                .authorView();
+
+        JSONObject gate = view.getJSONObject("readinessGate");
+        assertTrue(gate.getBoolean("added"));
+        assertEquals(2, gate.getJSONArray("agents").length());
+        assertTrue(gate.getString("detail").contains("waits for"));
+        assertTrue(gate.getBoolean("canTurnOff"),
+                "An author who has handled readiness elsewhere has to be able to say so");
+
+        String all = view.toString().toLowerCase(Locale.ROOT);
+        for (String word : INTERNAL_VOCABULARY) {
+            assertFalse(all.contains(word), "The gate leaked the internal term \"" + word + "\"");
+        }
+    }
+
+    @Test
+    void theWaitCanBeDeclined() throws Exception {
+        JSONObject view = new FlowAssistantService()
+                .propose("p1", twoAgentSnapshot(), twoAgentFlow(),
+                        "first greet, then explain, then close", false)
+                .authorView();
+
+        assertFalse(view.has("readinessGate"));
+    }
+
+    /** A project whose plugins report nothing to wait for gets no wait put in front of it. */
+    @Test
+    void nothingIsPutInFrontWhenThereIsNothingToWaitFor() throws Exception {
+        JSONObject view = new FlowAssistantService()
+                .propose("p1", snapshot(), baseFlow(), "first greet, then explain, then close")
+                .authorView();
+
+        assertFalse(view.has("readinessGate"),
+                "The DesignPatterns project has only a timer, which reports no readiness");
+    }
+
+    /**
+     * A selected language service must not get the chance to replace a pattern.
+     *
+     * <p>Pattern output is validated, reproducible and explains itself in the author's words. The
+     * service is pointed at a port nothing listens on, so anything reaching it would fail loudly.
+     */
+    @Test
+    void aPatternStillWinsWhenALanguageServiceIsSelected() throws Exception {
+        JSONObject view = new FlowAssistantService().propose(
+                "p1", snapshot(), baseFlow(), "first greet, then explain, then close", true,
+                new SceneFlowIrLlmCandidateProvider.Config(
+                        "http://127.0.0.1:9/v1/", null, "nothing", 1, 3)).authorView();
+
+        assertEquals("ready", view.getString("status"));
+        assertEquals("pattern", view.getString("generatedBy"));
+        assertEquals("sequence", view.getJSONObject("pattern").getString("id"));
+    }
+
+    /**
+     * A service that cannot be reached leaves the author with the honest non-match, and says that
+     * the service was tried. Silence would look like the service had simply not been consulted.
+     */
+    @Test
+    void anUnreachableServiceIsReportedRatherThanSwallowed() throws Exception {
+        JSONObject view = new FlowAssistantService().propose(
+                "p1", snapshot(), baseFlow(), "make the avatar happy", true,
+                new SceneFlowIrLlmCandidateProvider.Config(
+                        "http://127.0.0.1:9/v1/", null, "nothing", 1, 3)).authorView();
+
+        assertEquals("no_pattern_matched", view.getString("status"));
+        assertTrue(view.getJSONArray("notes").toString().contains("could not be reached"),
+                "Expected a note about the service: " + view.optJSONArray("notes"));
+    }
+
+    private JSONObject twoAgentSnapshot() {
+        return new JSONObject("""
+                {
+                  "snapshotVersion": "1.3",
+                  "project": {
+                    "name": "TwoCharacters",
+                    "plugins": [
+                      {"name": "Px", "className": "x.Executor", "type": "device", "load": true,
+                       "commands": [],
+                       "writesVariables": [{"name": "characterReady", "type": "Bool",
+                                            "boundTo": "avatar_ready",
+                                            "description": "Set true when the model is loaded"}],
+                       "readsVariables": []},
+                      {"name": "Pb", "className": "x.Executor", "type": "device", "load": true,
+                       "commands": [],
+                       "writesVariables": [{"name": "characterReady", "type": "Bool",
+                                            "boundTo": "bob_ready",
+                                            "description": "Set true when the model is loaded"}],
+                       "readsVariables": []}
+                    ],
+                    "agents": [
+                      {"name": "Xenia", "device": "Px", "features": []},
+                      {"name": "Bob", "device": "Pb", "features": []}
+                    ]
+                  },
+                  "script": {"scenes": [], "sections": []},
+                  "screens": {"screens": []},
+                  "flow": {"rootId": "SceneFlow", "startNodeIds": [], "variables": [],
+                           "allowedEdgeTypes": ["EEDGE", "CEDGE", "TEDGE", "IEDGE"],
+                           "nodes": [], "edges": []}
+                }
+                """);
+    }
+
+    private String twoAgentFlow() {
+        return """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <SceneFlow id="SceneFlow" name="default" start="" xmlns="xml.sceneflow.dfki.de">
+                  <Define></Define>
+                  <Declare>
+                    <VariableDefinition type="Bool" name ="avatar_ready"><BoolLiteral value="false"/></VariableDefinition>
+                    <VariableDefinition type="Bool" name ="bob_ready"><BoolLiteral value="false"/></VariableDefinition>
+                  </Declare>
+                  <Commands></Commands>
+                </SceneFlow>
+                """;
     }
 
     private JSONObject requirement(final JSONObject view, final String role) {

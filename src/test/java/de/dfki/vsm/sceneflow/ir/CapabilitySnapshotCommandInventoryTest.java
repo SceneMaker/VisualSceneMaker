@@ -86,6 +86,66 @@ class CapabilitySnapshotCommandInventoryTest {
         assertTrue(hasConversationLog, "Expected conversation_log among the declared writes");
     }
 
+    /**
+     * Two characters on one plugin class must be tellable apart by the variables they set.
+     *
+     * <p>Both instances declare the same config keys, so the declared name alone says nothing about
+     * which character it belongs to. Only the variable each instance is bound to can appear in a
+     * condition, so without the binding "wait until Xenia is ready" cannot be written at all.
+     */
+    @Test
+    void eachPluginInstanceReportsTheVariablesItIsBoundTo() {
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(CHARAMEL_EXAMPLE);
+
+        assertEquals("avatar_ready",
+                writtenVariable(snapshot, "CharamelEmbedXenia", "characterReady"));
+        assertEquals("bob_ready",
+                writtenVariable(snapshot, "CharamelEmbedBob", "characterReady"));
+        assertEquals("avatar_connected",
+                writtenVariable(snapshot, "CharamelEmbedXenia", "sceneflowVar"));
+    }
+
+    /**
+     * Connecting and being ready are different moments, and an author has to be able to tell which
+     * is which. charamel-embed sets one when the page connects and the other only once the model is
+     * loaded and audio is unlocked; speaking in between fails silently.
+     */
+    @Test
+    void declaredVariablesCarryWhatThePluginMeansByThem() {
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(CHARAMEL_EXAMPLE);
+        JSONArray writes = pluginNamed(snapshot, "CharamelEmbedXenia").getJSONArray("writesVariables");
+
+        String connected = null;
+        String ready = null;
+        for (int i = 0; i < writes.length(); i++) {
+            JSONObject entry = writes.getJSONObject(i);
+            if ("sceneflowVar".equals(entry.getString("name"))) {
+                connected = entry.optString("description", "");
+            }
+            if ("characterReady".equals(entry.getString("name"))) {
+                ready = entry.optString("description", "");
+            }
+        }
+        assertNotNull(connected);
+        assertNotNull(ready);
+        assertFalse(connected.isBlank(), "A connection variable has to say what connecting means");
+        assertFalse(ready.equals(connected), "Connected and ready must not read as the same thing");
+    }
+
+    /**
+     * A project that sets no feature still gets the plugin's declared default at runtime.
+     *
+     * <p>doc/IntakeInterview binds no connection variable and its flow nevertheless waits on
+     * gui_connected, which is htmlgui-ws's default for sceneflowStateVar. Reporting that as unbound
+     * would hide the variable the flow already depends on.
+     */
+    @Test
+    void anUnsetBindingFallsBackToThePluginsDeclaredDefault() {
+        JSONObject snapshot = CapabilitySnapshotBuilder.buildFromDirectory(Path.of("doc/IntakeInterview"));
+
+        assertEquals("gui_connected", writtenVariable(snapshot, "HtmlGuiWs", "sceneflowStateVar"));
+    }
+
     /** A command is only usable if its parameters come with it. */
     @Test
     void commandParametersCarryTypeAndWhetherTheyAreRequired() {
@@ -103,6 +163,20 @@ class CapabilitySnapshotCommandInventoryTest {
         JSONObject param = withParams.getJSONArray("params").getJSONObject(0);
         assertTrue(param.has("name") && param.has("type") && param.has("required"),
                 "A parameter needs a name, a type and whether it is required: " + param);
+    }
+
+    /** The flow variable a plugin instance's declared write is wired to. */
+    private String writtenVariable(
+            final JSONObject snapshot, final String pluginName, final String declaredName) {
+        JSONObject plugin = pluginNamed(snapshot, pluginName);
+        assertNotNull(plugin, "No plugin named " + pluginName);
+        JSONArray writes = plugin.getJSONArray("writesVariables");
+        for (int i = 0; i < writes.length(); i++) {
+            if (declaredName.equals(writes.getJSONObject(i).getString("name"))) {
+                return writes.getJSONObject(i).optString("boundTo", null);
+            }
+        }
+        return null;
     }
 
     private JSONObject pluginNamed(final JSONObject snapshot, final String name) {

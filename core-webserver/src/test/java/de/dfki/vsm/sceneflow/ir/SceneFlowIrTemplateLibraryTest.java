@@ -356,10 +356,10 @@ class SceneFlowIrTemplateLibraryTest {
     @Test
     void recognisedSituationHintsCoverEveryPredicate() {
         List<String> hints = SceneFlowIrTemplateLibrary.recognisedSituationHints();
-        assertEquals(5, hints.size(),
-                "One hint per predicate: wait, retry, condition, sequence, ask-and-wait");
+        assertEquals(6, hints.size(),
+                "One hint per predicate: readiness, wait, retry, condition, sequence, ask-and-wait");
         String all = String.join(" ", hints).toLowerCase(java.util.Locale.ROOT);
-        for (String marker : new String[] {"waiting", "retry", "if", "first", "asking"}) {
+        for (String marker : new String[] {"waiting", "retry", "if", "first", "asking", "ready"}) {
             assertTrue(all.contains(marker), "Hints must mention " + marker + ": " + all);
         }
     }

@@ -1,7 +1,9 @@
 package de.dfki.vsm.web;
 
 import de.dfki.vsm.sceneflow.ir.AuthoringResources;
+import de.dfki.vsm.sceneflow.ir.ConstraintResolutionMode;
 import de.dfki.vsm.sceneflow.ir.SceneFlowIrCompileException;
+import de.dfki.vsm.sceneflow.ir.SceneFlowIrLlmCandidateProvider;
 import de.dfki.vsm.sceneflow.ir.SceneFlowSituationPipeline;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -155,6 +158,33 @@ public final class FlowAssistantService {
                             final JSONObject capabilities,
                             final String baseSceneFlowXml,
                             final String situation) throws IOException {
+        return propose(projectId, capabilities, baseSceneFlowXml, situation, true);
+    }
+
+    public Proposal propose(final String projectId,
+                            final JSONObject capabilities,
+                            final String baseSceneFlowXml,
+                            final String situation,
+                            final boolean readinessGate) throws IOException {
+        return propose(projectId, capabilities, baseSceneFlowXml, situation, readinessGate, null);
+    }
+
+    /**
+     * @param readinessGate whether a flow that would start by using an agent gets a wait for that
+     *                      agent put in front of it. False is how an author says they have handled
+     *                      readiness elsewhere.
+     * @param llm           the language service the project selected for the assistant, or null to
+     *                      work from the built-in patterns alone. Selected, it is used only for
+     *                      situations no pattern recognises: pattern output is validated and says
+     *                      the same thing every time, which is not something a model should get the
+     *                      chance to replace.
+     */
+    public Proposal propose(final String projectId,
+                            final JSONObject capabilities,
+                            final String baseSceneFlowXml,
+                            final String situation,
+                            final boolean readinessGate,
+                            final SceneFlowIrLlmCandidateProvider.Config llm) throws IOException {
         expireStaleProposals();
 
         final Path work = Files.createTempDirectory("vsm-flow-assistant-");
@@ -172,9 +202,13 @@ public final class FlowAssistantService {
                 report = new SceneFlowSituationPipeline().run(
                         snapshotPath, basePath, outputPath, reportPath, situation,
                         new SceneFlowSituationPipeline.Settings(
-                                SceneFlowSituationPipeline.CandidateMode.TEMPLATE,
+                                llm == null
+                                        ? SceneFlowSituationPipeline.CandidateMode.TEMPLATE
+                                        : SceneFlowSituationPipeline.CandidateMode.TEMPLATE_THEN_LLM,
                                 SceneFlowSituationPipeline.OutputMode.PATCH,
-                                null),
+                                llm,
+                                ConstraintResolutionMode.PERMISSIVE,
+                                readinessGate),
                         work.resolve("generated-project"));
             } catch (SceneFlowIrCompileException exc) {
                 report = new JSONObject()
@@ -250,6 +284,9 @@ public final class FlowAssistantService {
             view.put("recognisedSituations", noMatch == null
                     ? new JSONArray()
                     : noMatch.optJSONArray("recognisedSituations"));
+            // An author who selected a language service for exactly this case has to hear that it
+            // was tried and could not be reached, rather than reading a plain "not recognised".
+            addNotes(view, report);
             return view;
         }
 
@@ -269,17 +306,29 @@ public final class FlowAssistantService {
             view.put("pattern", authorFacingPattern(catalogEntry));
         }
 
+        // Where a proposal came from changes how much an author should trust it without reading it.
+        // A pattern was built and tested here; a model's answer was not.
+        view.put("generatedBy", "llm".equals(accepted.optString("templateSource", ""))
+                ? "language-model"
+                : "pattern");
+
         final JSONObject candidate = accepted.optJSONObject("candidate");
         view.put("changes", describeChanges(candidate));
+        describeReadinessGate(candidate).ifPresent(gate -> view.put("readinessGate", gate));
         view.put("resources", checkResources(catalogEntry, candidate, capabilities));
         view.put("assumptions", report.optJSONArray("assumptions") == null
                 ? new JSONArray()
                 : report.optJSONArray("assumptions"));
+        addNotes(view, report);
+        return view;
+    }
+
+    /** Anything that went wrong on the way but did not stop a proposal from being made. */
+    private void addNotes(final JSONObject view, final JSONObject report) {
         final JSONArray warnings = report.optJSONArray("generationWarnings");
         if (warnings != null && warnings.length() > 0) {
             view.put("notes", warnings);
         }
-        return view;
     }
 
     private JSONObject acceptedAttempt(final JSONObject report) {
@@ -326,12 +375,64 @@ public final class FlowAssistantService {
         return problems;
     }
 
+    /**
+     * The wait for the agents, when one was put in front of the flow, said as one thing.
+     *
+     * <p>Its four operations describe themselves badly one by one: a supernode, an empty node, a
+     * loop onto itself and a condition over variables an author has never heard of. What the author
+     * needs to know is that the flow now starts by waiting, for whom, and that they can say no.
+     */
+    private Optional<JSONObject> describeReadinessGate(final JSONObject candidate) {
+        final JSONObject metadata = candidate == null ? null : candidate.optJSONObject("metadata");
+        final JSONObject gate = metadata == null ? null : metadata.optJSONObject("readinessGate");
+        if (gate == null || !gate.optBoolean("added", false)) {
+            return Optional.empty();
+        }
+        final JSONArray waitsFor = gate.optJSONArray("waitsFor");
+        final List<String> agents = new ArrayList<>();
+        boolean onlyConnects = false;
+        for (int i = 0; waitsFor != null && i < waitsFor.length(); i++) {
+            final JSONObject entry = waitsFor.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            agents.add(entry.optString("agent"));
+            onlyConnects |= !entry.optBoolean("meansCanAct", true);
+        }
+
+        final String continuation = gate.optString("continuationName", "").isBlank()
+                ? "the first step"
+                : quoted(gate.optString("continuationName"));
+        final StringBuilder detail = new StringBuilder();
+        detail.append(agents.size() == 1
+                ? "The flow now waits for " + joinQuoted(agents) + " before "
+                : "The flow now waits for " + joinQuoted(agents) + " before ");
+        detail.append(continuation).append(" runs. ");
+        detail.append("An agent that has not finished starting up accepts what it is told and does "
+                + "nothing with it, which looks like a flow that is broken for no reason.");
+        if (onlyConnects) {
+            detail.append(" One of them reports only that it has connected, which can happen a "
+                    + "moment before it is really usable.");
+        }
+
+        return Optional.of(new JSONObject()
+                .put("added", true)
+                .put("agents", new JSONArray(agents))
+                .put("detail", detail.toString())
+                .put("canTurnOff", true));
+    }
+
     /** Restates the generated operations as things an author would recognise on the canvas. */
     private JSONArray describeChanges(final JSONObject candidate) {
         final JSONArray changes = new JSONArray();
         final JSONArray operations = candidate == null ? null : candidate.optJSONArray("operations");
         if (operations == null) {
             return changes;
+        }
+        final JSONObject metadata = candidate.optJSONObject("metadata");
+        if (metadata != null && "template-wait-until-ready".equals(metadata.optString("source"))) {
+            // Asked for outright rather than added on top, so it is the change, not a footnote.
+            return describeGateAsTheWholeProposal(metadata);
         }
         final Map<String, String> nodeNames = new LinkedHashMap<>();
         for (int i = 0; i < operations.length(); i++) {
@@ -347,13 +448,51 @@ public final class FlowAssistantService {
 
         for (int i = 0; i < operations.length(); i++) {
             final JSONObject op = operations.optJSONObject(i);
-            if (op == null) {
+            if (op == null || isReadinessGateOperation(op)) {
+                // The gate is described as one thing by describeReadinessGate, because its parts
+                // read as noise: an empty node, a loop onto itself, a condition over variables an
+                // author has never seen.
                 continue;
             }
             final String sentence = describeOperation(op, nodeNames);
             if (sentence != null) {
                 changes.put(sentence);
             }
+        }
+        return changes;
+    }
+
+    private boolean isReadinessGateOperation(final JSONObject op) {
+        return op.optString("opId", "").startsWith("gate-");
+    }
+
+    /** The gate said as what it does, for the case where waiting is the whole request. */
+    private JSONArray describeGateAsTheWholeProposal(final JSONObject metadata) {
+        final List<String> agents = new ArrayList<>();
+        final List<String> connectOnly = new ArrayList<>();
+        final JSONArray waitsFor = metadata.optJSONArray("waitsFor");
+        for (int i = 0; waitsFor != null && i < waitsFor.length(); i++) {
+            final JSONObject entry = waitsFor.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            agents.add(entry.optString("agent"));
+            if (!entry.optBoolean("meansCanAct", true)) {
+                connectOnly.add(entry.optString("agent"));
+            }
+        }
+
+        final JSONArray changes = new JSONArray();
+        changes.put(agents.size() == 1
+                ? "The flow starts by waiting for " + joinQuoted(agents) + " and carries on as soon "
+                        + "as it is ready."
+                : "The flow starts by waiting, and carries on only once " + joinQuoted(agents)
+                        + " are all ready.");
+        changes.put("While it waits it does nothing. This is where a scene goes if the person should "
+                + "be told that something is coming.");
+        if (!connectOnly.isEmpty()) {
+            changes.put(joinQuoted(connectOnly) + " reports only that it has connected, which can "
+                    + "happen a moment before it is really usable.");
         }
         return changes;
     }
@@ -511,6 +650,8 @@ public final class FlowAssistantService {
                 return fillVariableRequirement(result, requirement, candidate, capabilities);
             case "input":
                 return fillInputRequirement(result, requirement, candidate, capabilities);
+            case "capability":
+                return fillCapabilityRequirement(result, requirement, candidate, capabilities);
             default:
                 return result.put("status", statusForMissing(requirement))
                         .put("detail", "");
@@ -544,6 +685,68 @@ public final class FlowAssistantService {
                                 + "agent should say there."
                         : "The scenes " + joinQuoted(missing) + " do not exist yet. Write what the "
                                 + "agent should say in each.");
+    }
+
+    /**
+     * A requirement stated as something a deployment can do rather than as a named artifact.
+     *
+     * <p>Only agent readiness is answerable so far, and it is answered from what the flow actually
+     * waits on rather than from the catalogue, so an agent whose plugin reports nothing is named as
+     * the one that cannot be waited for instead of the requirement failing as a whole.
+     */
+    private JSONObject fillCapabilityRequirement(final JSONObject result,
+                                                 final JSONObject requirement,
+                                                 final JSONObject candidate,
+                                                 final JSONObject capabilities) {
+        if (!declaresCapability(requirement, "agent-readiness")) {
+            return result.put("status", statusForMissing(requirement)).put("detail", "");
+        }
+
+        final List<String> waited = new ArrayList<>();
+        final List<String> connectOnly = new ArrayList<>();
+        final JSONObject metadata = candidate == null ? null : candidate.optJSONObject("metadata");
+        JSONArray waitsFor = metadata == null ? null : metadata.optJSONArray("waitsFor");
+        if (waitsFor == null && metadata != null && metadata.optJSONObject("readinessGate") != null) {
+            waitsFor = metadata.getJSONObject("readinessGate").optJSONArray("waitsFor");
+        }
+        for (int i = 0; waitsFor != null && i < waitsFor.length(); i++) {
+            final JSONObject entry = waitsFor.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            waited.add(entry.optString("agent"));
+            if (!entry.optBoolean("meansCanAct", true)) {
+                connectOnly.add(entry.optString("agent"));
+            }
+        }
+
+        if (waited.isEmpty()) {
+            return result.put("status", "blocked")
+                    .put("detail", "No plugin in this project reports when its agent is ready, so "
+                            + "there is nothing the flow could wait for.");
+        }
+        if (!connectOnly.isEmpty()) {
+            return result.put("status", "present")
+                    .put("names", new JSONArray(waited))
+                    .put("detail", "Waits for " + joinQuoted(waited) + ". " + joinQuoted(connectOnly)
+                            + " reports only that it has connected, which can happen a moment before "
+                            + "it is really usable.");
+        }
+        return result.put("status", "present")
+                .put("names", new JSONArray(waited))
+                .put("detail", "Waits for " + joinQuoted(waited) + ", each of which reports when it "
+                        + "is able to act.");
+    }
+
+    private boolean declaresCapability(final JSONObject requirement, final String capability) {
+        final JSONArray providedBy = requirement.optJSONArray("providedBy");
+        for (int i = 0; providedBy != null && i < providedBy.length(); i++) {
+            final JSONObject provider = providedBy.optJSONObject(i);
+            if (provider != null && capability.equals(provider.optString("capability"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private JSONObject fillAgentRequirement(final JSONObject result,

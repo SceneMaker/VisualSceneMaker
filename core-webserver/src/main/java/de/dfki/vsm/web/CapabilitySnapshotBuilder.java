@@ -56,7 +56,7 @@ import java.util.Set;
  */
 public final class CapabilitySnapshotBuilder {
 
-    public static final String SNAPSHOT_VERSION = "1.2";
+    public static final String SNAPSHOT_VERSION = "1.3";
 
     /** Edge types the model can express, reported so a generator knows what it may emit. */
     private static final List<String> ALLOWED_EDGE_TYPES =
@@ -138,8 +138,8 @@ public final class CapabilitySnapshotBuilder {
                         .put("type", nullToEmpty(plugin.getPluginType()))
                         .put("load", plugin.isMarkedtoLoad())
                         .put("commands", declaredCommands(className))
-                        .put("writesVariables", declaredVariables(className, "writes"))
-                        .put("readsVariables", declaredVariables(className, "reads")));
+                        .put("writesVariables", declaredVariables(className, "writes", plugin))
+                        .put("readsVariables", declaredVariables(className, "reads", plugin)));
             }
             for (AgentConfig agent : config.getAgentConfigList()) {
                 final JSONArray features = new JSONArray();
@@ -196,8 +196,21 @@ public final class CapabilitySnapshotBuilder {
         return out;
     }
 
-    /** The variables a plugin declares it writes or reads, from its plugin-properties.json. */
-    private static JSONArray declaredVariables(final String className, final String direction) {
+    /**
+     * The variables a plugin declares it writes or reads, resolved to the ones this project binds.
+     *
+     * <p>{@code name} is the plugin's own config key, which is the same for every instance of a
+     * plugin class. {@code boundTo} is the flow variable this instance is wired to through its
+     * {@code <Feature>} of that key, which is the only part a flow can name. A project running two
+     * characters on one plugin class declares {@code characterReady} twice and binds it to
+     * {@code avatar_ready} and {@code bob_ready}, so without the binding nothing can tell the two
+     * apart, and a condition over "this character is ready" cannot be written at all.
+     *
+     * <p>{@code description} comes along because it is what distinguishes variables an author would
+     * otherwise confuse: a character page that has connected is not yet a character that can speak.
+     */
+    private static JSONArray declaredVariables(
+            final String className, final String direction, final PluginConfig plugin) {
         final JSONArray out = new JSONArray();
         final JSONObject variables = WebUiServer.pluginVariablesForClassName(className);
         final JSONArray declared = variables == null ? null : variables.optJSONArray(direction);
@@ -210,9 +223,24 @@ public final class CapabilitySnapshotBuilder {
             if (name.isEmpty()) {
                 continue;
             }
-            out.put(new JSONObject()
+            final JSONObject reported = new JSONObject()
                     .put("name", name)
-                    .put("type", nullToEmpty(entry.optString("type", ""))));
+                    .put("type", nullToEmpty(entry.optString("type", "")));
+            String boundTo = plugin == null ? "" : trimmed(plugin.getProperty(name));
+            if (boundTo.isEmpty()) {
+                // Not set by this project. Either the plugin's declared default applies, or the
+                // declared name is no config key at all and is therefore the variable itself.
+                final String declaredDefault = WebUiServer.pluginConfigDefaultForClassName(className, name);
+                boundTo = declaredDefault == null ? name : trimmed(declaredDefault);
+            }
+            if (!boundTo.isEmpty()) {
+                reported.put("boundTo", boundTo);
+            }
+            final String description = trimmed(entry.optString("description", ""));
+            if (!description.isEmpty()) {
+                reported.put("description", description);
+            }
+            out.put(reported);
         }
         return out;
     }

@@ -2167,6 +2167,34 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return entry == null ? null : entry.variables;
     }
 
+    /**
+     * The default a plugin class declares for a config key, or {@code null} if it declares no such
+     * key at all.
+     *
+     * <p>The two cases are different and a caller has to tell them apart. A project that omits a
+     * {@code <Feature>} still gets the declared default at runtime, so reading only the project's own
+     * features reports a binding as missing when it is merely unwritten: doc/IntakeInterview binds no
+     * connection variable and still waits on {@code gui_connected}, which is htmlgui-ws's default for
+     * {@code sceneflowStateVar}. A name that is no config key at all, such as htmlgui-ws's
+     * {@code gui_choice}, is not indirect in the first place and is already the variable itself.
+     */
+    static String pluginConfigDefaultForClassName(String className, String key) {
+        ExportablePropertyEntry entry = exportableEntryFor(className);
+        if (entry == null || entry.pluginSpec == null || key == null || key.isBlank()) {
+            return null;
+        }
+        for (String section : new String[] {"required", "optional", "pluginSpecific"}) {
+            JSONArray declared = entry.pluginSpec.optJSONArray(section);
+            for (int i = 0; declared != null && i < declared.length(); i++) {
+                JSONObject item = declared.optJSONObject(i);
+                if (item != null && key.equals(item.optString("name", ""))) {
+                    return item.has("default") ? String.valueOf(item.get("default")) : "";
+                }
+            }
+        }
+        return null;
+    }
+
     private static ExportablePropertyEntry exportableEntryFor(String className) {
         if (className == null || className.isBlank()) {
             return null;
@@ -5112,8 +5140,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                     : java.nio.file.Paths.get(ref.path);
             JSONObject capabilities = CapabilitySnapshotBuilder.build(ref.runtimeProject, pid, dir);
             String baseXml = serializeSceneFlowXml(ref.runtimeProject.getSceneFlow());
-            FlowAssistantService.Proposal proposal =
-                    flowAssistantService.propose(pid, capabilities, baseXml, situation);
+            // Defaults to on: a flow that speaks before its agent has started up fails silently, and
+            // an author who has handled that elsewhere says so by turning it off.
+            boolean readinessGate = body.optBoolean("readinessGate", true);
+            FlowAssistantService.Proposal proposal = flowAssistantService.propose(
+                    pid, capabilities, baseXml, situation, readinessGate,
+                    flowAssistantLlmConfig(ref.runtimeProject));
             writeJson(ctx, proposal.authorView());
         } catch (java.io.IOException | RuntimeException exc) {
             sLogger.failure("Flow Assistant cannot propose for " + pid + ": " + exc.getMessage());
@@ -5176,6 +5208,56 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 .put("status", "ok")
                 .put("proposalId", proposalId)
                 .put("snapshot", snapshot));
+    }
+
+    /**
+     * The language service this project selected for the Flow Assistant, or null when none is.
+     *
+     * <p>Read from the project rather than taken from the request, the way scene generation takes
+     * it, because the assistant's generator runs on the server. A browser posting an API key with
+     * every proposal would be sending a credential it has no reason to hold.
+     *
+     * <p>The selection is a name in {@code LLMSelections}, resolved against the project's own
+     * {@code <LLM>} entries. Nothing selected means the assistant works from its patterns alone,
+     * which is the default and is a complete way to use it.
+     */
+    private de.dfki.vsm.sceneflow.ir.SceneFlowIrLlmCandidateProvider.Config flowAssistantLlmConfig(
+            RunTimeProject project) {
+        ProjectConfig config = project == null ? null : project.getProjectConfig();
+        if (config == null) {
+            return null;
+        }
+        String selected = config.getLLMSelections().getProperty("flowAssistant");
+        if (selected == null || selected.isBlank()) {
+            return null;
+        }
+        for (de.dfki.vsm.model.project.LLMConfig llm : config.getLLMConfigList()) {
+            if (!selected.equals(llm.getLLMName())) {
+                continue;
+            }
+            String baseUrl = llm.getProperty("baseUrl");
+            String model = llm.getProperty("model");
+            if (baseUrl == null || baseUrl.isBlank() || model == null || model.isBlank()) {
+                sLogger.warning("Flow Assistant: LLM service \"" + selected
+                        + "\" has no base URL or no model, falling back to patterns only");
+                return null;
+            }
+            int timeout = parsePositiveInt(llm.getProperty("timeout"), 60);
+            return new de.dfki.vsm.sceneflow.ir.SceneFlowIrLlmCandidateProvider.Config(
+                    baseUrl, llm.getProperty("apiKey"), model, timeout, 3);
+        }
+        sLogger.warning("Flow Assistant: no LLM service named \"" + selected
+                + "\" in this project, falling back to patterns only");
+        return null;
+    }
+
+    private int parsePositiveInt(String value, int fallback) {
+        try {
+            int parsed = Integer.parseInt(value == null ? "" : value.trim());
+            return parsed > 0 ? parsed : fallback;
+        } catch (NumberFormatException exc) {
+            return fallback;
+        }
     }
 
     private void handleFlowAssistantDiscard(Context ctx) {
@@ -5796,8 +5878,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         de.dfki.vsm.model.config.ConfigElement llmSelections = cfg.getLLMSelections();
         String generateSelection = llmSelections.getProperty("generate");
         String semanticSelection = llmSelections.getProperty("semantic");
+        String flowAssistantSelection = llmSelections.getProperty("flowAssistant");
         llmSelectionsJson.put("generate", generateSelection != null ? generateSelection : "");
         llmSelectionsJson.put("semantic", semanticSelection != null ? semanticSelection : "");
+        llmSelectionsJson.put("flowAssistant", flowAssistantSelection != null ? flowAssistantSelection : "");
         cfgJson.put("llmSelections", llmSelectionsJson);
         JSONObject semanticServicesJson = new JSONObject();
         de.dfki.vsm.model.config.ConfigElement semanticServices = cfg.getSemanticServices();
@@ -6010,11 +6094,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             selections.getEntryList().clear();
             String generateSelection = llmSelectionsJson.optString("generate", "");
             String semanticSelection = llmSelectionsJson.optString("semantic", "");
+            String flowAssistantSelection = llmSelectionsJson.optString("flowAssistant", "");
             if (!generateSelection.isEmpty()) {
                 selections.addProperty("generate", generateSelection);
             }
             if (!semanticSelection.isEmpty()) {
                 selections.addProperty("semantic", semanticSelection);
+            }
+            if (!flowAssistantSelection.isEmpty()) {
+                selections.addProperty("flowAssistant", flowAssistantSelection);
             }
         }
         JSONObject semanticServicesJson = configJson.optJSONObject("semanticServices");

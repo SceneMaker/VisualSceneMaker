@@ -1,6 +1,6 @@
 {
   "screens": {"screens": []},
-  "generatedAt": "2026-08-15T13:53:25+02:00",
+  "generatedAt": "2026-08-16T15:00:35+02:00",
   "project": {
     "androidProject": false,
     "plugins": [
@@ -11,26 +11,38 @@
         "readsVariables": [
           {
             "name": "conversation_log",
+            "boundTo": "conversation_log",
+            "description": "JSON array of messages rendered by vsm-feed elements (dialogue-feed and review-feed templates)",
             "type": "String"
           },
           {
             "name": "sensor_data",
+            "boundTo": "sensor_data",
+            "description": "Chart.js dataset JSON rendered by vsm-chart elements (sensor-chart template)",
             "type": "String"
           },
           {
             "name": "heart_rate",
+            "boundTo": "heart_rate",
+            "description": "Beats per minute controlling vsm-animate heartbeat rate (heartbeat-overlay template)",
             "type": "Int"
           },
           {
             "name": "heart_color",
+            "boundTo": "heart_color",
+            "description": "CSS colour string controlling vsm-animate heartbeat colour (heartbeat-overlay template)",
             "type": "String"
           },
           {
             "name": "breath_rate",
+            "boundTo": "breath_rate",
+            "description": "Breaths per minute controlling vsm-animate breathing rate (breathing-overlay template)",
             "type": "Int"
           },
           {
             "name": "breath_color",
+            "boundTo": "breath_color",
+            "description": "CSS colour string controlling vsm-animate breathing colour (breathing-overlay template)",
             "type": "String"
           }
         ],
@@ -38,18 +50,26 @@
         "writesVariables": [
           {
             "name": "sceneflowStateVar",
+            "boundTo": "gui_connected",
+            "description": "Set to true when GUI connects",
             "type": "Bool"
           },
           {
             "name": "sceneflowInfoVar",
+            "boundTo": "gui_info",
+            "description": "Receives all non-binding messages from the legacy GUI",
             "type": "String"
           },
           {
             "name": "gui_choice",
+            "boundTo": "gui_choice",
+            "description": "Written by button clicks in choice screens (question-buttons template); value equals the button's sendsValue",
             "type": "String"
           },
           {
             "name": "conversation_log",
+            "boundTo": "conversation_log",
+            "description": "Written by appendMessage / clearFeed; holds the vsm-feed conversation as a JSON array",
             "type": "String"
           }
         ],
@@ -345,6 +365,8 @@
         "type": "device",
         "writesVariables": [{
           "name": "llm_response",
+          "boundTo": "llm_response",
+          "description": "Default response variable if responseVar is not specified in the action.",
           "type": "String"
         }],
         "commands": [{
@@ -406,7 +428,7 @@
       }
     ]
   },
-  "snapshotVersion": "1.2",
+  "snapshotVersion": "1.3",
   "source": "/Users/gebhard/Code/Repo/VisualSceneMaker/doc/IntakeInterview",
   "script": {
     "scenes": [

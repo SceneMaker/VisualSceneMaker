@@ -211,6 +211,11 @@ VisualSceneMaker/
 - `POST /api/v1/projects/{pid}/flow-assistant/propose` - Situation text → a proposal; changes nothing.
   Generated against the flow **as it stands in the editor**, not the file on disk. The compiled result
   stays server-side keyed by a proposal id; only the author-facing view is sent (never the IR).
+  Body: `situation`, and `readinessGate` (default true) which puts a wait for the agents in front of a
+  flow that would otherwise start by using one. Which language service the assistant may use comes
+  from the **project**, not the request: `LLMSelections/flowAssistant` names one of the project's
+  `<LLM>` entries. Unset means patterns only, which is the default; set, it is consulted only for
+  situations no pattern recognises (`CandidateMode.TEMPLATE_THEN_LLM`).
 - `POST /api/v1/projects/{pid}/flow-assistant/apply` / `discard` - Take or drop a proposal. Apply is
   one undoable step (`SceneFlow.FlowAssistant.Apply`), and consumes the proposal.
 

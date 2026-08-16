@@ -2685,6 +2685,26 @@ a.export-link {
   font-size: 0.75rem;
 }
 
+.flow-assistant-service {
+  font-size: 0.75rem;
+}
+
+.flow-assistant-service-select {
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 0.2rem 0.3rem;
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+  color: inherit;
+}
+
+.flow-assistant-service-note {
+  font-size: 0.6875rem;
+  flex: 1 1 18rem;
+  min-width: 12rem;
+}
+
 .flow-assistant-proposal {
   background: var(--panel-soft);
   border: 1px solid var(--stroke);
@@ -2761,6 +2781,21 @@ a.export-link {
 .flow-assistant-resource.status-blocked .flow-assistant-resource-status {
   border-color: var(--danger);
   color: var(--danger);
+}
+
+/* Something the assistant added that the author did not ask for, so it says so and offers a way
+   out rather than appearing among the ordinary changes. */
+.flow-assistant-gate {
+  border-left: 3px solid var(--accent);
+  padding: 0.1rem 0 0.1rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.flow-assistant-gate p {
+  margin: 0;
 }
 
 .flow-assistant-assumptions {

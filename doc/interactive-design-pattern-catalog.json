@@ -1,6 +1,6 @@
 {
-  "catalogVersion": "1.6",
-  "updatedAt": "2026-08-15",
+  "catalogVersion": "1.7",
+  "updatedAt": "2026-08-16",
   "purpose": "Scientific grounding and executable mapping for constrained activity modeling in SceneFlow generation.",
   "metaModel": {
     "name": "ConstrainedActivityModel",
@@ -329,6 +329,127 @@
       ],
       "detectedAs": "ask_and_wait",
       "detectionRule": "A node that sets a variable to empty and hands to a node that waits for that same variable to become non-empty. The reset is the discriminator: a wait whose variable nothing clears is waiting for a condition rather than for an answer it invited. What becomes of the answer is reported as kept in a variable of its own, used straight away as a scene argument, or dropped."
+    },
+    {
+      "id": "wait_until_ready",
+      "label": "Wait until the agents are ready",
+      "level": 1,
+      "humanDescription": "Nothing happens until every agent the flow needs has connected and can act. With more than one agent the flow waits for all of them, and it can show or say something while it waits.",
+      "status": "implemented",
+      "layer": "executable_pattern",
+      "mapsToTemplateSource": "template-wait-until-ready",
+      "sceneFlowMapping": {
+        "gate": "a supernode the flow starts in, holding whatever happens while waiting",
+        "waiting": "a node inside it with no commands and a TEDGE self-loop, so the flow has somewhere to be",
+        "release": "an IEDGE on the supernode carrying one condition over every agent's readiness variable, joined with &&",
+        "continuation": "the IEDGE targets what the flow would otherwise have started with, so the gate is prepended rather than bolted on"
+      },
+      "supportsMeta": {
+        "situation.shape": [
+          "wait-until-ready"
+        ]
+      },
+      "resourceRequirements": [
+        {
+          "role": "readiness-signal",
+          "kind": "capability",
+          "cardinality": "1..n",
+          "description": "Something that reports each agent is able to act. One per agent the flow waits for.",
+          "providedBy": [
+            {
+              "capability": "agent-readiness",
+              "via": "a plugin declaring a Bool under variables.writes that it sets when its device is ready",
+              "note": "Resolved through agent.device to plugin.name to the variable that plugin instance is bound to. Two characters on one plugin class declare the same key and bind it to different variables, which is the only thing telling them apart."
+            }
+          ],
+          "onMissing": "block",
+          "onMissingReason": "A readiness variable cannot be invented. If the agent's plugin reports nothing, a gate on it would never open, so the requirement is blocked and the author is told which agent cannot be waited for."
+        },
+        {
+          "role": "waiting-content",
+          "kind": "scene",
+          "cardinality": "0..1",
+          "description": "What the person sees or hears while the flow waits. Optional, and worth having when the wait is long enough to look like a failure.",
+          "onMissing": "record",
+          "onMissingReason": "Only the author can decide whether a wait should be silent. An empty gate is a working gate, so nothing is stubbed."
+        }
+      ],
+      "assistantScript": [
+        {
+          "slot": "agents",
+          "ask": "Which agents does the flow need before it can start?",
+          "kind": "agent-list",
+          "resolveFrom": "snapshot",
+          "note": "Default to every agent whose plugin reports readiness. Ask only when the author wants fewer."
+        },
+        {
+          "slot": "readinessLevel",
+          "ask": "Is connecting enough, or does the agent have to be able to speak?",
+          "kind": "choice",
+          "suggest": "able to speak",
+          "note": "A plugin may report both. charamel-embed sets one when the page connects and another once the model is loaded and audio is unlocked; speaking in between fails silently."
+        },
+        {
+          "slot": "waitingContent",
+          "ask": "Should anything be shown or said while waiting?",
+          "kind": "scene",
+          "suggest": "existing-or-new"
+        },
+        {
+          "slot": "continuation",
+          "ask": "What should happen once everything is ready?",
+          "kind": "node-or-stop",
+          "resolveFrom": "flow",
+          "note": "Defaults to what the flow already starts with, which is what makes this a gate in front rather than a branch beside."
+        }
+      ],
+      "tutorialScript": [
+        {
+          "step": "Make a place to wait in",
+          "instruction": "Add a supernode and name it after the waiting, then mark it as where the flow starts.",
+          "verify": "supernode-is-start"
+        },
+        {
+          "step": "Give the flow somewhere to be",
+          "instruction": "Inside it, add a node with no commands and draw a timeout edge from it back onto itself.",
+          "verify": "node-has-self-timeout"
+        },
+        {
+          "step": "Say when the waiting ends",
+          "instruction": "Draw an interrupt edge out of the supernode to the first real step, and give it a condition naming each agent's readiness variable joined with &&.",
+          "verify": "supernode-has-interrupt-edge"
+        }
+      ],
+      "runtimeSemantics": "The interrupt edge sits on the supernode, not on the node inside it, so it is evaluated while the flow is anywhere within the gate and fires the moment the condition holds. That is what makes the wait end immediately rather than at the next tick of the inner loop, and it is why anything shown while waiting can be interrupted mid-way. The inner self-loop exists only so the flow has a node to occupy; its interval decides nothing about how quickly readiness is noticed. Waiting for several agents is one condition joined with &&, not concurrency, so it needs none of the join semantics that pattern 2.6 is blocked on.",
+      "knownLimitations": [
+        "A gate whose condition can never become true is indistinguishable at authoring time from one that is merely slow. Nothing in the flow says how long the wait may take.",
+        "Connecting and being able to act are different moments and not every plugin reports both. Where only a connection signal exists, the gate can open before the agent can speak.",
+        "The condition names variables, so an agent whose plugin reports no readiness at all cannot be waited for. It is reported as blocked rather than approximated with a timer."
+      ],
+      "scientificSources": [
+        {
+          "type": "paper",
+          "title": "The importance of percent-done progress indicators for computer-human interfaces",
+          "authors": [
+            "B. A. Myers"
+          ],
+          "year": 1985,
+          "venue": "CHI '85: Proceedings of the SIGCHI Conference on Human Factors in Computing Systems",
+          "relevance": "A wait with no sign that anything is happening is experienced as a failure. This is why the gate is a supernode with room inside it rather than a bare condition."
+        },
+        {
+          "type": "book",
+          "title": "Usability Engineering",
+          "authors": [
+            "J. Nielsen"
+          ],
+          "year": 1993,
+          "venue": "Morgan Kaufmann",
+          "relevance": "Visibility of system status, and the response-time limits beyond which a person needs to be told that the system is still working. Both bear directly on what belongs inside the gate."
+        }
+      ],
+      "detectedAs": "wait_until_ready",
+      "detectionRule": "A supernode carrying an interrupt edge whose condition reads only readiness variables, meaning variables a plugin declares it sets when its device becomes usable. The readiness binding is the discriminator: the same shape over any other variable is a constrained activity waiting for something else. Several such variables joined with && are reported as one gate over several agents rather than as several gates."
     },
     {
       "id": "constrained_activity_base",

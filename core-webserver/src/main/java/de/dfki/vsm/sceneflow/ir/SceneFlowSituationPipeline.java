@@ -30,7 +30,16 @@ public final class SceneFlowSituationPipeline {
     public enum CandidateMode {
         TEMPLATE,
         LLM,
-        HYBRID;
+        HYBRID,
+        /**
+         * Templates first, and a language model only for situations no template recognises.
+         *
+         * <p>Template output is validated, reproducible and explains itself in the author's words,
+         * so it is not something a model should be given the chance to replace. What a model is good
+         * for here is the tail: the situations that would otherwise come back as "no pattern
+         * recognises this".
+         */
+        TEMPLATE_THEN_LLM;
 
         public static CandidateMode from(final String value) {
             if (value == null || value.isBlank()) {
@@ -43,6 +52,9 @@ public final class SceneFlowSituationPipeline {
                     return LLM;
                 case "hybrid":
                     return HYBRID;
+                case "template-then-llm":
+                case "template_then_llm":
+                    return TEMPLATE_THEN_LLM;
                 default:
                     return TEMPLATE;
             }
@@ -54,6 +66,7 @@ public final class SceneFlowSituationPipeline {
         private final OutputMode outputMode;
         private final SceneFlowIrLlmCandidateProvider.Config llm;
         private final ConstraintResolutionMode constraintResolutionMode;
+        private final boolean readinessGate;
 
         public Settings(
                 final CandidateMode mode,
@@ -67,12 +80,32 @@ public final class SceneFlowSituationPipeline {
                 final OutputMode outputMode,
                 final SceneFlowIrLlmCandidateProvider.Config llm,
                 final ConstraintResolutionMode constraintResolutionMode) {
+            this(mode, outputMode, llm, constraintResolutionMode, true);
+        }
+
+        /**
+         * @param readinessGate whether a flow that starts by using an agent gets a wait for that
+         *                      agent put in front of it, when the project has something that reports
+         *                      readiness and the flow does not already wait. Off is how an author
+         *                      says they have handled it elsewhere.
+         */
+        public Settings(
+                final CandidateMode mode,
+                final OutputMode outputMode,
+                final SceneFlowIrLlmCandidateProvider.Config llm,
+                final ConstraintResolutionMode constraintResolutionMode,
+                final boolean readinessGate) {
             this.mode = mode == null ? CandidateMode.TEMPLATE : mode;
             this.outputMode = outputMode == null ? OutputMode.PATCH : outputMode;
             this.llm = llm;
             this.constraintResolutionMode = constraintResolutionMode == null
                     ? ConstraintResolutionMode.PERMISSIVE
                     : constraintResolutionMode;
+            this.readinessGate = readinessGate;
+        }
+
+        public boolean readinessGate() {
+            return readinessGate;
         }
 
         public CandidateMode mode() {
@@ -166,6 +199,9 @@ public final class SceneFlowSituationPipeline {
                     new JSONObject(candidates.get(i).toString()), snapshot, effectiveSettings.outputMode());
             candidate = enforceWaitLoopCanonicalShape(
                     candidate, snapshot, situation, effectiveSettings.outputMode());
+            if (effectiveSettings.readinessGate()) {
+                candidate = prependReadinessGate(candidate, snapshot, situation);
+            }
             candidate = assignCreateNodePositions(candidate, snapshot);
             final JSONObject attempt = new JSONObject();
             final String source = candidate.optJSONObject("metadata") != null
@@ -332,6 +368,20 @@ public final class SceneFlowSituationPipeline {
         switch (settings.mode()) {
             case TEMPLATE:
                 return templateLibrary.generateCandidates(situation, snapshot, settings.constraintResolutionMode());
+            case TEMPLATE_THEN_LLM:
+                final List<JSONObject> fromTemplates = templateLibrary.generateCandidates(
+                        situation, snapshot, settings.constraintResolutionMode());
+                if (!fromTemplates.isEmpty()) {
+                    return fromTemplates;
+                }
+                try {
+                    return llmProvider.generateCandidates(
+                            situation, snapshot, settings.llm(), settings.outputMode());
+                } catch (SceneFlowIrCompileException exc) {
+                    warnings.add("No pattern recognises this, and the language model could not be "
+                            + "reached either: " + exc.getMessage());
+                    return List.of();
+                }
             case LLM:
                 return llmProvider.generateCandidates(situation, snapshot, settings.llm(), settings.outputMode());
             case HYBRID:
@@ -827,6 +877,129 @@ public final class SceneFlowSituationPipeline {
             out.append((inSingleQuote || inDoubleQuote) ? ' ' : c);
         }
         return out.toString();
+    }
+
+    /**
+     * Puts a wait for the agents in front of a flow that would otherwise start by using one.
+     *
+     * <p>An agent that has not connected yet silently swallows whatever it is told to do, so a flow
+     * whose first step speaks before anything waits does nothing at all on a slow machine and works
+     * on a fast one. That is the hardest kind of fault for a non-technical author to make sense of,
+     * which is why the gate is offered rather than left to be discovered.
+     *
+     * <p>Nothing is added when the project has no plugin that reports readiness, when the flow
+     * already waits on one of those variables, or when the generated flow attaches to an existing
+     * node rather than starting the project.
+     */
+    private JSONObject prependReadinessGate(
+            final JSONObject candidate, final JSONObject snapshot, final String situation) {
+        final JSONObject metadata = candidate.optJSONObject("metadata");
+        if (metadata != null && "template-wait-until-ready".equals(metadata.optString("source"))) {
+            return candidate;
+        }
+        final JSONArray operations = candidate.optJSONArray("operations");
+        if (operations == null || operations.length() == 0) {
+            return candidate;
+        }
+
+        final SceneFlowIrTemplateLibrary library = new SceneFlowIrTemplateLibrary();
+        final List<SceneFlowIrTemplateLibrary.ReadinessSignal> signals = library.readinessSignals(snapshot);
+        if (signals.isEmpty() || flowAlreadyWaitsForReadiness(snapshot, signals)) {
+            return candidate;
+        }
+
+        JSONObject startOp = null;
+        final Set<String> reserved = new LinkedHashSet<>();
+        for (int i = 0; i < operations.length(); i++) {
+            final JSONObject op = operations.optJSONObject(i);
+            if (op == null) {
+                continue;
+            }
+            final String name = op.optString("op", "");
+            if ("create_node".equals(name)) {
+                reserved.add(op.optString("nodeId", ""));
+            } else if ("create_supernode".equals(name)) {
+                reserved.add(op.optString("superNodeId", ""));
+            } else {
+                continue;
+            }
+            if (startOp == null && op.optBoolean("isStartNode", false)) {
+                startOp = op;
+            }
+        }
+        if (startOp == null) {
+            return candidate;
+        }
+
+        final String continuationId = "create_supernode".equals(startOp.optString("op", ""))
+                ? startOp.optString("superNodeId", "")
+                : startOp.optString("nodeId", "");
+        final JSONObject gate = library.readinessGateFor(
+                situation, resolveRootId(snapshot), snapshot, continuationId, reserved);
+        if (gate == null) {
+            return candidate;
+        }
+
+        // What the flow used to start with now starts once the gate opens.
+        startOp.remove("isStartNode");
+
+        // The gate's own nodes go first and its release edge last, because that edge points at a
+        // node the generated flow has not created yet at the top of the list.
+        final JSONArray gateOps = gate.getJSONArray("operations");
+        final JSONArray merged = new JSONArray();
+        final JSONArray release = new JSONArray();
+        for (int i = 0; i < gateOps.length(); i++) {
+            final JSONObject op = gateOps.getJSONObject(i);
+            if ("create_edge".equals(op.optString("op")) && "IEDGE".equals(op.optString("edgeType"))) {
+                release.put(op);
+            } else {
+                merged.put(op);
+            }
+        }
+        for (int i = 0; i < operations.length(); i++) {
+            merged.put(operations.get(i));
+        }
+        for (int i = 0; i < release.length(); i++) {
+            merged.put(release.get(i));
+        }
+
+        final JSONArray assumptions = candidate.optJSONArray("assumptions") == null
+                ? new JSONArray()
+                : candidate.getJSONArray("assumptions");
+        final JSONArray gateAssumptions = gate.optJSONArray("assumptions");
+        for (int i = 0; gateAssumptions != null && i < gateAssumptions.length(); i++) {
+            assumptions.put(gateAssumptions.get(i));
+        }
+
+        if (metadata != null) {
+            metadata.put("readinessGate", new JSONObject()
+                    .put("added", true)
+                    .put("waitsFor", gate.getJSONObject("metadata").optJSONArray("waitsFor"))
+                    .put("gateSuperNodeId", gate.getJSONObject("metadata").optString("gateSuperNodeId"))
+                    .put("continuationNodeId", continuationId)
+                    .put("continuationName", startOp.optString("name", continuationId)));
+        }
+        return candidate.put("operations", merged).put("assumptions", assumptions);
+    }
+
+    /** Whether any condition in the flow already tests one of the readiness variables. */
+    private boolean flowAlreadyWaitsForReadiness(
+            final JSONObject snapshot, final List<SceneFlowIrTemplateLibrary.ReadinessSignal> signals) {
+        final JSONObject flow = snapshot == null ? null : snapshot.optJSONObject("flow");
+        final JSONArray edges = flow == null ? null : flow.optJSONArray("edges");
+        for (int i = 0; edges != null && i < edges.length(); i++) {
+            final JSONObject edge = edges.optJSONObject(i);
+            final String condition = edge == null ? "" : edge.optString("conditionText", "");
+            if (condition.isBlank()) {
+                continue;
+            }
+            for (SceneFlowIrTemplateLibrary.ReadinessSignal signal : signals) {
+                if (condition.contains(signal.variable())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private JSONObject assignCreateNodePositions(final JSONObject candidate, final JSONObject snapshot) {

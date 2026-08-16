@@ -6729,6 +6729,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
   }
 
+  // Whether a flow that would start by using an agent gets a wait for that agent put in front of
+  // it. On by default: an agent that has not finished starting up accepts what it is told and does
+  // nothing with it, which is the hardest kind of fault to make sense of from the canvas.
+  let flowAssistantReadinessGate = true;
+
   async function proposeFlow() {
     const pid = selectedProjectId;
     const situation = flowAssistantSituation.trim();
@@ -6739,7 +6744,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     try {
       const proposal = await apiPost(
         `/api/v1/projects/${encodeURIComponent(pid)}/flow-assistant/propose`,
-        { situation }
+        { situation, readinessGate: flowAssistantReadinessGate }
       );
       if (pid !== selectedProjectId) return;
       if (proposal.error) {
@@ -6781,6 +6786,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       // as though it is still waiting for a decision.
       flowAssistantProposal = null;
       flowAssistantSituation = "";
+      flowAssistantReadinessGate = true;
       // What the flow now contains is part of what the next proposal is checked against.
       flowAssistantProjectId = "";
     } catch (err) {
@@ -6788,6 +6794,16 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     } finally {
       flowAssistantApplying = false;
     }
+  }
+
+  /** Re-asks for the same situation without the wait in front. Only reachable from a proposal. */
+  async function dropReadinessGate() {
+    if (!flowAssistantProposal || flowAssistantProposing) return;
+    const situation = flowAssistantProposal.situation || flowAssistantSituation;
+    await discardProposedFlow();
+    flowAssistantReadinessGate = false;
+    flowAssistantSituation = situation;
+    await proposeFlow();
   }
 
   async function discardProposedFlow() {
@@ -6963,6 +6979,28 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       semanticServices: nextSemanticServices
     };
     await applyLLMPromptsConfig();
+  }
+
+  // The Flow Assistant's service is held as a name rather than an index, because "none" has to be
+  // a real choice here: the patterns alone are a complete way to use the assistant, and they are
+  // the default.
+  $: flowAssistantLlmName = projectConfigView?.llmSelections?.flowAssistant || "";
+
+  async function setFlowAssistantLlm(name) {
+    if (!selectedProjectId || !wsConnected) return;
+    const baseDraft = projectConfigDraft ? cloneProjectConfig(projectConfigDraft) : cloneProjectConfig(projectConfigView);
+    projectConfigDraft = {
+      ...baseDraft,
+      llmSelections: {
+        ...(baseDraft.llmSelections || projectConfigView?.llmSelections || {}),
+        flowAssistant: name || ""
+      }
+    };
+    await applyLLMPromptsConfig();
+  }
+
+  function handleFlowAssistantLlmChange(event) {
+    void setFlowAssistantLlm(event?.target?.value ?? "");
   }
 
   function handleGenerateLLMSelectionChange(event) {
@@ -17224,6 +17262,28 @@ Sentence:
                       </span>
                     {/if}
                   </div>
+
+                  <div class="flow-assistant-ask-row">
+                    <label class="muted flow-assistant-service" for="flow-assistant-llm">
+                      For anything else, ask
+                    </label>
+                    <select
+                      id="flow-assistant-llm"
+                      class="flow-assistant-service-select"
+                      value={flowAssistantLlmName}
+                      on:change={handleFlowAssistantLlmChange}
+                      disabled={!wsConnected || flowAssistantProposing}
+                    >
+                      <option value="">nobody, use the patterns only</option>
+                      {#each projectConfigLLMs || [] as llm}
+                        <option value={llm.name}>{llm.name}</option>
+                      {/each}
+                    </select>
+                    <span class="muted flow-assistant-service-note">
+                      The patterns always come first. A service is used only for situations none of
+                      them recognises. Services are set up under the project's language services.
+                    </span>
+                  </div>
                   {#if flowAssistantProposeError}
                     <p class="flow-assistant-error">{flowAssistantProposeError}</p>
                   {/if}
@@ -17237,6 +17297,32 @@ Sentence:
                       </h4>
                       {#if flowAssistantProposal.pattern?.description}
                         <p class="muted">{flowAssistantProposal.pattern.description}</p>
+                      {/if}
+                      {#if flowAssistantProposal.generatedBy === "language-model"}
+                        <p class="flow-assistant-gap">
+                          No pattern covers this, so a language service wrote it. Read it more
+                          carefully than usual: it was checked for being a valid flow, not for being
+                          the flow you meant.
+                        </p>
+                      {/if}
+
+                      {#if flowAssistantProposal.readinessGate?.added}
+                        <div class="flow-assistant-gate">
+                          <p>
+                            <strong>Waiting for the agents first.</strong>
+                            {flowAssistantProposal.readinessGate.detail}
+                          </p>
+                          {#if flowAssistantProposal.readinessGate.canTurnOff}
+                            <button
+                              type="button"
+                              class="ghost"
+                              on:click={dropReadinessGate}
+                              disabled={flowAssistantProposing || flowAssistantApplying}
+                            >
+                              Leave that out
+                            </button>
+                          {/if}
+                        </div>
                       {/if}
 
                       <h5>What this adds</h5>
@@ -17294,6 +17380,9 @@ Sentence:
                   {:else if flowAssistantProposal.status === "no_pattern_matched"}
                     <section class="flow-assistant-proposal" aria-label="Proposal">
                       <p>{flowAssistantProposal.message}</p>
+                      {#each flowAssistantProposal.notes || [] as note}
+                        <p class="flow-assistant-gap">{note}</p>
+                      {/each}
                       {#if (flowAssistantProposal.recognisedSituations || []).length > 0}
                         <p class="muted">Try describing it like one of these:</p>
                         <ul class="flow-assistant-changes">

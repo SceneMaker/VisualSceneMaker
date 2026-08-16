@@ -1,6 +1,6 @@
 {
   "screens": {"screens": []},
-  "generatedAt": "2026-08-15T09:23:31+02:00",
+  "generatedAt": "2026-08-16T15:00:36+02:00",
   "project": {
     "androidProject": false,
     "plugins": [{
@@ -110,7 +110,7 @@
       "device": "TimerExecutor"
     }]
   },
-  "snapshotVersion": "1.2",
+  "snapshotVersion": "1.3",
   "source": "/Users/gebhard/Code/Repo/VisualSceneMaker/doc/DesignPatterns",
   "script": {
     "scenes": [{

@@ -77,6 +77,15 @@ Status legend: **H** = taught in sceneflow-help.html, **D** = modelled in Design
 | 1.6 | **Retry / poll until** | Check again after a delay until a condition holds | CEdge + TEdge self-loop (DesignPatterns D12 is the placeholder — currently modelled incompletely, needs fixing) | D(broken) |
 | 1.7 | **Grouped sub-dialogue** | Package a step sequence as one reusable unit; resume where it left off on re-entry | SuperNode (Prepare/Execute/End) + History node | D |
 | 1.8 | **Questionnaire** | A whole linear interview: n × (ask & wait & store), then summary | Composition of 1.1 + 1.3 (+ 1.4 for skip logic) | I |
+| 1.9 | **Wait until the agents are ready** | Nothing starts until every agent has connected and can act | SuperNode the flow starts in, holding an idle node with a TEdge self-loop, plus an IEdge on the SuperNode over each agent's readiness variable joined with `&&` (the charamel-embed ExampleProject idiom) | I C T |
+
+**On 1.9.** It is the first thing every shipped project does and the first thing a newcomer does not
+know to do. An agent that has not finished starting up accepts what it is told and does nothing with
+it, so a flow that speaks too early works on a fast machine and silently does nothing on a slow one.
+Two details are worth stating. Waiting for several agents is one condition joined with `&&`, not
+concurrency, so it needs none of the join semantics that 2.6 is blocked on. And connecting is not the
+same as being able to act: charamel-embed sets one variable when the character page connects and
+another once the model is loaded and audio is unlocked, so the gate belongs on the later one.
 
 ### Level 2 — Parallel sequences (several timelines)
 
@@ -372,6 +381,16 @@ Ordered roughly by dependency:
    offers folds away underneath. Still to come: the gallery, provenance tagging, and the ordered
    apply plan of §4b, which today stops at reporting the resources rather than creating the
    creatable ones.
+
+   *2026-08-16:* the panel also carries the assistant's **language service selection**. It is stored
+   in the project as `LLMSelections/flowAssistant`, alongside the existing `generate` and `semantic`
+   keys, so a service is configured once and picked per purpose. Two things are deliberate. The
+   server reads it from the project rather than accepting it in the request, the way scene generation
+   does, because the generator runs server-side and a browser posting an API key on every proposal
+   would hold a credential it has no reason to. And the mode is `TEMPLATE_THEN_LLM`, not `HYBRID`:
+   patterns are validated, reproducible and explain themselves in the author's words, so a model is
+   only ever asked about situations no pattern recognises. A proposal that came from a model is
+   labelled as such, because a pattern was tested and a model's answer was not.
 6. **Tutorial mode** on top of the pattern detector (extend detector coverage beyond the
    constrained-activity wait pattern — branching, retries, parallel launch) + tour framework (B3)
    + first tutorial-shelf content.

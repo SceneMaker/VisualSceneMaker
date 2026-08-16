@@ -14,7 +14,7 @@
   "properties": {
     "snapshotVersion": {
       "type": "string",
-      "const": "1.2"
+      "const": "1.3"
     },
     "generatedAt": {
       "type": "string",
@@ -338,10 +338,19 @@
             ],
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "description": "The plugin's own config key, identical for every instance of a plugin class."
               },
               "type": {
                 "type": "string"
+              },
+              "boundTo": {
+                "type": "string",
+                "description": "The flow variable this plugin instance is wired to through its Feature of that key. Absent when the project binds nothing, in which case the plugin cannot reach a variable at all. This is the only name a condition in the flow can use, and it is what tells two instances of one plugin class apart."
+              },
+              "description": {
+                "type": "string",
+                "description": "What the plugin means by this variable, from plugin-properties.json. Carried because it separates variables an author would confuse, such as a character page that has connected from a character that can speak."
               }
             }
           },
@@ -357,10 +366,19 @@
             ],
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "description": "The plugin's own config key, identical for every instance of a plugin class."
               },
               "type": {
                 "type": "string"
+              },
+              "boundTo": {
+                "type": "string",
+                "description": "The flow variable this plugin instance is wired to through its Feature of that key. Absent when the project binds nothing, in which case the plugin cannot reach a variable at all. This is the only name a condition in the flow can use, and it is what tells two instances of one plugin class apart."
+              },
+              "description": {
+                "type": "string",
+                "description": "What the plugin means by this variable, from plugin-properties.json. Carried because it separates variables an author would confuse, such as a character page that has connected from a character that can speak."
               }
             }
           },

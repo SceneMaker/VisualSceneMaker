@@ -532,7 +532,8 @@ public final class SceneFlowIrLlmCandidateProvider {
             return llm.sendPrompt(withMaxTokens).content();
         } catch (IOException | InterruptedException | RuntimeException firstExc) {
             if (!isUnsupportedMaxTokens(firstExc)) {
-                throw new SceneFlowIrCompileException("LLM generation failed: " + firstExc.getMessage(), firstExc);
+                throw new SceneFlowIrCompileException(
+                        "LLM generation failed: " + describe(firstExc), firstExc);
             }
         }
 
@@ -545,7 +546,7 @@ public final class SceneFlowIrLlmCandidateProvider {
         try {
             return llm.sendPrompt(withoutMaxTokens).content();
         } catch (IOException | InterruptedException | RuntimeException exc) {
-            throw new SceneFlowIrCompileException("LLM generation failed: " + exc.getMessage(), exc);
+            throw new SceneFlowIrCompileException("LLM generation failed: " + describe(exc), exc);
         }
     }
 
@@ -661,5 +662,19 @@ public final class SceneFlowIrLlmCandidateProvider {
             return "";
         }
         return trimmed.substring(start).trim();
+    }
+
+    /**
+     * What went wrong, in a form worth showing.
+     *
+     * <p>A connection that is simply refused carries no message at all, so the exception type is the
+     * only information there is, and "failed: null" tells a reader nothing.
+     */
+    private static String describe(final Throwable exc) {
+        final String message = exc.getMessage();
+        if (message != null && !message.isBlank()) {
+            return message;
+        }
+        return exc.getClass().getSimpleName();
     }
 }
