@@ -2104,6 +2104,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         Thread preCopy = new Thread(this::preCopyBundledTutorials, "vsm-tutorial-precopy");
         preCopy.setDaemon(true);
         preCopy.start();
+        // Ending is the one transition the interpreter never announces, so it is watched for.
+        mShutdownScheduler.scheduleWithFixedDelay(() -> {
+            try {
+                checkForFinishedRuntimes();
+            } catch (RuntimeException exc) {
+                sLogger.failure("Finished-runtime check failed: " + exc.getMessage());
+            }
+        }, 1, 1, java.util.concurrent.TimeUnit.SECONDS);
         // EventDispatcher registration now happens per-project when projects are added to projectStore.
         // See onProjectRegistered() / onProjectRemoved().
         sLogger.message("Web UI server started on " + getLocalUrl());
@@ -2746,9 +2754,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private void syncOrchestratorState(String projectId, String state) {
         if (projectId == null || !mRuntimeOrchestrator.contains(projectId)) return;
         RuntimeOrchestrator.RuntimeState s;
-        if ("running".equals(state))      s = RuntimeOrchestrator.RuntimeState.RUNNING;
-        else if ("paused".equals(state))  s = RuntimeOrchestrator.RuntimeState.PAUSED;
-        else                              s = RuntimeOrchestrator.RuntimeState.STOPPED;
+        if ("running".equals(state))       s = RuntimeOrchestrator.RuntimeState.RUNNING;
+        else if ("paused".equals(state))   s = RuntimeOrchestrator.RuntimeState.PAUSED;
+        // Deliberately not STOPPED: that releases the project's exclusive resources, and a flow that
+        // ran out of things to do has not given up its devices. Only Stop does that.
+        else if ("finished".equals(state)) s = RuntimeOrchestrator.RuntimeState.FINISHED;
+        else                               s = RuntimeOrchestrator.RuntimeState.STOPPED;
         mRuntimeOrchestrator.setState(projectId, s);
     }
 
@@ -2876,6 +2887,36 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             } catch (Exception e) {
                 sLogger.warning("Failed to send WebSocket message: " + e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Notices a flow that has run out of things to do, and says so.
+     *
+     * <p>The runtime knows: the sceneflow thread clears its own running flag the moment it has no
+     * edge left to take. Nothing conveys an event when that happens, and the state the editor shows
+     * is a word written by the Start, Pause and Stop commands, so a flow whose last step had no
+     * outgoing edge kept reading as "running" until someone pressed Stop. That is the state a
+     * newcomer is least able to interpret: the flow visibly finished and the editor disagreed.
+     *
+     * <p>Polled rather than event-driven because ending is the one transition the interpreter does
+     * not announce. One reference read per running project per tick.
+     */
+    private void checkForFinishedRuntimes() {
+        for (Map.Entry<String, ProjectRef> entry : projectStore.entrySet()) {
+            ProjectRef ref = entry.getValue();
+            if (ref == null || ref.runtimeProject == null) {
+                continue;
+            }
+            if (!"running".equals(ref.runtimeState)) {
+                continue;
+            }
+            if (ref.runtimeProject.isRunning() || ref.runtimeProject.isPaused()) {
+                continue;
+            }
+            ref.runtimeState = "finished";
+            sLogger.message("Project " + entry.getKey() + " has run out of steps to take");
+            broadcastRuntimeState(entry.getKey(), "finished");
         }
     }
 

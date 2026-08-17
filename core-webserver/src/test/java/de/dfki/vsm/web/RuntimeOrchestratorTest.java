@@ -185,6 +185,30 @@ class RuntimeOrchestratorTest {
     // RuntimeOrchestrator — Resource arbitration
     // =====================================================================
 
+    /**
+     * Finishing is not stopping, and the difference is what it does to the devices.
+     *
+     * <p>A flow that runs out of edges ends that thread and nothing else: the interface it opened is
+     * still there, and only pressing Stop takes it away. If finishing released the project's
+     * exclusive resources, a flow that reached its last step would pull the screen out from under the
+     * person still looking at it.
+     */
+    @Test
+    void finishingKeepsWhatStoppingReleases() {
+        orchestrator.register("proj-1");
+        orchestrator.register("proj-2");
+        assertTrue(orchestrator.acquireExclusiveResource("proj-1", "microphone"));
+
+        orchestrator.setState("proj-1", RuntimeOrchestrator.RuntimeState.FINISHED);
+        assertEquals(RuntimeOrchestrator.RuntimeState.FINISHED, orchestrator.getState("proj-1"));
+        assertFalse(orchestrator.acquireExclusiveResource("proj-2", "microphone"),
+                "A finished flow has not given up its devices");
+
+        orchestrator.setState("proj-1", RuntimeOrchestrator.RuntimeState.STOPPED);
+        assertTrue(orchestrator.acquireExclusiveResource("proj-2", "microphone"),
+                "Stopping is what releases them");
+    }
+
     @Test
     void acquireGrantsUnheldResource() {
         orchestrator.register("proj-1");

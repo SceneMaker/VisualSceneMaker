@@ -157,6 +157,17 @@ VisualSceneMaker/
 - `UiEventBus` (core/ui/protocol/) - UI-specific event sink with lazy evaluation
 - `WebUiServer` (core/web/) - Javalin server with `ServerMode` (FULL_EDITOR / RUNTIME_ONLY)
 
+### Runtime States
+
+`ref.runtimeState` / `RuntimeOrchestrator.RuntimeState` are `stopped`, `running`, `paused` and
+`finished`. **`finished` is not `stopped`**: a flow that reaches a node with no outgoing edge ends
+that thread and nothing else, so the session is over while the devices it opened are still connected.
+Only `stopped` releases the project's exclusive resources. Ending is the one transition the
+interpreter never announces (`TerminationEvent` is fired on errors only), so
+`WebUiServer.checkForFinishedRuntimes` polls `RunTimeProject.isRunning()` once a second for projects
+whose state says running. Before that existed, a finished flow read as still running until someone
+pressed Stop.
+
 ### Runtime Execution Model
 
 **Execution Flow**:

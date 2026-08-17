@@ -55,6 +55,15 @@ public final class RuntimeOrchestrator {
         RUNNING,
         /** Interpreter is temporarily paused (can resume). */
         PAUSED,
+        /**
+         * The flow ran out of things to do on its own, and the devices are still connected.
+         *
+         * <p>Distinct from {@link #STOPPED}, which is what pressing Stop produces: that releases the
+         * plugins and their ports, this does not. A flow reaching a node with no outgoing edge ends
+         * that thread and nothing else, so the session is over while the interface it opened is still
+         * there. Reporting it as running was the older behaviour and read as a flow that had hung.
+         */
+        FINISHED,
         /** Runtime has finished or been stopped; cannot be resumed. */
         STOPPED
     }
