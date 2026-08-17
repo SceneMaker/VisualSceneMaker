@@ -2393,6 +2393,14 @@ a.export-link {
   border-color: rgba(141, 106, 27, 0.35);
 }
 
+/* Ran out of steps by itself, with its devices still connected. Neutral rather than the alarm colour
+   of .stopped, since nothing went wrong and nothing has been released yet. */
+.runtime-state.finished {
+  color: #3c5a80;
+  font-size: 0.9rem;
+  border-color: rgba(60, 90, 128, 0.35);
+}
+
 .runtime-state.stopped {
   color: #8a4b4b;
   font-size: 0.9rem;
@@ -2537,16 +2545,30 @@ a.export-link {
   align-items: center;
 }
 
-/* Without this the label breaks onto two lines and the button grows taller than the rest of the
-   bar, since .panel-save sizes to its content inside a fixed-width column. */
+/* Without nowrap the label breaks onto two lines and the button grows taller than the rest of the
+   bar, since .panel-save sizes to its content inside a fixed-width column. .panel-save itself sets
+   no gap, so the icon would otherwise sit flush against the label (cf. .sia-panel-toggle). */
 .flow-assistant-btn {
   white-space: nowrap;
+  gap: 0.4rem;
 }
 
-/* Pressed state, so the bar shows whether the panel below is open. */
-.flow-assistant-btn.active {
-  background: var(--panel-soft);
-  box-shadow: inset 0 0 0 1px var(--stroke);
+/* An .icon svg carries a viewBox but no width/height, so it only gets a size from CSS. The icon
+   buttons elsewhere in this bar get theirs from .icon-button's fixed 34px box; a text+icon
+   .panel-save has no such box, and without this the glyph collapsed to 0x0 and simply did not
+   appear. Same 16px the other .panel-save buttons use (cf. .panel-save.sia-panel-toggle .icon). */
+.panel-save.flow-assistant-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Open state, styled exactly like an enabled Autosave toggle (.panel-save.autosave-toggle.active)
+   so a lit accent button means the same thing wherever it appears. Specificity matches that rule's,
+   so neither depends on source order. */
+.panel-save.flow-assistant-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
 }
 
 /* A row of the sceneflow area's grid, between the menu bar and the editing layout, so opening it
@@ -2565,31 +2587,12 @@ a.export-link {
   overflow-y: auto;
 }
 
-.flow-assistant-head {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  gap: 0.35rem 0.75rem;
-}
-
-.flow-assistant-head h3 {
-  margin: 0;
-  font-size: 0.95rem;
-  grid-column: 1;
-}
-
+/* Spans the panel: no max-width, and no longer a grid cell sharing a row with a close button. */
 .flow-assistant-lede {
   margin: 0;
-  grid-column: 1;
-  max-width: 62ch;
   color: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.5;
-}
-
-.flow-assistant-close {
-  grid-column: 2;
-  grid-row: 1 / span 2;
 }
 
 .flow-assistant-caps {

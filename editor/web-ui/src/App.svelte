@@ -9,6 +9,7 @@
   import IconPencil from "./icons/IconPencil.svelte";
   import IconPlus from "./icons/IconPlus.svelte";
   import IconDocument from "./icons/IconDocument.svelte";
+  import IconUser from "./icons/IconUser.svelte";
   import IconSearch from "./icons/IconSearch.svelte";
   import IconPuzzle from "./icons/IconPuzzle.svelte";
   import IconBlocks from "./icons/IconBlocks.svelte";
@@ -191,6 +192,9 @@
   const RUNTIME_STATE_LABELS = {
     running: "Running",
     paused: "Paused",
+    // The flow ran out of steps on its own. The devices it opened are still there, which is why this
+    // is not "Stopped": pressing Stop is what releases them.
+    finished: "Finished",
     stopped: "Stopped"
   };
   const EDGE_ACTIVITY_MS = 650;
@@ -3401,7 +3405,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: activityNodeIds = Array.from(activityNodeCounts.keys());
   $: activityEdgeList = Array.from(activityEdgeHits.values());
   $: timeoutEdgeList = Array.from(timeoutEdgeRuns.values());
-  $: runtimeCanPlay = wsConnected && !!selectedProjectId && (runtimeState === "stopped" || runtimeState === "paused");
+  $: runtimeCanPlay = wsConnected && !!selectedProjectId
+    && (runtimeState === "stopped" || runtimeState === "paused" || runtimeState === "finished");
   $: runtimeCanPause = wsConnected && !!selectedProjectId && runtimeState === "running";
   $: runtimeCanStop = wsConnected && !!selectedProjectId && runtimeState !== "stopped";
   $: runtimePlayLabel = runtimeState === "paused" ? "Resume" : "Start";
@@ -5994,6 +5999,42 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
   }
 
+
+  /**
+   * The agent features the device's plugin declares, filled in with their declared defaults.
+   *
+   * <p>An agent with no features is not a neutral starting point. htmlgui-ws appends a spoken line
+   * to the variable named by the agent's own `var` feature, and with no `var` it appends nowhere:
+   * the scene plays, the flow moves on, and nothing appears (found 2026-08-17, where Alex's line
+   * simply never reached the page). Anything the plugin declares a default for is something the
+   * author should not have to know about.
+   */
+  function declaredAgentFeatures(deviceName, agentName) {
+    const plugin = (projectConfigPlugins || []).find((p) => p?.name === deviceName);
+    const iface = pluginInterfaceForClassName(plugin?.className);
+    const fixed = Array.isArray(iface?.agentSpec?.fixed) ? iface.agentSpec.fixed : [];
+    const features = [];
+    for (const entry of fixed) {
+      if (!entry?.name) continue;
+      // "speaker" has no useful default in the abstract: it is whatever this agent is called.
+      const value = entry.name === "speaker" ? agentName : entry.default;
+      if (value !== undefined && value !== null && String(value) !== "") {
+        features.push({ key: entry.name, value: String(value) });
+      }
+    }
+    return features;
+  }
+
+  function pluginInterfaceForClassName(className) {
+    if (!className) return null;
+    const wanted = String(className).trim().toLowerCase();
+    return (
+      (Array.isArray(pluginInterfaces) ? pluginInterfaces : []).find(
+        (entry) => String(entry?.plugin?.className || "").trim().toLowerCase() === wanted
+      ) || null
+    );
+  }
+
   function addAgent(deviceOverride) {
     const name = (projectConfigNewAgent.name || "").trim();
     const device = (deviceOverride || projectConfigNewAgent.device || "").trim();
@@ -6008,7 +6049,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     const agent = {
       name,
       device,
-      features: []
+      features: declaredAgentFeatures(device, name)
     };
     const agents = [...projectConfigAgents, agent];
     projectConfigDraft = { ...projectConfigDraft, agents };
@@ -6784,6 +6825,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       // The server broadcasts the new flow to every client including this one, so the canvas is
       // already up to date. Clearing the proposal keeps a proposal that has been used from looking
       // as though it is still waiting for a decision.
+      // An apply that added a device, an agent or a screen changed the project's settings as well
+      // as its flow, and the close-project dialog builds its list of what is at stake from these
+      // flags. Without this it would name only the graph, and an author who read it carefully would
+      // conclude the device was safe.
+      if (Array.isArray(result.added) && result.added.length > 0) {
+        projectConfigPending = true;
+      }
       flowAssistantProposal = null;
       flowAssistantSituation = "";
       flowAssistantReadinessGate = true;
@@ -7743,6 +7791,15 @@ Sentence:
   // redundant re-navigation (and the resulting flicker) when a second refresh after Runtime.Play
   // resolves computes the same URL the first, immediate refresh already used.
   let runtimeGuiWindowLastUrl = null;
+  // Whether that navigation actually reached a server. Without this the dedup above turns a
+  // too-early navigation into a permanent one: the plugin's HTTP server does not exist until
+  // Runtime.Play launches it, so navigating on the click lands on the browser's "cannot connect"
+  // page, and the refresh after Play then computes the same URL and skips (found 2026-08-17 on a
+  // first run, where the popup sat on Safari's error page while the port was live).
+  let runtimeGuiWindowLastUrlLive = false;
+  // Only the newest navigation attempt may act, since the click fires one and Play's completion
+  // fires another while the first may still be waiting for the port.
+  let runtimeGuiNavigationToken = 0;
 
   function startRuntimeGuiWindowPoll() {
     if (runtimeGuiWindowPollTimer) return;
@@ -7856,21 +7913,51 @@ Sentence:
   // fresh loadProjectConfig() here, off the critical popup-blocker path, fixes that.
   async function refreshHtmlGuiUrlAndNavigate(win) {
     if (!selectedProjectId || !win || win.closed) return;
+    const token = ++runtimeGuiNavigationToken;
     try {
       await loadProjectConfig(selectedProjectId);
     } catch (_) {
       // Network hiccup — fall through and try with whatever config we already have rather than
       // leaving the popup on its placeholder forever.
     }
+    if (token !== runtimeGuiNavigationToken) return;
     const url = htmlGuiUrl();
-    if (url && url !== runtimeGuiWindowLastUrl && !win.closed) {
-      runtimeGuiWindowLastUrl = url;
+    if (!url || win.closed) return;
+    if (url === runtimeGuiWindowLastUrl && runtimeGuiWindowLastUrlLive) return;
+
+    // The plugin binds its HTTP port while Runtime.Play is still running, so waiting for the port
+    // to answer is what turns "same URL, nothing to do" into "same URL, and now it works".
+    const live = await waitForHtmlGuiReachable(url, token);
+    if (token !== runtimeGuiNavigationToken || win.closed) return;
+    runtimeGuiWindowLastUrl = url;
+    runtimeGuiWindowLastUrlLive = live;
+    try {
+      win.location.href = url;
+    } catch (_) {
+      /* window may have navigated/closed on its own since we last checked */
+    }
+  }
+
+  /**
+   * Waits until something answers on the GUI's own port, for at most a few seconds.
+   *
+   * <p>An opaque no-cors response is enough: the page is on another port, so nothing about it can
+   * be read, but a connection that succeeds resolves and one that is refused throws. Navigating
+   * anyway after the wait runs out is deliberate, since the browser's own error page says more
+   * about what went wrong than a placeholder of ours would.
+   */
+  async function waitForHtmlGuiReachable(url, token, timeoutMs = 20000) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      if (token !== runtimeGuiNavigationToken) return false;
       try {
-        win.location.href = url;
+        await fetch(url, { mode: "no-cors", cache: "no-store" });
+        return true;
       } catch (_) {
-        /* window may have navigated/closed on its own since we last checked */
+        await new Promise((resolve) => setTimeout(resolve, 400));
       }
     }
+    return false;
   }
 
   // Called synchronously from the Play click so the browser does not block the popup — opens at
@@ -7888,7 +7975,21 @@ Sentence:
     }
     if (!win) return null;
     runtimeGuiWindowLastUrl = null;
+    runtimeGuiWindowLastUrlLive = false;
     runtimeGuiWindow = win;
+    // A blank popup reads as a failure while the runtime is still starting, so it says what it is
+    // waiting for. Same-origin about:blank, so writing to it is allowed.
+    try {
+      win.document.write(
+        '<!doctype html><meta charset="utf-8"><title>Starting\u2026</title>'
+          + '<body style="margin:0;display:flex;align-items:center;justify-content:center;'
+          + 'height:100vh;font:14px system-ui,sans-serif;color:#555;background:#f6f7f9">'
+          + 'Waiting for the interface to start\u2026</body>'
+      );
+      win.document.close();
+    } catch (_) {
+      /* a reused popup may already be on the GUI's own origin, which we cannot write to */
+    }
     // Set synchronously, not left to the next 1s poll tick (startRuntimeGuiWindowPoll) — the
     // popup's own character page starts connecting to the VuppetMaster cloud immediately, and a
     // brief window where it and an already-open SIA preview are both live on the same license
@@ -8770,6 +8871,28 @@ Sentence:
   // Both directions of "a window went away" are announced on pagehide. The receiving side never
   // acts on the announcement alone — a reload fires pagehide too — it only stores state (main)
   // or starts a grace period (child) and lets the watchdog / hello traffic decide.
+  /**
+   * Asks the browser to confirm a close, reload or navigation that would drop unsaved work.
+   *
+   * The in-app Close Project button already lists what is at stake and offers to save first. A tab
+   * close, a reload or a Back went past all of that in silence, which is the same loss of work with
+   * no warning at all. Reuses collectUnsavedReasons so the two can never disagree about what counts
+   * as unsaved.
+   *
+   * The browser writes the wording itself and ignores anything we would put in it; preventDefault
+   * together with returnValue is only what makes it appear.
+   */
+  function handleWindowBeforeUnload(event) {
+    // Closing the detached script window is a normal action, and its content is handed back to the
+    // main window by handleWindowPagehide rather than lost.
+    if (isScriptWindow) return;
+    if (!showEditor || !selectedProjectId) return;
+    if (collectUnsavedReasons().length === 0) return;
+    event.preventDefault();
+    // Still required by browsers that predate preventDefault being enough on its own.
+    event.returnValue = "";
+  }
+
   function handleWindowPagehide() {
     if (!scriptDetachChannel) return;
     try {
@@ -16270,7 +16393,7 @@ Sentence:
   }
 </script>
 
-<svelte:window on:keydown={handleGlobalKeydown} on:keyup={handleGlobalKeyup} on:blur={handleWindowBlur} on:pagehide={handleWindowPagehide} />
+<svelte:window on:keydown={handleGlobalKeydown} on:keyup={handleGlobalKeyup} on:blur={handleWindowBlur} on:pagehide={handleWindowPagehide} on:beforeunload={handleWindowBeforeUnload} />
 
 {#if projectActionConfirmation}
   {#key projectActionConfirmationId}
@@ -17002,10 +17125,10 @@ Sentence:
               disabled={!selectedProject}
               aria-expanded={flowAssistantOpen}
               aria-controls="flow-assistant-panel"
-              title={flowAssistantOpen ? "Hide the Flow Assistant" : "Show the Flow Assistant"}
+              title={flowAssistantOpen ? "Hide the Assistant" : "Show the Assistant"}
             >
-              <IconDocument className="icon" />
-              Flow Assistant
+              <IconUser className="icon" />
+              Assistant
             </button>
           </div>
           <div class="sceneflow-edit-cluster">
@@ -17204,25 +17327,15 @@ Sentence:
               class="flow-assistant"
               aria-label="Flow Assistant"
             >
-              <header class="flow-assistant-head">
-                <h3>Flow Assistant</h3>
-                <p class="flow-assistant-lede">
-                  Describe what should happen and I will propose the steps. Nothing changes until
-                  you say so, and anything I propose either uses what this project already has or
-                  says what still has to be added.
-                </p>
-                <button
-                  type="button"
-                  class="ghost icon-button flat flow-assistant-close"
-                  on:click={toggleFlowAssistant}
-                  aria-label="Close the Flow Assistant"
-                  title="Close"
-                >
-                  <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </header>
+              <!-- No title and no close button: the panel is named by the section's own aria-label,
+                   and the "Assistant" button in the menu bar is a toggle that closes it. The
+                   lede is a direct child so it spans the panel rather than sharing a grid row with
+                   a close button. -->
+              <p class="flow-assistant-lede">
+                Describe what should happen and I will propose the steps. Nothing changes until
+                you say so, and anything I propose either uses what this project already has or
+                says what still has to be added.
+              </p>
 
               {#if flowAssistantLoading}
                 <p class="muted">Reading what this project offers…</p>
