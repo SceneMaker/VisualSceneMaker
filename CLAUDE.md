@@ -217,7 +217,9 @@ VisualSceneMaker/
   `<LLM>` entries. Unset means patterns only, which is the default; set, it is consulted only for
   situations no pattern recognises (`CandidateMode.TEMPLATE_THEN_LLM`).
 - `POST /api/v1/projects/{pid}/flow-assistant/apply` / `discard` - Take or drop a proposal. Apply is
-  one undoable step (`SceneFlow.FlowAssistant.Apply`), and consumes the proposal.
+  one undoable step (`SceneFlow.FlowAssistant.Apply`), and consumes the proposal. It first carries
+  out the proposal's `setup` steps (device, agent, screen; see `FlowAssistantSetup`) and then applies
+  the flow, in that order, because the flow was generated against the project as it will be.
 
 **Runtime-only endpoints** (RUNTIME_ONLY mode):
 - `POST /api/v1/runtime/load` - Load project by path
@@ -313,6 +315,10 @@ mLogger.failure("Error message");
   `parseForInformation` so that describing a project never launches its plugins, and aborts the
   project's event dispatcher afterwards (its timer thread is not a daemon, so a CLI would otherwise
   write its output and then hang).
+- `core-webserver/src/main/java/de/dfki/vsm/web/FlowAssistantSetup.java` - What a project is still
+  missing (device, agent, screen) and why, plus the **projected** capability snapshot the flow is
+  generated against. Deliberately omits the new device's flow variables so the generator declares
+  them; scenes are never planned, since only the author can write them.
 - `core-webserver/src/main/java/de/dfki/vsm/web/FlowAssistantService.java` - Situation → proposal,
   on top of `de.dfki.vsm.sceneflow.ir` (which lives in this module, not the root one). Holds the
   compiled flow until the author applies or discards it, and translates the generated operations

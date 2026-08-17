@@ -213,6 +213,26 @@ patch. Resources are created first and the flow patch applied second, otherwise 
 with warnings about things that are about to exist. Because a plan can fail halfway, the assistant
 reports what it created, so a partially applied change is visible rather than mysterious.
 
+**Built 2026-08-17** (`FlowAssistantSetup`). The plan covers a device, an agent and a screen, which
+is what an empty project is missing. Three things make it work:
+
+- The flow is generated against the project **as it will be**, not as it is. Without that, a proposal
+  is a flow plus a note saying it cannot run, and the author has to reconcile the two by hand.
+- The projected project deliberately leaves out the flow variables the new device brings. That is
+  what makes the generator declare them itself, so applying the plan and applying the flow cannot
+  disagree about which of them owns the declaration.
+- Every step carries its reason. An author who has never built one of these has no way of knowing
+  that a scene without a device plays to nobody, and a plan that only lists what it will do teaches
+  nothing.
+
+Scenes stay outside the plan. Only the author can write what an agent says, so a scene is reported,
+never stubbed, which is the `record` outcome of §4a.
+
+A capability the project lacks and a capability nobody shipped are different things, and the
+distinction is what makes the plan possible at all: the first is work to do, the second is a dead
+end. Before this, an empty project was told that nothing in the installation could ever take an
+answer, which was both wrong and the end of the road.
+
 The four consumers:
 
 1. **Documentation/gallery** — help file sections and DesignPatterns regions are generated from /

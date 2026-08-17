@@ -74,16 +74,29 @@ public final class FlowAssistantService {
         private final String mStatus;
         private final JSONObject mAuthorView;
         private final String mSceneFlowXml;
+        private final FlowAssistantSetup mSetup;
         private final long mCreatedAt;
 
         private Proposal(final String id, final String projectId, final String status,
-                         final JSONObject authorView, final String sceneFlowXml) {
+                         final JSONObject authorView, final String sceneFlowXml,
+                         final FlowAssistantSetup setup) {
             this.mId = id;
             this.mProjectId = projectId;
             this.mStatus = status;
             this.mAuthorView = authorView;
             this.mSceneFlowXml = sceneFlowXml;
+            this.mSetup = setup;
             this.mCreatedAt = System.currentTimeMillis();
+        }
+
+        /**
+         * What has to be added to the project before the flow can work, in order.
+         *
+         * <p>Carried out by the caller, because none of it is an operation on a flow: a device, an
+         * agent and a screen live in the project's configuration and beside it on disk.
+         */
+        List<FlowAssistantSetup.Step> setupSteps() {
+            return mSetup == null ? List.of() : mSetup.steps();
         }
 
         public String id() {
@@ -209,7 +222,13 @@ public final class FlowAssistantService {
             final Path basePath = work.resolve("sceneflow.xml");
             final Path outputPath = work.resolve("proposed-sceneflow.xml");
             final Path reportPath = work.resolve("report.json");
-            Files.writeString(snapshotPath, capabilities.toString(2), StandardCharsets.UTF_8);
+            // What the project is missing, and the project as it would be once that is added. The
+            // flow is generated against the latter, so a proposal is one coherent thing rather than
+            // a flow plus a note saying it cannot work yet.
+            final FlowAssistantSetup setup =
+                    FlowAssistantSetup.plan(capabilities, situation, mInstalledPlugins.get());
+            final JSONObject projected = setup.project(capabilities);
+            Files.writeString(snapshotPath, projected.toString(2), StandardCharsets.UTF_8);
             Files.writeString(basePath, baseSceneFlowXml == null ? "" : baseSceneFlowXml,
                     StandardCharsets.UTF_8);
 
@@ -238,9 +257,13 @@ public final class FlowAssistantService {
                     ? Files.readString(outputPath, StandardCharsets.UTF_8)
                     : null;
 
+            final JSONObject view = buildAuthorView(status, situation, report, projected);
+            if (!setup.isEmpty() && !"failed".equals(status)) {
+                view.put("setup", setup.toJson());
+            }
             final Proposal proposal = new Proposal(
                     UUID.randomUUID().toString(), projectId, status,
-                    buildAuthorView(status, situation, report, capabilities), mergedXml);
+                    view, mergedXml, setup);
             proposal.mAuthorView.put("proposalId", proposal.id());
             mProposals.put(proposal.id(), proposal);
             return proposal;

@@ -145,24 +145,67 @@ class FlowAssistantServiceTest {
     /**
      * A plugin nobody shipped and a plugin the project has not added are different problems.
      *
-     * <p>Telling someone with an empty project that nothing can ever answer is both wrong and the
-     * end of the road, when the plugin they need is one dialog away. This is what a newcomer meets
-     * first, so it has to point somewhere.
+     * <p>The second one is not a gap to report, it is work to do, so it becomes a setup step that
+     * says what will be added and why. What a newcomer meets first has to point somewhere.
      */
     @Test
-    void aCapabilityThatIsInstalledButUnusedSaysWhatToAddRatherThanThatItIsHopeless() throws Exception {
-        JSONObject view = new FlowAssistantService()
-                .withInstalledPlugins(() -> java.util.Map.of(
-                        "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor", "HTML GUI"))
+    void aCapabilityThatIsInstalledButUnusedBecomesSomethingTheAssistantWillAdd() throws Exception {
+        JSONObject view = withHtmlGui()
                 .propose("p1", snapshot(), baseFlow(),
                         "Ask the person for their name and wait for the reply")
                 .authorView();
 
-        JSONObject answerSource = requirement(view, "answer-source");
-        assertEquals("author_only", answerSource.getString("status"));
-        assertTrue(answerSource.getString("detail").contains("HTML GUI"),
-                "The author has to be told which device to add: " + answerSource.getString("detail"));
-        assertFalse(answerSource.getString("detail").contains("wait forever"));
+        JSONArray setup = view.getJSONArray("setup");
+        assertTrue(setup.length() >= 2, "A device and a screen at least: " + setup);
+
+        JSONObject device = setupStep(view, "device");
+        assertNotNull(device, "The device the project lacks has to be offered: " + setup);
+        assertTrue(device.getString("label").contains("Web Browser User Interface"));
+        assertFalse(device.getString("why").isBlank(), "Every step has to say why it is needed");
+
+        JSONObject screen = setupStep(view, "screen");
+        assertNotNull(screen);
+        assertEquals("chat-interview", screen.getString("templateId"));
+
+        // The flow is generated against the project as it will be, so the requirement the setup
+        // covers reads as met rather than as a warning the author has to reconcile by hand.
+        assertEquals("present", requirement(view, "answer-source").getString("status"));
+    }
+
+    /** Nothing to add, nothing to say. A project that already has what it needs gets no plan. */
+    @Test
+    void aProjectThatAlreadyHasWhatItNeedsGetsNoSetupPlan() throws Exception {
+        JSONObject ready = new JSONObject(snapshot().toString());
+        ready.getJSONObject("project").getJSONArray("plugins").put(new JSONObject()
+                .put("name", "webpage")
+                .put("className", "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor")
+                .put("type", "device").put("load", true)
+                .put("commands", new JSONArray())
+                .put("writesVariables", new JSONArray())
+                .put("readsVariables", new JSONArray()));
+        ready.getJSONObject("screens").getJSONArray("screens").put(new JSONObject()
+                .put("name", "chat")
+                .put("readsVariables", new JSONArray())
+                .put("writesVariables", new JSONArray().put("user_input")));
+
+        JSONObject view = withHtmlGui()
+                .propose("p1", ready, baseFlow(), "Ask the person for their name and wait for the reply")
+                .authorView();
+
+        assertFalse(view.has("setup"), "Nothing is missing, so nothing should be proposed: "
+                + view.optJSONArray("setup"));
+    }
+
+    /** A deployment that really has no such plugin still says so rather than promising to add one. */
+    @Test
+    void aCapabilityNobodyShippedIsStillReportedAsBlocked() throws Exception {
+        JSONObject view = new FlowAssistantService()
+                .propose("p1", snapshot(), baseFlow(),
+                        "Ask the person for their name and wait for the reply")
+                .authorView();
+
+        assertFalse(view.has("setup"), "Nothing can be added, so nothing is offered");
+        assertEquals("blocked", requirement(view, "answer-source").getString("status"));
     }
 
     /** An agent needs a device, which no flow can express, so the assistant must not claim it will. */
@@ -367,6 +410,21 @@ class FlowAssistantServiceTest {
                   <Commands></Commands>
                 </SceneFlow>
                 """;
+    }
+
+    private FlowAssistantService withHtmlGui() {
+        return new FlowAssistantService().withInstalledPlugins(() -> java.util.Map.of(
+                "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor", "Web Browser User Interface"));
+    }
+
+    private JSONObject setupStep(final JSONObject view, final String kind) {
+        JSONArray setup = view.optJSONArray("setup");
+        for (int i = 0; setup != null && i < setup.length(); i++) {
+            if (kind.equals(setup.getJSONObject(i).optString("kind"))) {
+                return setup.getJSONObject(i);
+            }
+        }
+        return null;
     }
 
     private JSONObject requirement(final JSONObject view, final String role) {

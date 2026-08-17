@@ -2785,6 +2785,44 @@ a.export-link {
   color: var(--danger);
 }
 
+/* Work outside the flow: a device, an agent, a screen. Numbered because the order matters, and
+   each carries its reason, since an author who has never built one of these has no way of knowing
+   that a scene without a device plays to nobody. */
+.flow-assistant-setup {
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  background: var(--panel);
+}
+
+.flow-assistant-setup h5 {
+  margin: 0 0 0.4rem;
+}
+
+.flow-assistant-setup-steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.flow-assistant-setup-steps li strong {
+  display: block;
+}
+
+.flow-assistant-setup-steps li .muted {
+  display: block;
+  font-size: 0.75rem;
+}
+
+.flow-assistant-setup-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+}
+
 /* Something the assistant added that the author did not ask for, so it says so and offers a way
    out rather than appearing among the ordinary changes. */
 .flow-assistant-gate {

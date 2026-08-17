@@ -17306,6 +17306,24 @@ Sentence:
                         </p>
                       {/if}
 
+                      {#if (flowAssistantProposal.setup || []).length > 0}
+                        <div class="flow-assistant-setup">
+                          <h5>First, what this project is still missing</h5>
+                          <ol class="flow-assistant-setup-steps">
+                            {#each flowAssistantProposal.setup as step}
+                              <li>
+                                <strong>{step.label}</strong>
+                                <span class="muted">{step.why}</span>
+                              </li>
+                            {/each}
+                          </ol>
+                          <p class="muted flow-assistant-setup-note">
+                            These are added for you when you take the proposal, before the steps
+                            below. The flow is already written as though they exist.
+                          </p>
+                        </div>
+                      {/if}
+
                       {#if flowAssistantProposal.readinessGate?.added}
                         <div class="flow-assistant-gate">
                           <p>

@@ -575,9 +575,12 @@ public final class SceneFlowIrTemplateLibrary {
                 .put("payload", new JSONObject().put("timeoutMs", intervalMs)));
 
         final JSONArray assumptions = new JSONArray()
-                .put("The answer arrives in \"" + channel + "\". Something has to write it: a screen "
-                        + "control carrying sendsVar, or a plugin declaring it under variables.writes. "
-                        + "Nothing in this patch provides that.")
+                .put(writesChannel(snapshot, channel)
+                        ? "The answer arrives in \"" + channel + "\", which a screen in this project "
+                                + "already hands back."
+                        : "The answer arrives in \"" + channel + "\". Something has to write it: a "
+                                + "screen control carrying sendsVar, or a plugin declaring it under "
+                                + "variables.writes. Nothing in this patch provides that.")
                 .put("An empty channel means no answer yet, so an empty answer cannot be told apart "
                         + "from silence.")
                 .put("Polling notices an answer up to " + intervalMs + " ms late. Reacting immediately "
@@ -631,6 +634,37 @@ public final class SceneFlowIrTemplateLibrary {
                 .put("reason", reason)
                 .put("nodeId", nodeId)
                 .put("commandText", commandText);
+    }
+
+
+    /** Whether anything in the project already hands {@code channel} back to the flow. */
+    private boolean writesChannel(final JSONObject snapshot, final String channel) {
+        final JSONObject screens = snapshot == null ? null : snapshot.optJSONObject("screens");
+        final JSONArray defined = screens == null ? null : screens.optJSONArray("screens");
+        for (int i = 0; defined != null && i < defined.length(); i++) {
+            final JSONArray writes = defined.optJSONObject(i) == null
+                    ? null
+                    : defined.getJSONObject(i).optJSONArray("writesVariables");
+            for (int j = 0; writes != null && j < writes.length(); j++) {
+                if (channel.equals(writes.optString(j, ""))) {
+                    return true;
+                }
+            }
+        }
+        final JSONObject project = snapshot == null ? null : snapshot.optJSONObject("project");
+        final JSONArray plugins = project == null ? null : project.optJSONArray("plugins");
+        for (int i = 0; plugins != null && i < plugins.length(); i++) {
+            final JSONArray writes = plugins.optJSONObject(i) == null
+                    ? null
+                    : plugins.getJSONObject(i).optJSONArray("writesVariables");
+            for (int j = 0; writes != null && j < writes.length(); j++) {
+                final JSONObject entry = writes.optJSONObject(j);
+                if (entry != null && channel.equals(entry.optString("boundTo", entry.optString("name", "")))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

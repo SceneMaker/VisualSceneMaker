@@ -4,7 +4,7 @@
     "specHash": "fa07637b9cb91da3",
     "plugin": {
         "id": "htmlgui-ws",
-        "name": "HTML GUI /statusWebSocket",
+        "name": "Web Browser User Interface",
         "className": "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor",
         "androidCompatible": false,
         "description": "Versatile HTML GUI with agent-based control via WebSocket",

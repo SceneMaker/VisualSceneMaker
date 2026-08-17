@@ -5204,6 +5204,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             return;
         }
 
+        // Resources before the flow, because the flow was generated against a project that has
+        // them. Doing it the other way round would leave a flow waiting on a screen that does not
+        // exist yet, which is the failure the plan exists to avoid.
+        JSONArray added = applySetupSteps(ref, proposal.setupSteps());
+
         SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
         if (!applySceneFlowXml(sceneFlow, proposal.sceneFlowXml())) {
             writeJson(ctx, errorResponse("APPLY_FAILED", "The proposed flow could not be loaded."));
@@ -5228,7 +5233,112 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         writeJson(ctx, new JSONObject()
                 .put("status", "ok")
                 .put("proposalId", proposalId)
+                .put("added", added)
                 .put("snapshot", snapshot));
+    }
+
+    /**
+     * Adds the device, agent and screen a proposal needs, in the order the plan gives them.
+     *
+     * <p>None of this is expressible as an operation on a flow: a device and an agent live in the
+     * project's configuration and a screen lives beside the project on disk. A step that cannot be
+     * carried out is reported and the rest still run, because a flow with two of its three resources
+     * is closer to working than no flow at all, and the author can see which one is missing.
+     *
+     * @return one entry per step actually carried out, for telling the author what happened
+     */
+    private JSONArray applySetupSteps(ProjectRef ref, List<FlowAssistantSetup.Step> steps) {
+        JSONArray added = new JSONArray();
+        if (steps == null || steps.isEmpty()) {
+            return added;
+        }
+        ProjectConfig config = ref.runtimeProject.getProjectConfig();
+        if (config == null) {
+            return added;
+        }
+        for (FlowAssistantSetup.Step step : steps) {
+            try {
+                switch (step.kind()) {
+                    case "device" -> {
+                        config.getPluginConfigList().add(buildPluginConfig(step));
+                        added.put(new JSONObject().put("kind", "device").put("name", step.deviceName()));
+                    }
+                    case "agent" -> {
+                        de.dfki.vsm.model.project.AgentConfig agent =
+                                new de.dfki.vsm.model.project.AgentConfig(step.agentName(), step.deviceName());
+                        agent.addProperty("role", "agent");
+                        agent.addProperty("speaker", step.agentName());
+                        config.getAgentConfigList().add(agent);
+                        added.put(new JSONObject().put("kind", "agent").put("name", step.agentName()));
+                    }
+                    case "screen" -> {
+                        if (installScreenTemplate(ref, step.templateId())) {
+                            added.put(new JSONObject().put("kind", "screen").put("name", step.templateId()));
+                        }
+                    }
+                    default -> {
+                    }
+                }
+            } catch (RuntimeException exc) {
+                sLogger.failure("Flow Assistant could not add " + step.kind() + ": " + exc.getMessage());
+            }
+        }
+        return added;
+    }
+
+    /** A plugin entry carrying the defaults its own spec declares, as the add-device dialog does. */
+    private PluginConfig buildPluginConfig(FlowAssistantSetup.Step step) {
+        PluginConfig plugin = new PluginConfig("device", step.deviceName(), step.pluginClass(), true);
+        ExportablePropertyEntry entry = exportableEntryFor(step.pluginClass());
+        JSONObject spec = entry == null ? null : entry.pluginSpec;
+        if (spec == null) {
+            return plugin;
+        }
+        for (String section : new String[] {"required", "optional", "pluginSpecific"}) {
+            JSONArray declared = spec.optJSONArray(section);
+            for (int i = 0; declared != null && i < declared.length(); i++) {
+                JSONObject item = declared.optJSONObject(i);
+                if (item == null || !item.has("default")) {
+                    continue;
+                }
+                String key = item.optString("name", "");
+                if (!key.isBlank() && plugin.getProperty(key) == null) {
+                    plugin.addProperty(key, String.valueOf(item.get("default")));
+                }
+            }
+        }
+        return plugin;
+    }
+
+    /** Merges a screen template into the project's screens.json, leaving any existing screens. */
+    private boolean installScreenTemplate(ProjectRef ref, String templateId) {
+        if (ref.path == null || ref.path.isBlank()) {
+            return false;
+        }
+        JSONObject template = FlowAssistantSetup.readTemplate(templateId);
+        JSONObject defined = template == null ? null : template.optJSONObject("screens");
+        if (defined == null) {
+            return false;
+        }
+        java.nio.file.Path screensFile = java.nio.file.Paths.get(ref.path).resolve("screens.json");
+        try {
+            JSONObject root = java.nio.file.Files.isRegularFile(screensFile)
+                    ? new JSONObject(java.nio.file.Files.readString(screensFile))
+                    : new JSONObject().put("version", 1);
+            JSONObject screens = root.optJSONObject("screens") == null
+                    ? root.put("screens", new JSONObject()).getJSONObject("screens")
+                    : root.getJSONObject("screens");
+            for (String name : defined.keySet()) {
+                if (!screens.has(name)) {
+                    screens.put(name, defined.get(name));
+                }
+            }
+            java.nio.file.Files.writeString(screensFile, root.toString(2));
+            return true;
+        } catch (java.io.IOException | RuntimeException exc) {
+            sLogger.failure("Flow Assistant could not write screens.json: " + exc.getMessage());
+            return false;
+        }
     }
 
     /**

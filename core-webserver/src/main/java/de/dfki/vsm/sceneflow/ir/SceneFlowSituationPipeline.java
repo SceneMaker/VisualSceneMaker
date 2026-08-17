@@ -195,13 +195,17 @@ public final class SceneFlowSituationPipeline {
         String generatedProjectError = null;
 
         for (int i = 0; i < candidates.size(); i++) {
-            JSONObject candidate = ensureConditionVariablesDefined(
-                    new JSONObject(candidates.get(i).toString()), snapshot, effectiveSettings.outputMode());
-            candidate = enforceWaitLoopCanonicalShape(
-                    candidate, snapshot, situation, effectiveSettings.outputMode());
+            JSONObject candidate = enforceWaitLoopCanonicalShape(
+                    new JSONObject(candidates.get(i).toString()), snapshot, situation,
+                    effectiveSettings.outputMode());
             if (effectiveSettings.readinessGate()) {
                 candidate = prependReadinessGate(candidate, snapshot, situation);
             }
+            // Last of the shape passes, so it sees every condition the others added. The readiness
+            // gate reads a variable no template mentions, and a condition on a variable nothing
+            // declares compiles into a flow that cannot run.
+            candidate = ensureConditionVariablesDefined(
+                    candidate, snapshot, effectiveSettings.outputMode());
             candidate = assignCreateNodePositions(candidate, snapshot);
             final JSONObject attempt = new JSONObject();
             final String source = candidate.optJSONObject("metadata") != null
@@ -745,13 +749,22 @@ public final class SceneFlowSituationPipeline {
 
         final JSONArray prefixOps = new JSONArray();
         for (String variable : neededVariables) {
-            final String type = inferVariableType(variable);
+            final String type = declaredVariableType(snapshot, variable);
             final JSONObject varDef = new JSONObject()
                     .put("name", variable)
                     .put("type", type);
             if ("Event".equals(type)) {
                 varDef.put("eventElementType", "*");
                 varDef.put("eventCapacity", 10);
+            } else {
+                // A variable a condition reads is read before anything writes it, so it needs a
+                // starting value. The one that means "nothing yet" for its type.
+                varDef.put("expression", switch (type) {
+                    case "Bool" -> "false";
+                    case "Int" -> "0";
+                    case "Float" -> "0.0";
+                    default -> "\"\"";
+                });
             }
             prefixOps.put(new JSONObject()
                     .put("op", "add_variable_definition")
@@ -833,6 +846,36 @@ public final class SceneFlowSituationPipeline {
             vars.add(token);
         }
         return vars;
+    }
+
+    /**
+     * The type to declare a variable with, taken from the plugin that writes it where possible.
+     *
+     * <p>Guessing from the name alone is only safe for the conventional ones. A readiness variable
+     * guessed as String makes a condition such as {@code gui_connected && avatar_ready} nonsense,
+     * and the plugin that sets it has already said it is a Bool.
+     */
+    private String declaredVariableType(final JSONObject snapshot, final String variableName) {
+        final JSONObject project = snapshot == null ? null : snapshot.optJSONObject("project");
+        final JSONArray plugins = project == null ? null : project.optJSONArray("plugins");
+        for (int i = 0; plugins != null && i < plugins.length(); i++) {
+            final JSONObject plugin = plugins.optJSONObject(i);
+            for (String direction : new String[] {"writesVariables", "readsVariables"}) {
+                final JSONArray declared = plugin == null ? null : plugin.optJSONArray(direction);
+                for (int j = 0; declared != null && j < declared.length(); j++) {
+                    final JSONObject entry = declared.optJSONObject(j);
+                    if (entry == null) {
+                        continue;
+                    }
+                    final String bound = entry.optString("boundTo", entry.optString("name", ""));
+                    final String type = entry.optString("type", "").trim();
+                    if (bound.equals(variableName) && !type.isEmpty()) {
+                        return type;
+                    }
+                }
+            }
+        }
+        return inferVariableType(variableName);
     }
 
     private String inferVariableType(final String variableName) {
