@@ -233,6 +233,11 @@ VisualSceneMaker/
 - Constructor: `(PluginConfig config, RunTimeProject project)`
 - Lifecycle: `launch()` → active → `unload()`
 - Plugins stored in `Map<String, RunTimePlugin>` in `RunTimeProject`
+- **A device added to an already-open project needs `RunTimeProject.loadRunTimePlugin(config)`.**
+  Plugin objects are otherwise created once, while the project is being read, so a device added later
+  sits in the configuration with nothing behind it: starting the project opens no port and shows
+  nothing, and only reopening the project helps. `applyProjectConfigFromJson` calls it for every
+  plugin in an applied config, which covers the add-device dialog and the Flow Assistant alike.
 
 **Plugin Interface** (core/runtime/plugin/RunTimePlugin.java):
 ```java

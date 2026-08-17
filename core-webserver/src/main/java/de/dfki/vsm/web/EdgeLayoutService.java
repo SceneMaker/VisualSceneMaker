@@ -516,6 +516,55 @@ public final class EdgeLayoutService {
         initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
     }
 
+    /**
+     * Gives geometry to edges that have none, leaving every edge that already has some alone.
+     *
+     * <p>An edge arriving from somewhere other than the canvas, a generated flow for instance, has no
+     * endpoints and no control points. The client draws it from nothing, which for an edge from a
+     * node back to itself means a line of zero length hidden under the node: the edge is there, does
+     * its job at runtime, and cannot be seen. Relayouting the whole flow would fix it and throw away
+     * every route the author had arranged by hand, so only the new edges are touched.
+     *
+     * @return how many edges were given geometry
+     */
+    int layoutEdgesWithoutGeometry(SuperNode root, int nodeWidth, int nodeHeight) {
+        if (root == null) {
+            return 0;
+        }
+        List<AbstractEdge> all = new ArrayList<>();
+        Set<AbstractEdge> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        collectEdgesRecursive(root, all, seen);
+
+        List<AbstractEdge> missing = new ArrayList<>();
+        for (AbstractEdge edge : all) {
+            if (lacksGeometry(edge)) {
+                missing.add(edge);
+            }
+        }
+        if (missing.isEmpty()) {
+            return 0;
+        }
+        // Dock points first for the whole batch, then the curve for each, which is the order the
+        // canvas's own relayout uses: normalizeEdge needs both endpoints to already exist.
+        relayoutEdgesInOrder(missing, nodeWidth, nodeHeight);
+        for (AbstractEdge edge : missing) {
+            normalizeEdge(edge, nodeWidth, nodeHeight);
+        }
+        return missing.size();
+    }
+
+    private boolean lacksGeometry(AbstractEdge edge) {
+        if (edge == null) {
+            return false;
+        }
+        EdgeGraphics graphics = edge.getGraphics();
+        if (graphics == null || graphics.getConnection() == null) {
+            return true;
+        }
+        List<EdgePoint> points = graphics.getConnection().getPointList();
+        return points == null || points.size() < 2;
+    }
+
     void relayoutEdgesInOrder(List<AbstractEdge> edges, int nodeWidth, int nodeHeight) {
         if (edges == null || edges.isEmpty()) return;
         for (AbstractEdge edge : edges) {

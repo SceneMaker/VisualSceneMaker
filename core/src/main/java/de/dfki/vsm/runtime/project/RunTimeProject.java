@@ -304,35 +304,71 @@ public class RunTimeProject {
     private boolean loadRunTimePlugins() {
         // Get the list of devices
         for (final PluginConfig config : mProjectConfig.getPluginConfigList()) {
-            // Get the plugin attributes
-            final String pluginType = config.getPluginType();
             final String pluginName = config.getPluginName();
-            final String className = config.getClassName();
-
             // check if plugin show be loaded - added PG 19.4.2016
             if (config.isMarkedtoLoad()) {
-                // Load the device executor
-                try {
-                    // Get the class object
-                    final Class clazz = Class.forName(className);
-                    // Get the constructor
-                    final Constructor constructor
-                            = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
-                    // Call the constructor
-                    final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, this);
-                    // Add the executor then
-                    mPluginMap.put(pluginName, plugin);
-                    // Print some information
-                    mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
-                } catch (final Exception exc) {
-                    mLogger.failure(exc.toString());
-                }
+                instantiateRunTimePlugin(config);
             } else {
                 mLogger.message("Plugin object '" + pluginName + "' is marked as 'not load' - skipping loading plugin.");
             }
         }
         // Return true at success
         return true;
+    }
+
+    /**
+     * Instantiates a device that was added to the configuration after the project was loaded.
+     *
+     * <p>Plugins are otherwise created once, while the project is being read. A device added later,
+     * from the editor's own add-device dialog or by the Flow Assistant, is in the configuration and
+     * in the saved file but has no runtime object behind it, so starting the project does nothing
+     * with it: no port is opened and nothing it should have shown appears. Until this existed the
+     * only way to get one running was to close the project and open it again, which is not something
+     * an author can be expected to know.
+     *
+     * <p>Launched straight away if its peers already have been, so it ends up in the same state they
+     * are in rather than in one no other plugin is ever in.
+     *
+     * @return true if a new plugin object was created
+     */
+    public final boolean loadRunTimePlugin(final PluginConfig config) {
+        if (config == null || !config.isMarkedtoLoad()) {
+            return false;
+        }
+        final String pluginName = config.getPluginName();
+        if (pluginName == null || pluginName.isEmpty() || mPluginMap.containsKey(pluginName)) {
+            return false;
+        }
+        final RunTimePlugin plugin = instantiateRunTimePlugin(config);
+        if (plugin == null) {
+            return false;
+        }
+        if (mPluginsLaunched) {
+            plugin.launch();
+        }
+        return true;
+    }
+
+    private RunTimePlugin instantiateRunTimePlugin(final PluginConfig config) {
+        final String pluginName = config.getPluginName();
+        final String className = config.getClassName();
+        try {
+            // Get the class object
+            final Class clazz = Class.forName(className);
+            // Get the constructor
+            final Constructor constructor
+                    = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
+            // Call the constructor
+            final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, this);
+            // Add the executor then
+            mPluginMap.put(pluginName, plugin);
+            // Print some information
+            mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
+            return plugin;
+        } catch (final Exception exc) {
+            mLogger.failure(exc.toString());
+            return null;
+        }
     }
 
     // Launch the runtime objects of the project

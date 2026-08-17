@@ -5260,7 +5260,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             try {
                 switch (step.kind()) {
                     case "device" -> {
-                        config.getPluginConfigList().add(buildPluginConfig(step));
+                        PluginConfig plugin = buildPluginConfig(step);
+                        config.getPluginConfigList().add(plugin);
+                        // Same reason as in applyProjectConfigFromJson: a device with no runtime
+                        // object behind it opens no port when the project is started.
+                        ref.runtimeProject.loadRunTimePlugin(plugin);
                         added.put(new JSONObject().put("kind", "device").put("name", step.deviceName()));
                     }
                     case "agent" -> {
@@ -6103,6 +6107,16 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
         cfg.getPluginConfigList().clear();
         cfg.getPluginConfigList().addAll(nextPlugins);
+
+        // A device added to an already-open project has no runtime object behind it, because those
+        // are created while the project is being read. Without this, adding a device and pressing
+        // Play opened no port and showed nothing, and the only cure was to close the project and
+        // open it again (found 2026-08-17; the add-device dialog had it too, not just the assistant).
+        if (ref.runtimeProject != null) {
+            for (PluginConfig added : nextPlugins) {
+                ref.runtimeProject.loadRunTimePlugin(added);
+            }
+        }
 
         JSONArray agentsJson = configJson.optJSONArray("agents");
         Map<String, AgentConfig> agentByName = new HashMap<>();
@@ -11978,6 +11992,16 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         ref.nextSuperNodeIndex = computeNextSuperNodeIndex(ref.runtimeProject);
         mEdgeLayout.clearDockPointsRecursive(ref.runtimeProject.getSceneFlow());
         initializeDockPointsForProject(ref);
+        // Dock points are only read off edges that already have geometry, so an edge that arrived
+        // without any keeps none and is drawn as a zero-length line. Undo cannot produce one, since
+        // its snapshots were drawn on the canvas; a generated flow does it every time.
+        int laidOut = mEdgeLayout.layoutEdgesWithoutGeometry(
+                ref.runtimeProject.getSceneFlow(),
+                getEditorConfigInt(ref, "node_width", 90),
+                getEditorConfigInt(ref, "node_height", getEditorConfigInt(ref, "node_width", 90)));
+        if (laidOut > 0) {
+            sLogger.message("Laid out " + laidOut + " edge(s) that arrived without geometry");
+        }
     }
 
     private boolean applyHistoryEntry(ProjectRef ref, HistoryEntry entry) {
