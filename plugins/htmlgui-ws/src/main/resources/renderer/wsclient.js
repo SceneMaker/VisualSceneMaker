@@ -66,6 +66,16 @@ var messageEvent = eventMethod === "attachEvent"
 let audioCtx;
 
 eventer(messageEvent, function (e) {
+    // Everything the screens have ever sent upstream is a string (the varUpdate$ protocol, and the
+    // legacy gui pages' button names). An object is therefore a control message between the shell
+    // and the renderer, and must not be forwarded to the plugin as if a person had done something.
+    if (e.data && typeof e.data === 'object') {
+        if (e.data.cmd === 'rendererReady') {
+            screensReady = true;
+            flushToScreens();
+        }
+        return;
+    }
     sendToWSServer(e.data);
     console.log(e);
 })
@@ -105,13 +115,43 @@ function setupAudioOverlay() {
 }
 
 /**
+ * Sends a control message to the screens iframe, holding it back until the renderer can hear it.
+ *
+ * The renderer registers its own message listener while its module loads and its custom element
+ * upgrades, which is well after this shell's WebSocket is open. Anything posted before that arrives
+ * at a window with no listener and is gone: postMessage has no queue and nothing ever resends. A
+ * flow whose first step speaks as soon as the browser connects, which is what waiting for the
+ * interface to be ready produces, therefore lost its first line every time (found 2026-08-17: the
+ * page was up, the plugin had pushed the text, and the feed stayed empty).
+ *
+ * The renderer announces itself with { cmd: 'rendererReady' } once its listener is attached.
+ */
+let screensReady = false;
+const pendingForScreens = [];
+
+function sendToScreens(message) {
+    if (!screensReady) {
+        pendingForScreens.push(message);
+        return;
+    }
+    const frame = document.getElementById('screens');
+    if (frame && frame.contentWindow) {
+        frame.contentWindow.postMessage(message, '*');
+    }
+}
+
+function flushToScreens() {
+    while (pendingForScreens.length > 0) {
+        sendToScreens(pendingForScreens.shift());
+    }
+}
+
+/**
  * Tell the screens iframe to switch to the given screen id.
  */
 function loadScreen(screenId) {
     console.log("Load VSM screen: " + screenId);
-    document.getElementById('screens').contentWindow.postMessage(
-        { cmd: 'loadScreen', screen: screenId }, '*'
-    );
+    sendToScreens({ cmd: 'loadScreen', screen: screenId });
 }
 
 /**
@@ -125,9 +165,7 @@ function forwardUpdateVar(wsMsg) {
     if (idx1 < 0 || idx2 < 0) return;
     const varName = wsMsg.substring(idx1 + 1, idx2);
     const value   = wsMsg.substring(idx2 + 1);
-    document.getElementById('screens').contentWindow.postMessage(
-        { cmd: 'updateVar', var: varName, value: value }, '*'
-    );
+    sendToScreens({ cmd: 'updateVar', var: varName, value: value });
 }
 
 /**

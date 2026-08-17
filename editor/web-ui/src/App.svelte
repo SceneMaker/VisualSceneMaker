@@ -6831,6 +6831,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       // conclude the device was safe.
       if (Array.isArray(result.added) && result.added.length > 0) {
         projectConfigPending = true;
+        // The device and the agent were added to the project on the server, so the settings panel is
+        // now showing something that no longer exists. The flow refreshes itself from the broadcast
+        // snapshot; the configuration has no such broadcast, so it is re-read here.
+        try {
+          await loadProjectConfig(selectedProjectId);
+        } catch (err) {
+          // The panel keeps its stale copy rather than losing the proposal that was just applied.
+        }
       }
       flowAssistantProposal = null;
       flowAssistantSituation = "";

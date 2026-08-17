@@ -260,7 +260,17 @@ public abstract class RunTimePlugin {
 ```
 
 **Important Plugins**:
-- `htmlgui-ws` - WebSocket-based custom HTML UI (separate from main Web UI)
+- `htmlgui-ws` - WebSocket-based custom HTML UI (separate from main Web UI). Two ways to present
+  something: a hand-written page under the project's `gui/` (legacy, e.g. `doc/IntakeInterview`), or
+  screens declared in `screens.json` and drawn by the renderer served from the plugin jar
+  (schema-driven, what the Flow Assistant sets up). In the schema-driven case the shell page and the
+  renderer talk over `postMessage`, and the shell **buffers until the renderer reports
+  `rendererReady`**: postMessage has no queue, so anything sent before the renderer's listener exists
+  is lost outright, which used to swallow the first spoken line of every flow that speaks as soon as
+  the browser connects. `plugins/htmlgui-ws/src/test/js/wsclient-buffering.test.mjs` guards it
+  (`node --test`, not part of `gradle test`).
+  An agent on this device needs a `var` feature naming where its lines go; see the agent features it
+  declares under `config.agent.fixed`.
 - `charamel-ws` - Character animation system
 - `unity` - Unity3D integration
 - `console`, `email`, `timer` - Utility plugins

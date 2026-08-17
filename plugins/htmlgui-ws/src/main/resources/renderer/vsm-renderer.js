@@ -129,6 +129,15 @@ class VsmScreenRenderer extends LitElement {
                 this.requestUpdate();
             }
         });
+
+        // Tell the shell it may deliver now. Anything it sent before this listener existed reached a
+        // window with nobody listening and was gone, postMessage having no queue of its own; the
+        // shell holds messages back until it hears this. See wsclient.js sendToScreens.
+        try {
+            parent.postMessage({ cmd: 'rendererReady' }, '*');
+        } catch (e) {
+            // Not framed, or a parent we may not talk to. Nothing to announce ourselves to.
+        }
     }
 
     async connectedCallback() {
