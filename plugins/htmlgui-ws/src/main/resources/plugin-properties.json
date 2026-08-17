@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.5",
+    "specVersion": "1.6",
     "specHash": "fa07637b9cb91da3",
     "plugin": {
         "id": "htmlgui-ws",
@@ -113,7 +113,24 @@
         ],
         "agent": {
             "fixed": [
-                
+                {
+                    "name": "var",
+                    "type": "string",
+                    "sceneflowtype": "String",
+                    "default": "conversation_log",
+                    "description": "SceneFlow variable this agent's spoken lines are appended to. Without it a scene this agent speaks produces nothing at all, because the plugin has nowhere to put the text."
+                },
+                {
+                    "name": "role",
+                    "type": "string",
+                    "default": "agent",
+                    "description": "How the line is labelled in the feed: agent or user."
+                },
+                {
+                    "name": "speaker",
+                    "type": "string",
+                    "description": "Display name shown beside the line. Defaults to the agent's own name."
+                }
             ],
             "dynamic": {
                 "enabled": true,

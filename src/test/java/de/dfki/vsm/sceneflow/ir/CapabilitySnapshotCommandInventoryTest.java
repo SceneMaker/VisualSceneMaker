@@ -146,6 +146,33 @@ class CapabilitySnapshotCommandInventoryTest {
         assertEquals("gui_connected", writtenVariable(snapshot, "HtmlGuiWs", "sceneflowStateVar"));
     }
 
+    /**
+     * htmlgui-ws has to declare the agent features it reads, or an agent added to it stays mute.
+     *
+     * <p>A spoken line is appended to the variable named by the agent's own {@code var} feature, and
+     * an agent with none appends nowhere: the scene plays, the flow moves on, and nothing appears.
+     * The declaration is what lets both the add-agent dialog and the Flow Assistant fill it in, so an
+     * author never has to know that the feature exists.
+     */
+    @Test
+    void theWebInterfaceDeclaresTheAgentFeaturesItReads() {
+        JSONObject spec = de.dfki.vsm.web.WebUiServer.agentSpecForClassName(
+                "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor");
+        assertNotNull(spec, "htmlgui-ws has to declare an agent spec");
+        JSONArray fixed = spec.optJSONArray("fixed");
+        assertNotNull(fixed);
+
+        JSONObject var = null;
+        for (int i = 0; i < fixed.length(); i++) {
+            if ("var".equals(fixed.getJSONObject(i).optString("name"))) {
+                var = fixed.getJSONObject(i);
+            }
+        }
+        assertNotNull(var, "Expected a declared \"var\" feature, got: " + fixed);
+        assertEquals("conversation_log", var.optString("default"),
+                "The default has to be the variable the chat screen's feed reads");
+    }
+
     /** A command is only usable if its parameters come with it. */
     @Test
     void commandParametersCarryTypeAndWhetherTheyAreRequired() {

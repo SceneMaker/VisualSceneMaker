@@ -2182,6 +2182,18 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return out;
     }
 
+    /**
+     * The agent-level config a plugin class declares, or null.
+     *
+     * <p>Its {@code fixed} entries are the features an agent on that device needs. htmlgui-ws reads a
+     * spoken line's destination from the agent's own {@code var}, so an agent created without it is
+     * silent, and nothing anywhere says so.
+     */
+    public static JSONObject agentSpecForClassName(String className) {
+        ExportablePropertyEntry entry = exportableEntryFor(className);
+        return entry == null ? null : entry.agentSpec;
+    }
+
     /** The {@code variables.writes} / {@code variables.reads} a plugin class declares, or null. */
     static JSONObject pluginVariablesForClassName(String className) {
         ExportablePropertyEntry entry = exportableEntryFor(className);
@@ -5268,11 +5280,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                         added.put(new JSONObject().put("kind", "device").put("name", step.deviceName()));
                     }
                     case "agent" -> {
-                        de.dfki.vsm.model.project.AgentConfig agent =
-                                new de.dfki.vsm.model.project.AgentConfig(step.agentName(), step.deviceName());
-                        agent.addProperty("role", "agent");
-                        agent.addProperty("speaker", step.agentName());
-                        config.getAgentConfigList().add(agent);
+                        config.getAgentConfigList().add(buildAgentConfig(config, step));
                         added.put(new JSONObject().put("kind", "agent").put("name", step.agentName()));
                     }
                     case "screen" -> {
@@ -5312,6 +5320,43 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
         }
         return plugin;
+    }
+
+    /**
+     * An agent carrying the features its device's plugin declares, with their declared defaults.
+     *
+     * <p>An agent with no features is not a neutral starting point. htmlgui-ws appends a spoken line
+     * to the variable named by the agent's own {@code var} feature, and with none it appends nowhere:
+     * the scene plays, the flow moves on, and nothing appears. Reading the declaration rather than
+     * hard-coding the three keys keeps this correct for the next device that needs different ones.
+     */
+    private de.dfki.vsm.model.project.AgentConfig buildAgentConfig(
+            ProjectConfig config, FlowAssistantSetup.Step step) {
+        de.dfki.vsm.model.project.AgentConfig agent =
+                new de.dfki.vsm.model.project.AgentConfig(step.agentName(), step.deviceName());
+        String className = "";
+        for (PluginConfig plugin : config.getPluginConfigList()) {
+            if (step.deviceName().equals(plugin.getPluginName())) {
+                className = plugin.getClassName();
+            }
+        }
+        JSONObject agentSpec = agentSpecForClassName(className);
+        JSONArray declared = agentSpec == null ? null : agentSpec.optJSONArray("fixed");
+        for (int i = 0; declared != null && i < declared.length(); i++) {
+            JSONObject feature = declared.optJSONObject(i);
+            String key = feature == null ? "" : feature.optString("name", "");
+            if (key.isBlank()) {
+                continue;
+            }
+            // "speaker" has no useful default in the abstract: it is whatever this agent is called.
+            String value = "speaker".equals(key)
+                    ? step.agentName()
+                    : (feature.has("default") ? String.valueOf(feature.get("default")) : "");
+            if (!value.isBlank()) {
+                agent.addProperty(key, value);
+            }
+        }
+        return agent;
     }
 
     /** Merges a screen template into the project's screens.json, leaving any existing screens. */
