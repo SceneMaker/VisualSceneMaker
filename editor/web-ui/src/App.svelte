@@ -2175,6 +2175,39 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
   }
 
+  // Once a project session is up, scheduleAutoConnectRetry() deliberately does nothing (it's
+  // for the pre-session connect sequence only, and re-running connectAll() mid-session would
+  // reset project/UI state). So an unexpected close after that point — most commonly the
+  // server's idle timeout firing because a backgrounded tab froze the heartbeat's setInterval
+  // (browsers stop firing JS timers on hidden tabs) — otherwise left the app stuck "offline"
+  // until a manual reload. This reopens the same connection (local or remote) without touching
+  // session state; the "visibilitychange" listener below also fires it as soon as the tab is
+  // foregrounded again, so recovery doesn't wait on the heartbeat's own throttled timer.
+  let wsReconnectTimer = null;
+
+  function scheduleWsReconnect(reason) {
+    if (wsReconnectTimer || (ws && ws.readyState === WebSocket.OPEN)) return;
+    if (isRemoteConnection && !remoteServerUrl) return;
+    console.log("[WS] Scheduling reconnect", { reason });
+    wsReconnectTimer = setTimeout(() => {
+      wsReconnectTimer = null;
+      connectWs(isRemoteConnection ? remoteServerUrl : null);
+    }, 1000);
+  }
+
+  function stopWsReconnect() {
+    if (wsReconnectTimer) {
+      clearTimeout(wsReconnectTimer);
+      wsReconnectTimer = null;
+    }
+  }
+
+  function handleVisibilityChange() {
+    if (document.visibilityState === "visible" && sessionReady && (!ws || ws.readyState !== WebSocket.OPEN)) {
+      scheduleWsReconnect("tab-visible");
+    }
+  }
+
   $: selectedProject = projects.find((p) => p.projectId === selectedProjectId) || null;
   // Inspector section tracks. These were `minmax(0, 1fr)`, which let ONE expanded section swallow
   // every spare pixel: with 21 variables in a tall panel, Variables took 1296px for content needing
@@ -4501,6 +4534,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     autoConnectAttempts = 0;
     autoConnect();
     startRuntimeGuiWindowPoll();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
   });
 
   onDestroy(() => {
@@ -4511,7 +4545,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
     stopSemanticPreview();
     stopWsHeartbeat();
+    stopWsReconnect();
     stopRuntimeGuiWindowPoll();
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
     if (timeoutInspectorApplyTimer) {
       clearTimeout(timeoutInspectorApplyTimer);
       timeoutInspectorApplyTimer = null;
@@ -9073,6 +9109,7 @@ Sentence:
   function connectWs(serverUrl = null) {
     wsError = "";
     stopWsHeartbeat();
+    stopWsReconnect();
     if (ws) {
       rejectPendingRequests("WebSocket reconnecting.");
       ws.close();
@@ -9144,14 +9181,22 @@ Sentence:
             localStorage.removeItem("vsm_token");
           }
         }
-        scheduleAutoConnectRetry("ws-closed");
+        if (sessionReady) {
+          scheduleWsReconnect("ws-closed");
+        } else {
+          scheduleAutoConnectRetry("ws-closed");
+        }
         finish(false);
       };
       ws.onerror = () => {
         wsError = "WebSocket connection failed.";
         stopWsHeartbeat();
         rejectPendingRequests("WebSocket connection failed.");
-        scheduleAutoConnectRetry("ws-error");
+        if (sessionReady) {
+          scheduleWsReconnect("ws-error");
+        } else {
+          scheduleAutoConnectRetry("ws-error");
+        }
         finish(false);
       };
       ws.onmessage = (event) => handleWsMessage(event.data);
