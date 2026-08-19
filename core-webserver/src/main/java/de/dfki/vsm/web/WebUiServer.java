@@ -5234,7 +5234,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      * <p>Recorded as one undoable step, so an author who does not like the result gets back exactly
      * the flow they had. Resources the proposal reported as missing are not created here: the
      * representation has no operation for creating a scene or a screen, so those stay with the
-     * author (see doc/sceneflow-modelling-support-concept.md section 4b).
+     * author (see doc/vsm-modelling-support.md section 4b).
      */
     private void handleFlowAssistantApply(Context ctx) {
         String pid = ctx.pathParam("pid");

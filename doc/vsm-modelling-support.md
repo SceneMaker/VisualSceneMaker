@@ -1,8 +1,15 @@
-# SceneFlow Modelling Support — Concept
+# VSM Modelling Support
 
-**Date:** 2026-08-13
-**Status:** Conceptualisation phase (discussion draft)
-**Audience:** Non-technical authors (psychologists, dialogue designers) building interactive flows
+**Started:** 2026-08-13 as a concept. **Last revised:** 2026-08-19.
+**Status:** Partly built and in use. Three patterns work end to end, the assistant is reachable from
+the editor, and it now provisions what a flow needs rather than only reporting it. Section 1a is the
+current state; sections 2 to 8 are the reasoning it was built from and still the place where a
+decision is written down.
+**Audience:** Non-technical authors (psychologists, dialogue designers) building interactive flows.
+
+It was called *SceneFlow Modelling Support* while it was only about flows. It outgrew that: what the
+assistant does now reaches into the project's devices, its agents and its screens, because a flow on
+its own cannot say anything to anybody.
 
 ---
 
@@ -20,7 +27,102 @@ web UI).
 
 ---
 
-## 2. What already exists (prior work inventory)
+## 1a. Where this stands
+
+Written 2026-08-19, after the first author took an empty project all the way to a running
+interaction. Everything below was exercised end to end, not only unit tested.
+
+### What an author can do today
+
+Open the Flow Assistant panel, which sits between the SceneFlow menu bar and the editing area so a
+proposal and the canvas it would change stay on screen together. Describe a situation in a sentence.
+Read back a proposal in four parts, then take it or drop it.
+
+1. **What this project is still missing**, as an ordered list, each step saying *why*: the device
+   ("a device is the thing a flow can actually talk to"), the agent ("scenes are written as lines
+   someone says, so every line needs a someone"), the screen ("waiting for an answer only ends when
+   something hands one back").
+2. **Waiting for the agents first**, when the flow would otherwise start by using one, with a button
+   to leave it out.
+3. **What this adds**, the flow itself, one sentence per step in the vocabulary of the editor.
+4. **What it needs**, every requirement of the chosen pattern with one of the four outcomes of §4a,
+   and **what I assumed**.
+
+Taking the proposal carries out the setup steps first and then applies the flow, recorded as one
+undoable step. The flow was generated against the project *as it will be*, which is what makes the
+two halves agree.
+
+### The three patterns that work
+
+| # | Pattern | Shape |
+| --- | --- | --- |
+| 1.1 | Fixed sequence | EEDGE chain, one node per step, each playing a scene |
+| 1.3 | Ask and wait for an answer | ask + clear channel, empty wait node with a guard and a poll, store node that also puts the answer into the conversation |
+| 1.9 | Wait until the agents are ready | supernode the flow starts in, idle node inside, IEDGE over every agent's readiness variable joined with `&&` |
+
+Nothing else in §3 is built. A situation no pattern recognises is reported as exactly that, with what
+*is* recognised, rather than as a failure.
+
+### Where it lives
+
+- `de.dfki.vsm.sceneflow.ir` in **core-webserver**: generate, validate against eleven rules, compile
+  to a merged flow, explain. Also still reachable through the Gradle tasks.
+- `FlowAssistantService`: situation to proposal, holding the compiled result until the author decides.
+  The intermediate representation never leaves it; a test asserts the author-facing view carries none
+  of the generator's vocabulary.
+- `FlowAssistantSetup`: what the project is missing, why, and the **projected** capability snapshot
+  the flow is generated against.
+- `CapabilitySnapshotBuilder` (v1.3): what the project offers, including which flow variable each
+  plugin instance is bound to, which is what tells two characters on one plugin class apart.
+- Four routes, `FULL_EDITOR` only: `GET /api/v1/sceneflow/patterns`, and
+  `flow-assistant/propose | apply | discard` per project.
+
+### The language service
+
+Per project, as `LLMSelections/flowAssistant` beside the existing `generate` and `semantic` keys.
+Unset means patterns only, which is the default and a complete way to work. Set, it is asked **only**
+about situations no pattern recognises (`CandidateMode.TEMPLATE_THEN_LLM`), because pattern output is
+validated, reproducible and explains itself in the author's words. A proposal a model wrote says so.
+The server reads the selection from the project rather than the request, since the generator runs
+server-side and a browser posting an API key on every proposal would hold a credential it has no
+reason to.
+
+### What the first real use taught
+
+Each of these was invisible until an author started from nothing, and each is now guarded by a test.
+
+- **A flow is not enough, and neither is reporting what is missing.** Being told "the project has no
+  agent yet" is a dead end for someone who does not know what an agent is for. Hence the setup plan,
+  and hence every step carrying its reason.
+- **A capability the project lacks and one nobody shipped are different problems.** The first is work
+  to do, the second is a dead end. Conflating them told a newcomer that nothing could ever take an
+  answer while the plugin sat unused on the classpath.
+- **An agent with no features is silently mute.** htmlgui-ws appends a spoken line to the variable
+  named by the agent's own `var` feature and appends nowhere without it. Devices now declare the agent
+  features they read, under `config.agent.fixed`, and both the dialog and the assistant fill them in.
+- **A device added to an open project had no runtime object behind it**, so pressing Play opened no
+  port. Plugin objects are created while a project is read; `RunTimeProject.loadRunTimePlugin` covers
+  one added later.
+- **The conversation showed one side of itself.** An agent's lines appear by themselves; nothing does
+  that for the person, so ask-and-wait now emits the command that puts the answer in.
+- **`postMessage` has no queue.** The schema-driven screens live in an iframe, and everything sent
+  before its renderer was listening was lost, which for a flow that speaks as soon as the browser
+  connects meant the first line every time.
+- **Generated edges had no geometry**, so a timeout edge from a node back to itself was a line of zero
+  length under the node: running, and invisible.
+- **A finished flow was still reported as running.** Ending is the one transition the interpreter does
+  not announce.
+
+### Not built yet
+
+The other twenty patterns of §3, the pattern gallery, tutorial mode (§6), provenance tagging, and node
+positions in the snapshot, so a generated patch still cannot avoid overlapping existing nodes. Undo
+reverts the flow half of an apply only: a device, an agent and a screen live outside the flow history.
+Scenes are never generated, which is deliberate and stays that way (§4a, `record`).
+
+---
+
+## 2. What already existed when this started (prior work inventory, 2026-08-13)
 
 The repository already contains three layers that address parts of this goal — they are just not
 connected to each other or to the authoring UI:
@@ -246,6 +348,9 @@ The four consumers:
 
 ## 5. The Flow Assistant — concept
 
+*What was intended, and why. §1a says which of it exists. Where the two differ, the difference is
+noted in place rather than edited away, since the reasoning is what a later decision needs.*
+
 ### 5.1 Interaction model
 
 A conversational **panel in the web UI** (precedents: the LLM generate panel, InsertActionDialog,
@@ -339,7 +444,8 @@ the elements, the assistant **guides the author to build them** and *verifies* e
 
 ## 7. Gaps to close in the realisation phase
 
-Ordered roughly by dependency:
+Ordered roughly by dependency. Items struck through are done, with a note on what they turned into;
+§1a is the shorter summary of where the whole thing stands.
 
 1. ~~**Live capability snapshot service.**~~ *(done 2026-08-14.)* `CapabilitySnapshotBuilder` in
    `core-webserver` builds the snapshot from the loaded model, and `GET /api/v1/projects/{pid}/capabilities`

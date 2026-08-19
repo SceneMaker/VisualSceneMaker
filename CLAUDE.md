@@ -369,6 +369,11 @@ mLogger.failure("Error message");
 ## Documentation
 
 Additional architecture details are in `doc/`:
+- `vsm-modelling-support.md` - Interaction patterns and the Flow Assistant. **Section 1a is the
+  current state**: which patterns work, what the assistant provisions, and the traps that only showed
+  up when a first author started from an empty project. The rest is the reasoning it was built from,
+  including the four outcomes a requirement can have (§4a) and why creating a resource is not a flow
+  operation (§4b). Was `sceneflow-modelling-support-concept.md` until 2026-08-19.
 - `architecture-details.md` - Comprehensive architecture guide (unified server model)
 - `runtime-server.md` - Standalone runtime server guide (deployment, API, usage)
 - `scenemaker-java-compatibility.md` - Java 17/21 compatibility policy

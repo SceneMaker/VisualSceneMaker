@@ -19,7 +19,7 @@ import java.util.Set;
  * <p>A flow is only half of what an interaction needs. The other half is a device that can show
  * something, an agent to speak through it, and a screen with a control on it. None of those can be
  * expressed as an operation on a flow, which is why they are planned separately and carried out
- * before the flow is applied. See {@code doc/sceneflow-modelling-support-concept.md} section 4b.
+ * before the flow is applied. See {@code doc/vsm-modelling-support.md} section 4b.
  *
  * <p>Each step says what it adds and why that is needed, because an author who has never built one
  * of these has no way of knowing that a scene without a device plays to nobody.

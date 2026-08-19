@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * <p>The generator's intermediate representation never leaves this class. Authors are told what the
  * proposal does in the vocabulary of the editor (steps, scenes, waiting, variables); the operation
  * list that produces it is an implementation detail they have no way to act on. See
- * {@code doc/sceneflow-modelling-support-concept.md} section 4b for why applying a proposal is an
+ * {@code doc/vsm-modelling-support.md} section 4b for why applying a proposal is an
  * ordered plan rather than a single patch: the representation has no operation for creating a scene
  * or a screen, so those resources are reported and left to the author or to a later step.
  */

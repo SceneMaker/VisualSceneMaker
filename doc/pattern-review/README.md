@@ -1,7 +1,7 @@
 # Interaction Pattern Review: Understandability Study
 
 Expert review instrument for the pattern catalogue in
-[`../sceneflow-modelling-support-concept.md`](../sceneflow-modelling-support-concept.md) §3.
+[`../vsm-modelling-support.md`](../vsm-modelling-support.md) §3.
 
 **Purpose:** decide the final level cut and the pattern naming (concept doc §8, Q1) on evidence
 rather than intuition. Raters are psychologists and other non-technical domain experts, which is the
