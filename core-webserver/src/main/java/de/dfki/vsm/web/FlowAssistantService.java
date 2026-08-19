@@ -48,6 +48,11 @@ public final class FlowAssistantService {
     private static final Pattern PLAY_SCENE = Pattern.compile(
             "PlayScene\\s*\\(\\s*([\"'])(.*?)\\1", Pattern.CASE_INSENSITIVE);
 
+    /** Matches an action asked of a device: {@code PlayAction("[agent name key='value']")}. */
+    private static final Pattern PLAY_ACTION = Pattern.compile(
+            "PlayAction\\s*\\(\\s*\"\\s*\\[\\s*(\\S+)\\s+(\\S+)\\s*(.*?)\\]",
+            Pattern.CASE_INSENSITIVE);
+
     private final Map<String, Proposal> mProposals = new ConcurrentHashMap<>();
 
     /**
@@ -604,6 +609,12 @@ public final class FlowAssistantService {
         if (scene.find()) {
             return node + " plays the scene " + quoted(scene.group(2)) + ".";
         }
+        // Before the assignment case below, which splits on the first "=" and would tear an action
+        // apart at the first of its parameters.
+        final Matcher action = PLAY_ACTION.matcher(commandText);
+        if (action.find()) {
+            return node + " " + describeAction(action.group(1), action.group(2), action.group(3));
+        }
         final int assign = commandText.indexOf('=');
         if (assign > 0 && commandText.charAt(assign - 1) != '!'
                 && (assign + 1 >= commandText.length() || commandText.charAt(assign + 1) != '=')) {
@@ -615,6 +626,24 @@ public final class FlowAssistantService {
             return node + " sets " + quoted(target) + " to " + value + ".";
         }
         return node + " runs " + quoted(commandText) + ".";
+    }
+
+    /**
+     * An action asked of a device, said as what it achieves rather than as what it is called.
+     *
+     * <p>The ones the generator emits get a sentence of their own. Anything else falls back to naming
+     * the action, which is at least the name an author sees in the editor's own command list.
+     */
+    private String describeAction(final String agent, final String action, final String params) {
+        if ("appendMessage".equalsIgnoreCase(action)) {
+            return params.contains("role='user'")
+                    ? "puts the answer into the conversation, so the person can see what they said."
+                    : "puts a line into the conversation.";
+        }
+        if ("loadScreen".equalsIgnoreCase(action)) {
+            return "shows a screen.";
+        }
+        return "asks " + quoted(agent) + " to " + action + ".";
     }
 
     private String readableCondition(final String conditionText) {

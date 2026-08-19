@@ -546,6 +546,18 @@ public final class SceneFlowIrTemplateLibrary {
         operations.put(command(storeId, store + " = " + channel,
                 "Copy the answer out before the next question clears the shared channel."));
 
+        // Show what the person said. The agent's own lines appear by themselves, because the plugin
+        // appends whatever it speaks to the variable the agent names. Nothing does that for the other
+        // side: the control that takes the answer hands it to the flow and nothing else, so without
+        // this the conversation shows only half of itself.
+        final FeedEcho echo = resolveFeedEcho(snapshot);
+        if (echo != null) {
+            operations.put(command(storeId,
+                    "PlayAction(\"[" + echo.agentName() + " appendMessage var='" + echo.feedVariable()
+                            + "' role='user' text='@" + channel + "']\")",
+                    "Put the answer into the conversation, so the person can see what they said."));
+        }
+
         operations.put(new JSONObject()
                 .put("op", "create_edge")
                 .put("opId", "ask-to-wait")
@@ -1030,6 +1042,69 @@ public final class SceneFlowIrTemplateLibrary {
             }
         }
         return "UIEvent";
+    }
+
+
+    /** An agent that can put a line into a conversation feed, and the variable that feed reads. */
+    record FeedEcho(String agentName, String feedVariable) {
+    }
+
+    /**
+     * Who can show what the person said, and where.
+     *
+     * <p>Needs both halves: a plugin that declares a command for appending to a feed, and an agent on
+     * it that names the variable the feed reads. An agent naming no variable is the same agent whose
+     * own speech goes nowhere, so there is nothing to append to either.
+     *
+     * @return null when this project has no way to show a conversation, in which case the answer is
+     *         still stored and simply not displayed
+     */
+    private FeedEcho resolveFeedEcho(final JSONObject snapshot) {
+        final JSONObject project = snapshot == null ? null : snapshot.optJSONObject("project");
+        final JSONArray agents = project == null ? null : project.optJSONArray("agents");
+        final JSONArray plugins = project == null ? null : project.optJSONArray("plugins");
+        for (int i = 0; agents != null && i < agents.length(); i++) {
+            final JSONObject agent = agents.optJSONObject(i);
+            if (agent == null) {
+                continue;
+            }
+            final String feed = agentFeature(agent, "var");
+            if (feed.isEmpty() || !pluginOffersCommand(plugins, agent.optString("device", ""),
+                    "appendMessage")) {
+                continue;
+            }
+            return new FeedEcho(agent.optString("name", ""), feed);
+        }
+        return null;
+    }
+
+    private String agentFeature(final JSONObject agent, final String key) {
+        final JSONArray features = agent.optJSONArray("features");
+        for (int i = 0; features != null && i < features.length(); i++) {
+            final JSONObject feature = features.optJSONObject(i);
+            if (feature != null && key.equals(feature.optString("key", ""))) {
+                return feature.optString("value", "").trim();
+            }
+        }
+        return "";
+    }
+
+    private boolean pluginOffersCommand(
+            final JSONArray plugins, final String deviceName, final String commandName) {
+        for (int i = 0; plugins != null && i < plugins.length(); i++) {
+            final JSONObject plugin = plugins.optJSONObject(i);
+            if (plugin == null || !deviceName.equals(plugin.optString("name", ""))) {
+                continue;
+            }
+            final JSONArray commands = plugin.optJSONArray("commands");
+            for (int j = 0; commands != null && j < commands.length(); j++) {
+                final JSONObject command = commands.optJSONObject(j);
+                if (command != null && commandName.equals(command.optString("name", ""))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** An agent, and the variable whose becoming true means it can act. */

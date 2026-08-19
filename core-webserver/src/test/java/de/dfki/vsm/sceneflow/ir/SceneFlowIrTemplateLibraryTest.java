@@ -483,6 +483,82 @@ class SceneFlowIrTemplateLibraryTest {
 
     // ---- ask and wait ----
 
+    /**
+     * A project that can show a conversation also shows what the person said.
+     *
+     * <p>The agent's own lines appear by themselves: the plugin appends whatever it speaks to the
+     * variable the agent names. Nothing does that for the other side, because the control that takes
+     * the answer hands it to the flow and nothing else, so the conversation showed only half of
+     * itself until the flow was given the command that puts the answer in.
+     */
+    @Test
+    void theAnswerIsPutIntoTheConversationWhenTheProjectCanShowOne() throws Exception {
+        JSONObject candidate = candidateFromSource(
+                new SceneFlowIrTemplateLibrary().generateCandidates(
+                        "Ask the person for their name and wait for the reply", feedSnapshot()),
+                "template-ask-and-wait");
+        assertNotNull(candidate);
+
+        String echo = null;
+        for (String text : commandTexts(candidate)) {
+            if (text.contains("appendMessage")) {
+                echo = text;
+            }
+        }
+        assertNotNull(echo, "Expected the answer to be echoed, got: " + commandTexts(candidate));
+        assertTrue(echo.contains("[alex appendMessage"), echo);
+        assertTrue(echo.contains("var='conversation_log'"), echo);
+        assertTrue(echo.contains("role='user'"), echo);
+        assertTrue(echo.contains("text='@user_input'"),
+                "The text has to be read from the channel at call time: " + echo);
+        // The single quotes are the action's own; the whole action is a double-quoted argument, so
+        // the rule against stray single quotes must not fire on it.
+        assertFalse(new SceneFlowIrSemanticValidator().validate(candidate, feedSnapshot()).hasErrors());
+    }
+
+    /** Without a plugin that can append to a feed there is nowhere to put it, so nothing is added. */
+    @Test
+    void nothingIsEchoedWhenTheProjectHasNoConversationToShow() throws Exception {
+        JSONObject candidate = askAndWaitFor("Ask the person for their name and wait for the reply",
+                TestRepoPaths.doc("capability-snapshot.designpatterns.json").toString());
+        assertNotNull(candidate);
+
+        for (String text : commandTexts(candidate)) {
+            assertFalse(text.contains("appendMessage"),
+                    "The timer plugin cannot show a conversation: " + text);
+        }
+    }
+
+    /** An agent on a feed-capable device, naming the variable its lines go to. */
+    private JSONObject feedSnapshot() {
+        return new JSONObject("""
+                {
+                  "snapshotVersion": "1.3",
+                  "project": {
+                    "name": "Chat",
+                    "plugins": [
+                      {"name": "webpage", "className": "x.HtmlGuiWsExecutor", "type": "device",
+                       "load": true,
+                       "commands": [{"name": "appendMessage", "type": "action", "summary": "",
+                                     "params": []}],
+                       "writesVariables": [], "readsVariables": []}
+                    ],
+                    "agents": [
+                      {"name": "alex", "device": "webpage",
+                       "features": [{"key": "var", "value": "conversation_log"},
+                                    {"key": "role", "value": "agent"}]}
+                    ]
+                  },
+                  "script": {"scenes": [], "sections": []},
+                  "screens": {"screens": [{"name": "chat", "readsVariables": ["conversation_log"],
+                                           "writesVariables": ["user_input"]}]},
+                  "flow": {"rootId": "SceneFlow", "startNodeIds": [], "variables": [],
+                           "allowedEdgeTypes": ["EEDGE", "CEDGE", "TEDGE", "IEDGE"],
+                           "nodes": [], "edges": []}
+                }
+                """);
+    }
+
     private JSONObject askAndWaitFor(final String situation, final String snapshotPath) throws Exception {
         JSONObject snapshot = new JSONObject(Files.readString(Path.of(snapshotPath)));
         return candidateFromSource(

@@ -58,6 +58,24 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         super(config, project);
     }
 
+
+    /**
+     * A runtime value as text a person should read.
+     *
+     * <p>None of the value classes overrides toString, so calling it yielded
+     * "…value.StringValue@1a2b3c" and put that on screen. A string is wanted without the quotes
+     * getConcreteSyntax would add around it; for everything else that syntax is the value itself.
+     */
+    private static String plainText(final de.dfki.vsm.runtime.interpreter.value.AbstractValue value) {
+        if (value == null) {
+            return "";
+        }
+        if (value instanceof de.dfki.vsm.runtime.interpreter.value.StringValue string) {
+            return string.getValue();
+        }
+        return value.getConcreteSyntax();
+    }
+
     @Override
     public synchronized String marker(long id) {
         return "${'" + id + "'}$";
@@ -778,9 +796,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 if (varName != null && !varName.isBlank()) {
                     // @varName: resolve from a SceneFlow variable at speak time
                     if (text.startsWith("@")) {
-                        de.dfki.vsm.runtime.interpreter.value.AbstractValue val =
-                                mProject.getValueOf(text.substring(1));
-                        text = (val != null) ? val.toString() : "";
+                        text = plainText(mProject.getValueOf(text.substring(1)));
                     }
                     String role    = agentCfg.getProperty("role",    "agent");
                     String speaker = agentCfg.getProperty("speaker");
@@ -887,8 +903,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String text      = activity.get("text") != null ? activity.get("text").replace("'", "") : "";
                 // @varName: read text from a SceneFlow variable at call time
                 if (text.startsWith("@")) {
-                    de.dfki.vsm.runtime.interpreter.value.AbstractValue val = mProject.getValueOf(text.substring(1));
-                    text = (val != null) ? val.toString() : "";
+                    text = plainText(mProject.getValueOf(text.substring(1)));
                 }
                 String speaker   = activity.get("speaker");
                 String timestamp = activity.get("timestamp");
