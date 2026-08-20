@@ -106,6 +106,7 @@ import de.dfki.vsm.event.event.TurnDoneEvent;
 import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.runtime.logic.LogicEngines;
+import de.dfki.vsm.runtime.interpreter.event.RuntimeWarningEvent;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.util.VsmExecutionHistory;
@@ -2578,6 +2579,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 }
             }
 
+        } else if (event instanceof RuntimeWarningEvent) {
+            // The interpreter recovered on its own (e.g. a missing scene) — it is still running,
+            // so runtimeState is deliberately left untouched here.
+            payload.put("message", ((RuntimeWarningEvent) event).getMessage());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.warning");
+
         } else {
             // Unknown event type, skip
             return;
@@ -3130,6 +3138,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             runtimeVizRateLimiters.remove(projectId);
             ProjectRef ref = projectStore.get(projectId);
             if (ref != null) ref.runtimeState = "stopped";
+
+        } else if (event instanceof RuntimeWarningEvent) {
+            // The interpreter recovered on its own (e.g. a missing scene) — it is still running,
+            // so runtimeState is deliberately left untouched here.
+            payload.put("message", ((RuntimeWarningEvent) event).getMessage());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.warning");
 
         } else {
             return;

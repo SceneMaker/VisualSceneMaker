@@ -17,7 +17,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariab
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.*;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
-import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
+import de.dfki.vsm.runtime.interpreter.event.RuntimeWarningEvent;
 import de.dfki.vsm.runtime.interpreter.value.*;
 import de.dfki.vsm.runtime.logic.LogicEngines;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -171,7 +171,8 @@ public final class Evaluator {
                     // Execute the activity
                     mInterpreter.getScenePlayer().playScene(((StringValue) value).getValue(), list);
                 } catch (SceneDoesNotExists missingScene) {
-                    mInterpreter.getDispatcher().convey(new TerminationEvent(new Object(), missingScene));
+                    mLogger.warning(missingScene.getMessage());
+                    mInterpreter.getDispatcher().convey(new RuntimeWarningEvent(new Object(), missingScene.getMessage()));
                 } finally {
                     // Lock interpreter again
                     mInterpreter.lock();

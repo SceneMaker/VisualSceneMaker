@@ -9371,6 +9371,7 @@ Sentence:
       }
       if (status === "running") {
         runtimeStopRequested = false;
+        runtimeError = "";
         activeScenes = [];
         activeTurns = [];
         sceneHistory = [];
@@ -9386,6 +9387,18 @@ Sentence:
       }
       if (selectedProjectId) {
         loadRuntime(selectedProjectId);
+      }
+      return;
+    }
+    if (eventName === "runtime.warning") {
+      // The interpreter recovered on its own (e.g. a PlayScene named a scene that doesn't exist
+      // yet) and kept running — surface it without touching runtimeState or clearing activity,
+      // since nothing actually stopped.
+      if (payload?.projectId && payload.projectId !== selectedProjectId) {
+        return;
+      }
+      if (payload?.message) {
+        runtimeError = payload.message;
       }
       return;
     }
