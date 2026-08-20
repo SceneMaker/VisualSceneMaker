@@ -168,7 +168,7 @@ public class LlmExecutor extends ActivityExecutor {
     private String readVar(final String varName) {
         try {
             AbstractValue val = mProject.getValueOf(varName);
-            return val != null ? val.toString() : "";
+            return val != null ? String.valueOf(val.getValue()) : "";
         } catch (Exception ex) {
             return "";
         }

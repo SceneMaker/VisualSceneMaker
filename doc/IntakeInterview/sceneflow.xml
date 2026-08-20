@@ -442,37 +442,7 @@
         </Expression>
       </Assignment>
       <PlayAction mode="Default">
-        <Add>
-          <Add>
-            <Add>
-              <Add>
-                <Add>
-                  <Add>
-                    <Add>
-                      <Add>
-                        <Add>
-                          <Add>
-                            <StringLiteral><![CDATA[[llm send system='You are a clinical assistant. Write a concise, neutral 3-4 sentence intake summary in the third person. Use professional but accessible language. Do not add commentary or recommendations.' prompt='Patient name is ]]></StringLiteral>
-                            <SimpleVariable name="patient_name"/>
-                          </Add>
-                          <StringLiteral><![CDATA[, Main concern is ]]></StringLiteral>
-                        </Add>
-                        <SimpleVariable name="main_concern"/>
-                      </Add>
-                      <StringLiteral><![CDATA[, Duration is ]]></StringLiteral>
-                    </Add>
-                    <SimpleVariable name="duration_text"/>
-                  </Add>
-                  <StringLiteral><![CDATA[, Daily impact is ]]></StringLiteral>
-                </Add>
-                <SimpleVariable name="daily_impact"/>
-              </Add>
-              <StringLiteral><![CDATA[, Previous treatment is ]]></StringLiteral>
-            </Add>
-            <SimpleVariable name="previous_treatment"/>
-          </Add>
-          <StringLiteral><![CDATA[' responseVar='llm_summary']]]></StringLiteral>
-        </Add>
+        <StringLiteral><![CDATA[[llm send system='You are a clinical assistant. Write a concise, neutral 3-4 sentence intake summary in the third person. Use professional but accessible language. Do not add commentary or recommendations.' prompt='Patient name is {patient_name}, Main concern is {main_concern}, Duration is {duration_text}, Daily impact is {daily_impact}, Previous treatment is {previous_treatment}' responseVar='llm_summary']]]></StringLiteral>
       </PlayAction>
     </Commands>
     <EEdge target="N14" start ="">
