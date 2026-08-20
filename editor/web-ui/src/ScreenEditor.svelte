@@ -45,6 +45,24 @@
     { v: "space-between", label: "↕ Spread" },
   ];
 
+  const BUTTON_ICONS = [
+    { v: "",            label: "— none (text only) —" },
+    { v: "send",        label: "Send" },
+    { v: "microphone",  label: "Microphone" },
+    { v: "speaker-on",  label: "Speaker (on)" },
+    { v: "speaker-off", label: "Speaker (off)" },
+  ];
+
+  // Preview-only copies of plugins/htmlgui-ws/src/main/resources/renderer/vsm-renderer.js's
+  // ICONS, so the picker below can show what each option looks like. The runtime rendering
+  // itself happens in the renderer, not here — keep these two lists in sync by hand.
+  const ICON_SVG = {
+    send: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>`,
+    microphone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" /></svg>`,
+    "speaker-on": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" /></svg>`,
+    "speaker-off": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" /></svg>`,
+  };
+
   // ── derived ──────────────────────────────────────────────────────────────
   $: pluginLabel = plugin?.meta?.plugin?.name || plugin?.instanceName || "Screen Editor";
 
@@ -851,6 +869,16 @@
                     <label class="ve-prop-label">Label</label>
                     <input class="ve-input" type="text" value={el.label ?? ""}
                            on:input={e => setProp(i,"label",e.target.value)}>
+                    <label class="ve-prop-label">Icon <span class="ve-hint">(leave blank to use only the label)</span></label>
+                    <div class="ve-row" style="gap:.5rem">
+                      <select class="ve-select" value={el.icon ?? ""}
+                              on:change={e => setProp(i,"icon",e.target.value || undefined)}>
+                        {#each BUTTON_ICONS as opt}<option value={opt.v}>{opt.label}</option>{/each}
+                      </select>
+                      {#if el.icon && ICON_SVG[el.icon]}
+                        <span class="ve-icon-preview">{@html ICON_SVG[el.icon]}</span>
+                      {/if}
+                    </div>
                     <label class="ve-prop-label">Variant</label>
                     <select class="ve-select" value={el.variant ?? "default"}
                             on:change={e => setProp(i,"variant",e.target.value)}>
@@ -1341,7 +1369,18 @@
                     <input class="ve-input" type="text" placeholder="Type your message…"
                            value={el.placeholder ?? ""}
                            on:input={e => setProp(i,"placeholder",e.target.value || undefined)}>
-                    <label class="ve-prop-label">Button label</label>
+                    <label class="ve-prop-label">Send button style</label>
+                    <div class="ve-row" style="gap:.5rem">
+                      <select class="ve-select" value={el.icon ?? "send"}
+                              on:change={e => setProp(i,"icon", e.target.value === "send" ? undefined : "")}>
+                        <option value="send">Icon (paper plane)</option>
+                        <option value="">Text label</option>
+                      </select>
+                      {#if (el.icon ?? "send") === "send"}
+                        <span class="ve-icon-preview">{@html ICON_SVG.send}</span>
+                      {/if}
+                    </div>
+                    <label class="ve-prop-label">Button label <span class="ve-hint">(text when style is "Text label"; title/aria-label either way)</span></label>
                     <input class="ve-input" type="text" placeholder="Send"
                            value={el.buttonLabel ?? ""}
                            on:input={e => setProp(i,"buttonLabel",e.target.value || undefined)}>
@@ -1530,6 +1569,16 @@
                             <label class="ve-prop-label">Label</label>
                             <input class="ve-input" type="text" value={child.label ?? ""}
                                    on:input={e => setChildProp(i,ci,"label",e.target.value)}>
+                            <label class="ve-prop-label">Icon <span class="ve-hint">(leave blank to use only the label)</span></label>
+                            <div class="ve-row" style="gap:.5rem">
+                              <select class="ve-select" value={child.icon ?? ""}
+                                      on:change={e => setChildProp(i,ci,"icon",e.target.value || undefined)}>
+                                {#each BUTTON_ICONS as opt}<option value={opt.v}>{opt.label}</option>{/each}
+                              </select>
+                              {#if child.icon && ICON_SVG[child.icon]}
+                                <span class="ve-icon-preview">{@html ICON_SVG[child.icon]}</span>
+                              {/if}
+                            </div>
                             <label class="ve-prop-label">Variant</label>
                             <select class="ve-select" value={child.variant ?? "default"}
                                     on:change={e => setChildProp(i,ci,"variant",e.target.value)}>
@@ -2309,6 +2358,7 @@
   }
 
   .ve-hint { font-size: 0.68rem; color: var(--ide-dim); font-weight: 400; }
+  .ve-icon-preview { display: inline-flex; align-items: center; color: var(--ide-text); opacity: 0.8; }
   .ve-unknown { font-size: 0.8rem; color: var(--ide-muted); margin: 0; }
   .ve-unknown code { background: var(--ide-panel); padding: 0 0.2rem; border-radius: 3px; font-family: 'DM Mono', monospace; }
   .ve-empty { padding: 0.8rem; font-size: 0.8rem; color: var(--ide-dim); text-align: center; }

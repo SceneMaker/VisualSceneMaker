@@ -665,10 +665,22 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
     /** Appends one chat message to a named conversation log and broadcasts the update. */
     private void appendToConversationLog(String varName, String role, String speaker, String text) {
-        appendToConversationLog(varName, role, speaker, text, null);
+        appendToConversationLog(varName, role, speaker, text, null, true);
     }
 
     private void appendToConversationLog(String varName, String role, String speaker, String text, String timestamp) {
+        appendToConversationLog(varName, role, speaker, text, timestamp, true);
+    }
+
+    /**
+     * @param turnStart Whether this message starts a new bubble in the feed rather than joining
+     * the previous one. A scene's sentences arrive as one SpeechActivity each (see
+     * SpeechActivity.getUtteranceNumber()), so grouping them by consecutive same-speaker entries
+     * alone would also merge two genuinely different, immediately-adjacent scenes; the caller
+     * passes utteranceNumber == 1 instead. A standalone appendMessage command (e.g. echoing the
+     * person's typed answer) is always its own turn.
+     */
+    private void appendToConversationLog(String varName, String role, String speaker, String text, String timestamp, boolean turnStart) {
         StringBuilder msg = new StringBuilder("{");
         msg.append("\"role\":\"").append(escapeJson(role)).append("\"");
         msg.append(",\"text\":\"").append(escapeJson(text)).append("\"");
@@ -676,6 +688,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             msg.append(",\"speaker\":\"").append(escapeJson(speaker.replace("'", ""))).append("\"");
         if (timestamp != null)
             msg.append(",\"timestamp\":\"").append(escapeJson(timestamp.replace("'", ""))).append("\"");
+        if (turnStart)
+            msg.append(",\"turnStart\":true");
         msg.append("}");
         synchronized (mConvLogs) {
             mConvLogs.computeIfAbsent(varName, k -> new ArrayList<>()).add(msg.toString());
@@ -800,7 +814,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                     }
                     String role    = agentCfg.getProperty("role",    "agent");
                     String speaker = agentCfg.getProperty("speaker");
-                    appendToConversationLog(varName, role, speaker, text);
+                    appendToConversationLog(varName, role, speaker, text, null, sa.getUtteranceNumber() == 1);
                 }
                 // Always fire any inline markers so co-located ActionObjects execute
                 for (String tm : timemarks) {

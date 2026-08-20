@@ -14,6 +14,24 @@
  */
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
+// ---------------------------------------------------------------------------
+// Built-in icon set for sl-button / vsm-chat-input. Kept as raw inline SVG
+// (Heroicons outline, 1.5px stroke) rather than an icon font or sprite sheet
+// so a screen never depends on anything loading over the network. Mirrored
+// in editor/web-ui/src/ScreenEditor.svelte's icon picker — if you add one
+// here, add it there too.
+// ---------------------------------------------------------------------------
+const ICONS = {
+    send: () => html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>`,
+    microphone: () => html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" /></svg>`,
+    'speaker-on': () => html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" /></svg>`,
+    'speaker-off': () => html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" /></svg>`,
+};
+function renderIcon(name) {
+    const fn = name && ICONS[name];
+    return fn ? fn() : html``;
+}
+
 class VsmScreenRenderer extends LitElement {
 
     static properties = {
@@ -100,6 +118,7 @@ class VsmScreenRenderer extends LitElement {
         this._activeScreen        = null;
         this._varValues           = {};
         this._audioUnlocked       = false;
+        this._charUnlocked        = false;  // character iframe stays on top until it unlocks its audio
         this._liveSchemaReceived  = false;  // guards against API fetch overwriting live schema
 
         window.addEventListener('message', (e) => {
@@ -121,8 +140,22 @@ class VsmScreenRenderer extends LitElement {
             } else if (data.cmd === 'updateVar') {
                 // Immutable update so Lit detects the change
                 this._varValues = { ...this._varValues, [data.var]: data.value };
+            } else if (data.vsmCharacter === 'unlocked') {
+                // The character iframe unlocked its audio via a click in its own document.
+                // Drop it behind the screen controls (it was on top so the overlay was clickable).
+                this._charUnlocked = true;
+                this.requestUpdate();
             }
         });
+
+        // Tell the shell it may deliver now. Anything it sent before this listener existed reached a
+        // window with nobody listening and was gone, postMessage having no queue of its own; the
+        // shell holds messages back until it hears this. See wsclient.js sendToScreens.
+        try {
+            parent.postMessage({ cmd: 'rendererReady' }, '*');
+        } catch (e) {
+            // Not framed, or a parent we may not talk to. Nothing to announce ourselves to.
+        }
     }
 
     async connectedCallback() {
@@ -135,7 +168,7 @@ class VsmScreenRenderer extends LitElement {
                 schema = await window.__VSM_SCHEMA_READY;
             } else {
                 // Runtime mode: fetch screens.json from the plugin HTTP server.
-                const resp = await fetch('/screens.json');
+                const resp = await fetch('screens.json');
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 schema = await resp.json();
             }
@@ -163,6 +196,9 @@ class VsmScreenRenderer extends LitElement {
     // ---------------------------------------------------------------------------
 
     _sendToVsm(varName, value) {
+        // Optimistic local echo so bound components (and character.srcVar) reflect the change
+        // immediately; a plain varUpdate only reaches the SceneFlow, not back to this renderer.
+        this._varValues = { ...this._varValues, [varName]: value };
         parent.postMessage(`varUpdate$${varName}$${value}`, '*');
     }
 
@@ -190,6 +226,52 @@ class VsmScreenRenderer extends LitElement {
         return src;
     }
 
+    // Co-editing: when this GUI page is opened from a remote machine, a character
+    // (or iframe) src pointing at localhost/127.0.0.1 refers to the *viewer's* own
+    // machine, not the runtime host. Rewrite the hostname to the host that served
+    // this page so the resource loads from the runtime host over the LAN; the port
+    // and path are preserved. A self-hosted character page (e.g. charamel-embed)
+    // then connects its own WebSocket via ws://location.host/ws back to that host.
+    // No-op when the page is already on localhost (single-machine use).
+    _resolveHost(src) {
+        if (!src || typeof src !== 'string') return src;
+        const loc = (typeof window !== 'undefined') ? window.location : null;
+        if (!loc || !loc.hostname) return src;
+        try {
+            const u = new URL(src, loc.href);
+            const isLocal = u.hostname === 'localhost' || u.hostname === '127.0.0.1'
+                || u.hostname === '::1' || u.hostname === '[::1]';
+            // Nginx-routed deployments (VSM_PLUGIN_PATH_PREFIX_ENABLED): project-authored URLs
+            // (screens.json's character key, srcVar values written by the SceneFlow) reference
+            // the literal project.xml port from authoring time, but PortPoolManager reassigns
+            // ports dynamically — the authored port is stale and, behind nginx, not reachable
+            // from the browser at all (confirmed broken 2026-07-29). The server injects a map
+            // of original port → live nginx path prefix (window.VSM_GUI_CONFIG.portRewrites,
+            // see vsm-gui-config.js); a URL whose port matches gets routed through that prefix
+            // on this page's own origin. Only for URLs meant for the runtime host (localhost or
+            // this page's own hostname) — a matching port on a genuinely external host is a
+            // coincidence, not a stale reference.
+            const rewrites = (typeof window !== 'undefined' && window.VSM_GUI_CONFIG
+                && window.VSM_GUI_CONFIG.portRewrites) || null;
+            if (rewrites && u.port && rewrites[u.port] && (isLocal || u.hostname === loc.hostname)) {
+                return loc.protocol + '//' + loc.host + rewrites[u.port]
+                    + u.pathname.replace(/^\/+/, '') + u.search + u.hash;
+            }
+            if (!isLocal) return src;   // only touch URLs pointing at "this machine"
+            // Point the resource at the host that served this page (unless we are that host).
+            if (loc.hostname !== 'localhost' && loc.hostname !== '127.0.0.1') {
+                u.hostname = loc.hostname;
+            }
+            // Match the page scheme so a secure (https) GUI embeds a secure iframe — an
+            // http iframe inside an https page is blocked as mixed content (--secure mode).
+            if (loc.protocol === 'https:' && u.protocol === 'http:') {
+                u.protocol = 'https:';
+            }
+            return u.toString();
+        } catch (e) { /* relative or non-URL src — leave unchanged */ }
+        return src;
+    }
+
     _styleAttr(styleObj) {
         if (!styleObj) return '';
         return Object.entries(styleObj)
@@ -211,6 +293,7 @@ class VsmScreenRenderer extends LitElement {
                         variant=${el.variant ?? 'default'}
                         style=${style}
                         @click=${() => el.sendsVar && this._sendToVsm(el.sendsVar, el.sendsValue ?? 'true')}>
+                        ${el.icon ? renderIcon(el.icon) : html``}
                         ${el.label ?? ''}
                     </sl-button>`;
 
@@ -341,7 +424,7 @@ class VsmScreenRenderer extends LitElement {
                     style,
                 ].filter(Boolean).join(';');
                 return html`<iframe
-                    src=${el.src ?? ''}
+                    src=${this._resolveHost(el.src ?? '')}
                     title=${el.title ?? ''}
                     style=${embedStyle}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -381,12 +464,16 @@ class VsmScreenRenderer extends LitElement {
             }
 
             case 'vsm-feed': {
+                // height:'auto' means "fill flex space" — host gets flex:1, inner feed gets height:100%
+                const feedIsAuto = !el.height || el.height === 'auto';
                 const feedStyle = [
-                    el.width ? `width:${el.width}` : '',
+                    el.width     ? `width:${el.width}` : '',
+                    feedIsAuto   ? 'flex:1;min-height:0;display:flex;flex-direction:column' : '',
                     style,
                 ].filter(Boolean).join(';');
+                const feedConfig = feedIsAuto ? { ...el, height: '100%' } : el;
                 return html`<vsm-feed-element
-                    .config=${el}
+                    .config=${feedConfig}
                     .datavalue=${this._varValues[el.dataVar] ?? ''}
                     style=${feedStyle}></vsm-feed-element>`;
             }
@@ -457,6 +544,17 @@ class VsmScreenRenderer extends LitElement {
                     height=${chartH}></vsm-chart-element>`;
             }
 
+            case 'vsm-chat-input': {
+                const isDisabled = el.disabledVar
+                    ? (this._varValues[el.disabledVar] === 'true' || this._varValues[el.disabledVar] === '1')
+                    : false;
+                return html`<vsm-chat-input-element
+                    .config=${el}
+                    ?disabled=${isDisabled}
+                    @vsm-send=${(e) => el.sendsVar && this._sendToVsm(el.sendsVar, e.detail.value)}
+                    style=${style}></vsm-chat-input-element>`;
+            }
+
             default:
                 console.warn('[vsm-renderer] Unknown element type:', el.type);
                 return html`<span style="color:red">[unknown: ${el.type}]</span>`;
@@ -489,21 +587,33 @@ class VsmScreenRenderer extends LitElement {
         ].filter(Boolean).join(';');
 
         // Optional top-level "character" key: a persistent iframe fixed behind all screens.
+        // The src can be static ("src") or bound to a SceneFlow variable ("srcVar") so a button
+        // can select/enable the character at runtime (empty var → no character shown yet).
         // Set "enabled": false to keep the config but skip loading.
         const char        = this._schema.character;
-        const charEnabled = char && char.enabled !== false && !window.__VSM_PREVIEW_MODE;
-        const charStyle   = charEnabled
+        // srcVar (once written) overrides the static src, so `src` can auto-load a default character
+        // while buttons can still switch/hide it by writing srcVar (including "" to hide).
+        const charSrc     = char
+            ? ((char.srcVar && this._varValues[char.srcVar] !== undefined)
+                ? this._varValues[char.srcVar]
+                : (char.src ?? ''))
+            : '';
+        const charEnabled = char && char.enabled !== false && !!charSrc && !window.__VSM_PREVIEW_MODE;
+        let charStyle     = charEnabled
             ? (this._styleAttr(char.style) || 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:-1;border:none')
             : '';
+        // Until the character has unlocked its audio, keep it on top so its click-to-start overlay
+        // is reachable (the screen controls would otherwise cover it). The trailing z-index wins.
+        if (charEnabled && !this._charUnlocked) charStyle += ';z-index:2147483000';
 
         return html`
             ${charEnabled ? html`<iframe
-                src=${char.src ?? ''}
+                src=${this._resolveHost(charSrc)}
                 allow=${char.allow ?? ''}
                 style=${charStyle}
                 frameborder="0"></iframe>` : html``}
 
-            ${charEnabled && !this._audioUnlocked ? html`
+            ${charEnabled && char.audioOverlay === true && !this._audioUnlocked ? html`
             <div class="vsm-audio-overlay">
                 <div class="vsm-audio-panel">
                     <h3 id="vsm-audio-title">Enable audio</h3>
@@ -665,16 +775,18 @@ class VsmFeedElement extends LitElement {
         :host { display: block; }
 
         .vsm-feed {
-            display: flex; flex-direction: column; gap: 0.55rem;
+            display: flex; flex-direction: column; gap: 0.3rem;
             overflow-y: auto; padding: 0.6rem 0.8rem;
             box-sizing: border-box; scroll-behavior: smooth;
+            flex: 1;
         }
 
-        /* Bubble wrapper — controls alignment */
-        .vsm-feed-row             { display: flex; flex-direction: column; max-width: 78%; }
-        .vsm-feed-row.role-agent  { align-self: flex-start; }
+        /* Bubble wrapper — controls alignment.
+           padding-bottom gives the tail triangle room without being clipped. */
+        .vsm-feed-row             { display: flex; flex-direction: column; max-width: 78%; padding-bottom: 14px; }
+        .vsm-feed-row.role-agent  { align-self: flex-start; width: fit-content; }
         .vsm-feed-row.role-user   { align-self: flex-end; }
-        .vsm-feed-row.role-system { align-self: center; max-width: 90%; }
+        .vsm-feed-row.role-system { align-self: center; max-width: 90%; padding-bottom: 4px; }
 
         .vsm-feed-speaker {
             font-size: 0.7rem; font-weight: 600; opacity: 0.6;
@@ -690,20 +802,22 @@ class VsmFeedElement extends LitElement {
             line-height: 1.5; word-wrap: break-word;
         }
 
-        /* agent tail — bottom-left */
+        /* agent tail — downward triangle anchored at bottom-left of bubble */
         .vsm-feed-row.role-agent .vsm-feed-bubble::after {
-            content: ''; position: absolute;
-            bottom: -9px; left: 16px;
-            border-right: 12px solid transparent;
-            border-top: 10px solid var(--bubble-bg, #e8f4fd);
+            content: ''; position: absolute; width: 0; height: 0;
+            bottom: -11px; left: 18px;
+            border-left: 6px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 12px solid var(--bubble-bg, #e8f4fd);
         }
 
-        /* user tail — bottom-right */
+        /* user tail — downward triangle anchored at bottom-right of bubble */
         .vsm-feed-row.role-user .vsm-feed-bubble::after {
-            content: ''; position: absolute;
-            bottom: -9px; right: 16px;
-            border-left: 12px solid transparent;
-            border-top: 10px solid var(--bubble-bg, #e8f4fd);
+            content: ''; position: absolute; width: 0; height: 0;
+            bottom: -11px; right: 18px;
+            border-left: 10px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 12px solid var(--bubble-bg, #e8f4fd);
         }
 
         /* system — no tail, centered, subdued */
@@ -739,22 +853,56 @@ class VsmFeedElement extends LitElement {
         catch { return []; }
     }
 
-    _renderMessage(msg, cfg) {
-        const role = msg.role ?? 'agent';
-        const bg   = role === 'user'   ? (cfg.userColor   ?? '#eafbe8')
-                   : role === 'system' ? (cfg.systemColor ?? '#f5f5f5')
-                   :                     (cfg.agentColor  ?? '#e8f4fd');
+    // A scene's sentences arrive as one conversation_log entry each, so one bubble per entry
+    // reads as clutter for a multi-sentence turn. turnStart (set server-side from
+    // SpeechActivity.getUtteranceNumber() == 1) marks the first entry of a turn; entries without
+    // it join the previous bubble. A standalone appendMessage call (e.g. echoing the person's
+    // typed answer) always carries turnStart, so it never merges into a neighboring turn even
+    // when the role/speaker happen to match.
+    _groupMessages(msgs) {
+        const groups = [];
+        for (const msg of msgs) {
+            const role = msg.role ?? 'agent';
+            const last = groups[groups.length - 1];
+            const joinsLast = last && msg.turnStart !== true
+                && last.role === role && last.speaker === msg.speaker;
+            if (joinsLast) {
+                last.text += (last.text ? ' ' : '') + (msg.text ?? '');
+            } else {
+                groups.push({ role, speaker: msg.speaker, text: msg.text ?? '', timestamp: msg.timestamp });
+            }
+        }
+        return groups;
+    }
 
-        // Speaker label: per-message override > config label > omit for system
-        const defaultLabel = role === 'user' ? (cfg.userLabel ?? 'You')
+    _renderMessage(msg, cfg) {
+        const role      = msg.role ?? 'agent';
+        const bg        = role === 'user'   ? (cfg.userColor       ?? '#eafbe8')
+                        : role === 'system' ? (cfg.systemColor     ?? '#f5f5f5')
+                        :                     (cfg.agentColor      ?? '#e8f4fd');
+        const textColor = role === 'user'   ? (cfg.userTextColor   ?? '')
+                        : role === 'system' ? (cfg.systemTextColor ?? '')
+                        :                     (cfg.agentTextColor  ?? '');
+
+        const bubbleStyle = [
+            '--bubble-bg:' + bg,
+            'background:' + bg,
+            textColor ? 'color:' + textColor : '',
+        ].filter(Boolean).join(';');
+
+        // Speaker label: per-message override > config label > omit when disabled or system
+        const showLabel = role === 'user'  ? (cfg.showUserLabel  !== false)
+                        : role === 'agent' ? (cfg.showAgentLabel !== false)
+                        : false;
+        const defaultLabel = role === 'user'  ? (cfg.userLabel  ?? 'You')
                            : role === 'agent' ? (cfg.agentLabel ?? 'Agent')
                            : null;
-        const speaker = msg.speaker !== undefined ? msg.speaker : defaultLabel;
+        const speaker = showLabel ? (msg.speaker !== undefined ? msg.speaker : defaultLabel) : null;
 
         return html`
             <div class=${'vsm-feed-row role-' + role}>
                 ${speaker ? html`<div class="vsm-feed-speaker">${speaker}</div>` : html``}
-                <div class="vsm-feed-bubble" style=${'--bubble-bg:' + bg + ';background:' + bg}>
+                <div class="vsm-feed-bubble" style=${bubbleStyle}>
                     ${msg.text ?? ''}
                 </div>
                 ${msg.timestamp && cfg.showTimestamps
@@ -766,9 +914,14 @@ class VsmFeedElement extends LitElement {
     render() {
         const cfg  = this.config ?? {};
         const msgs = this._parseMessages();
+        const containerStyle = [
+            'height:' + (cfg.height ?? '400px'),
+            cfg.fontFamily ? 'font-family:' + cfg.fontFamily : '',
+            cfg.fontSize   ? 'font-size:'   + cfg.fontSize   : '',
+        ].filter(Boolean).join(';');
         return html`
-            <div class="vsm-feed" style=${'height:' + (cfg.height ?? '400px')}>
-                ${msgs.map(m => this._renderMessage(m, cfg))}
+            <div class="vsm-feed" style=${containerStyle}>
+                ${this._groupMessages(msgs).map(m => this._renderMessage(m, cfg))}
             </div>`;
     }
 }
@@ -997,3 +1150,77 @@ class VsmAnimateElement extends LitElement {
 }
 
 customElements.define('vsm-animate-element', VsmAnimateElement);
+
+// ---------------------------------------------------------------------------
+// vsm-chat-input-element — Chat message input (text field + Send button)
+//
+// Schema element fields:
+//   sendsVar    — SceneFlow variable name to write the submitted text to
+//   placeholder — input field placeholder text (default: 'Type your message…')
+//   icon        — send button icon, one of ICONS' keys (default: 'send'); '' shows buttonLabel
+//                 as text instead
+//   buttonLabel — send button text when icon is '', and its title/aria-label either way
+//                 (default: 'Send')
+//   disabledVar — optional SceneFlow Bool variable; disables input when 'true'
+// ---------------------------------------------------------------------------
+
+class VsmChatInputElement extends LitElement {
+
+    static properties = {
+        config:   { type: Object },
+        disabled: { type: Boolean },
+    };
+
+    static styles = css`
+        :host { display: block; width: 100%; }
+        .vsm-chat-row {
+            display: flex; gap: 8px; align-items: flex-end; width: 100%;
+        }
+        sl-input { flex: 1; }
+    `;
+
+    constructor() {
+        super();
+        this.config   = {};
+        this.disabled = false;
+    }
+
+    _submit(inputEl) {
+        if (!inputEl) return;
+        const text = (inputEl.value ?? '').trim();
+        if (!text || this.disabled) return;
+        this.dispatchEvent(new CustomEvent('vsm-send', {
+            detail: { value: text },
+            bubbles: true, composed: true,
+        }));
+        // Clear the Shoelace input imperatively after dispatch
+        inputEl.value = '';
+    }
+
+    render() {
+        const cfg = this.config ?? {};
+        return html`
+            <div class="vsm-chat-row">
+                <sl-input
+                    placeholder=${cfg.placeholder ?? 'Type your message…'}
+                    ?disabled=${this.disabled}
+                    @keydown=${(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            this._submit(e.target);
+                        }
+                    }}>
+                </sl-input>
+                <sl-button
+                    variant="primary"
+                    ?disabled=${this.disabled}
+                    title=${cfg.buttonLabel ?? 'Send'}
+                    aria-label=${cfg.buttonLabel ?? 'Send'}
+                    @click=${() => this._submit(this.renderRoot.querySelector('sl-input'))}>
+                    ${cfg.icon === '' ? (cfg.buttonLabel ?? 'Send') : renderIcon(cfg.icon ?? 'send')}
+                </sl-button>
+            </div>`;
+    }
+}
+
+customElements.define('vsm-chat-input-element', VsmChatInputElement);

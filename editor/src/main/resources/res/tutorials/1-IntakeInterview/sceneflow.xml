@@ -172,6 +172,9 @@
           <SimpleVariable name="user_input"/>
         </Expression>
       </Assignment>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[alex appendMessage var='conversation_log' role='user' text='@patient_name']]]></StringLiteral>
+      </PlayAction>
       <PlayScene>
         <StringLiteral><![CDATA[ask_concern]]></StringLiteral>
       </PlayScene>
@@ -237,6 +240,9 @@
           <SimpleVariable name="user_input"/>
         </Expression>
       </Assignment>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[alex appendMessage var='conversation_log' role='user' text='@main_concern']]]></StringLiteral>
+      </PlayAction>
       <PlayScene>
         <StringLiteral><![CDATA[ask_duration]]></StringLiteral>
       </PlayScene>
@@ -302,6 +308,9 @@
           <SimpleVariable name="user_input"/>
         </Expression>
       </Assignment>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[alex appendMessage var='conversation_log' role='user' text='@duration_text']]]></StringLiteral>
+      </PlayAction>
       <PlayScene>
         <StringLiteral><![CDATA[ask_impact]]></StringLiteral>
       </PlayScene>
@@ -367,6 +376,9 @@
           <SimpleVariable name="user_input"/>
         </Expression>
       </Assignment>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[alex appendMessage var='conversation_log' role='user' text='@daily_impact']]]></StringLiteral>
+      </PlayAction>
       <PlayScene>
         <StringLiteral><![CDATA[ask_treatment]]></StringLiteral>
       </PlayScene>
@@ -432,6 +444,9 @@
           <SimpleVariable name="user_input"/>
         </Expression>
       </Assignment>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[alex appendMessage var='conversation_log' role='user' text='@previous_treatment']]]></StringLiteral>
+      </PlayAction>
       <PlayScene>
         <StringLiteral><![CDATA[thinking]]></StringLiteral>
       </PlayScene>

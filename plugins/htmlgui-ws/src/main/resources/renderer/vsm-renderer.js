@@ -14,6 +14,24 @@
  */
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
+// ---------------------------------------------------------------------------
+// Built-in icon set for sl-button / vsm-chat-input. Kept as raw inline SVG
+// (Heroicons outline, 1.5px stroke) rather than an icon font or sprite sheet
+// so a screen never depends on anything loading over the network. Mirrored
+// in editor/web-ui/src/ScreenEditor.svelte's icon picker — if you add one
+// here, add it there too.
+// ---------------------------------------------------------------------------
+const ICONS = {
+    send: () => html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" /></svg>`,
+    microphone: () => html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" /></svg>`,
+    'speaker-on': () => html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" /></svg>`,
+    'speaker-off': () => html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" /></svg>`,
+};
+function renderIcon(name) {
+    const fn = name && ICONS[name];
+    return fn ? fn() : html``;
+}
+
 class VsmScreenRenderer extends LitElement {
 
     static properties = {
@@ -275,6 +293,7 @@ class VsmScreenRenderer extends LitElement {
                         variant=${el.variant ?? 'default'}
                         style=${style}
                         @click=${() => el.sendsVar && this._sendToVsm(el.sendsVar, el.sendsValue ?? 'true')}>
+                        ${el.icon ? renderIcon(el.icon) : html``}
                         ${el.label ?? ''}
                     </sl-button>`;
 
@@ -834,6 +853,28 @@ class VsmFeedElement extends LitElement {
         catch { return []; }
     }
 
+    // A scene's sentences arrive as one conversation_log entry each, so one bubble per entry
+    // reads as clutter for a multi-sentence turn. turnStart (set server-side from
+    // SpeechActivity.getUtteranceNumber() == 1) marks the first entry of a turn; entries without
+    // it join the previous bubble. A standalone appendMessage call (e.g. echoing the person's
+    // typed answer) always carries turnStart, so it never merges into a neighboring turn even
+    // when the role/speaker happen to match.
+    _groupMessages(msgs) {
+        const groups = [];
+        for (const msg of msgs) {
+            const role = msg.role ?? 'agent';
+            const last = groups[groups.length - 1];
+            const joinsLast = last && msg.turnStart !== true
+                && last.role === role && last.speaker === msg.speaker;
+            if (joinsLast) {
+                last.text += (last.text ? ' ' : '') + (msg.text ?? '');
+            } else {
+                groups.push({ role, speaker: msg.speaker, text: msg.text ?? '', timestamp: msg.timestamp });
+            }
+        }
+        return groups;
+    }
+
     _renderMessage(msg, cfg) {
         const role      = msg.role ?? 'agent';
         const bg        = role === 'user'   ? (cfg.userColor       ?? '#eafbe8')
@@ -880,7 +921,7 @@ class VsmFeedElement extends LitElement {
         ].filter(Boolean).join(';');
         return html`
             <div class="vsm-feed" style=${containerStyle}>
-                ${msgs.map(m => this._renderMessage(m, cfg))}
+                ${this._groupMessages(msgs).map(m => this._renderMessage(m, cfg))}
             </div>`;
     }
 }
@@ -1116,7 +1157,10 @@ customElements.define('vsm-animate-element', VsmAnimateElement);
 // Schema element fields:
 //   sendsVar    — SceneFlow variable name to write the submitted text to
 //   placeholder — input field placeholder text (default: 'Type your message…')
-//   buttonLabel — send button label (default: 'Send')
+//   icon        — send button icon, one of ICONS' keys (default: 'send'); '' shows buttonLabel
+//                 as text instead
+//   buttonLabel — send button text when icon is '', and its title/aria-label either way
+//                 (default: 'Send')
 //   disabledVar — optional SceneFlow Bool variable; disables input when 'true'
 // ---------------------------------------------------------------------------
 
@@ -1170,8 +1214,10 @@ class VsmChatInputElement extends LitElement {
                 <sl-button
                     variant="primary"
                     ?disabled=${this.disabled}
+                    title=${cfg.buttonLabel ?? 'Send'}
+                    aria-label=${cfg.buttonLabel ?? 'Send'}
                     @click=${() => this._submit(this.renderRoot.querySelector('sl-input'))}>
-                    ${cfg.buttonLabel ?? 'Send'}
+                    ${cfg.icon === '' ? (cfg.buttonLabel ?? 'Send') : renderIcon(cfg.icon ?? 'send')}
                 </sl-button>
             </div>`;
     }
