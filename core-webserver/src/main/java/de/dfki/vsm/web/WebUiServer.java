@@ -4458,86 +4458,94 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         handleRecentProjects(ctx);
     }
 
-    public static void addRecent(String path, String name) {
-        if (path == null || name == null || path.isBlank() || name.isBlank()) {
+    /**
+     * Canonicalizes a recent-project path so entries reached via different spellings
+     * (relative vs absolute, trailing slash, symlink, a lingering "project.xml" suffix)
+     * compare equal. Without this, addRecent/removeRecent used plain String.equals and a
+     * project re-opened via a slightly different path string was treated as a new entry
+     * instead of updating the existing one, which is how the recent list flooded with
+     * near-duplicate entries that a single "remove" click could not fully clear.
+     */
+    private static String canonicalRecentPath(String path) {
+        String normalized = normalizeProjectPath(path);
+        if (normalized.isEmpty()) {
+            return normalized;
+        }
+        try {
+            return new File(normalized).getCanonicalPath();
+        } catch (IOException e) {
+            return new File(normalized).getAbsolutePath();
+        }
+    }
+
+    private static List<String[]> loadRecentEntries() {
+        List<String[]> entries = new ArrayList<>();
+        for (int i = 0; i <= RECENT_MAX; i++) {
+            String path = Preferences.getProperty("recentproject." + i + ".path");
             if (path == null || path.isBlank()) {
-                return;
+                continue;
             }
-            name = fileName(path);
+            String name = Preferences.getProperty("recentproject." + i + ".name");
+            String date = Preferences.getProperty("recentproject." + i + ".date");
+            entries.add(new String[]{path, name, date});
         }
-        // Shift existing entries down and put new at position 0
+        return entries;
+    }
+
+    private static void saveRecentEntries(List<String[]> entries) {
         int max = RECENT_MAX;
-        // If already present, remove it first
         for (int i = 0; i <= max; i++) {
-            String existing = Preferences.getProperty("recentproject." + i + ".path");
-            if (path.equals(existing)) {
-                for (int j = i; j < max; j++) {
-                    String nextPath = Preferences.getProperty("recentproject." + (j + 1) + ".path");
-                    String nextName = Preferences.getProperty("recentproject." + (j + 1) + ".name");
-                    String nextDate = Preferences.getProperty("recentproject." + (j + 1) + ".date");
-                    if (nextPath == null) {
-                        Preferences.removeProperty("recentproject." + j + ".path");
-                        Preferences.removeProperty("recentproject." + j + ".name");
-                        Preferences.removeProperty("recentproject." + j + ".date");
-                    } else {
-                        Preferences.setProperty("recentproject." + j + ".path", nextPath);
-                        Preferences.setProperty("recentproject." + j + ".name", nextName);
-                        if (nextDate != null) {
-                            Preferences.setProperty("recentproject." + j + ".date", nextDate);
-                        } else {
-                            Preferences.removeProperty("recentproject." + j + ".date");
-                        }
-                    }
+            if (i < entries.size()) {
+                String[] entry = entries.get(i);
+                Preferences.setProperty("recentproject." + i + ".path", entry[0]);
+                Preferences.setProperty("recentproject." + i + ".name", entry[1]);
+                if (entry[2] != null) {
+                    Preferences.setProperty("recentproject." + i + ".date", entry[2]);
+                } else {
+                    Preferences.removeProperty("recentproject." + i + ".date");
                 }
-                break;
+            } else {
+                Preferences.removeProperty("recentproject." + i + ".path");
+                Preferences.removeProperty("recentproject." + i + ".name");
+                Preferences.removeProperty("recentproject." + i + ".date");
             }
         }
-        // Shift down
-        for (int i = max; i > 0; i--) {
-            String prevPath = Preferences.getProperty("recentproject." + (i - 1) + ".path");
-            String prevName = Preferences.getProperty("recentproject." + (i - 1) + ".name");
-            String prevDate = Preferences.getProperty("recentproject." + (i - 1) + ".date");
-            if (prevPath != null) {
-                Preferences.setProperty("recentproject." + i + ".path", prevPath);
-                Preferences.setProperty("recentproject." + i + ".name", prevName);
-                if (prevDate != null) {
-                    Preferences.setProperty("recentproject." + i + ".date", prevDate);
-                }
-            }
-        }
-        Preferences.setProperty("recentproject.0.path", path);
-        Preferences.setProperty("recentproject.0.name", name);
-        Preferences.setProperty("recentproject.0.date", new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(new java.util.Date()));
         Preferences.save();
     }
 
+    public static void addRecent(String path, String name) {
+        if (path == null || path.isBlank()) {
+            return;
+        }
+        if (name == null || name.isBlank()) {
+            name = fileName(path);
+        }
+        String canonicalPath = canonicalRecentPath(path);
+        if (canonicalPath.isBlank()) {
+            return;
+        }
+        List<String[]> entries = loadRecentEntries();
+        entries.removeIf(entry -> canonicalPath.equals(canonicalRecentPath(entry[0])));
+        String date = new java.text.SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(new java.util.Date());
+        entries.add(0, new String[]{canonicalPath, name, date});
+        if (entries.size() > RECENT_MAX + 1) {
+            entries = entries.subList(0, RECENT_MAX + 1);
+        }
+        saveRecentEntries(entries);
+    }
+
     public static void removeRecent(String path) {
-        if (path == null) return;
-        int max = RECENT_MAX;
-        for (int i = 0; i <= max; i++) {
-            String existing = Preferences.getProperty("recentproject." + i + ".path");
-            if (path.equals(existing)) {
-                for (int j = i; j < max; j++) {
-                    String nextPath = Preferences.getProperty("recentproject." + (j + 1) + ".path");
-                    String nextName = Preferences.getProperty("recentproject." + (j + 1) + ".name");
-                    String nextDate = Preferences.getProperty("recentproject." + (j + 1) + ".date");
-                    if (nextPath == null) {
-                        Preferences.removeProperty("recentproject." + j + ".path");
-                        Preferences.removeProperty("recentproject." + j + ".name");
-                        Preferences.removeProperty("recentproject." + j + ".date");
-                    } else {
-                        Preferences.setProperty("recentproject." + j + ".path", nextPath);
-                        Preferences.setProperty("recentproject." + j + ".name", nextName);
-                        if (nextDate != null) {
-                            Preferences.setProperty("recentproject." + j + ".date", nextDate);
-                        } else {
-                            Preferences.removeProperty("recentproject." + j + ".date");
-                        }
-                    }
-                }
-                Preferences.save();
-                break;
-            }
+        if (path == null) {
+            return;
+        }
+        String canonicalPath = canonicalRecentPath(path);
+        List<String[]> entries = loadRecentEntries();
+        // removeIf, not a single first-match removal: stale duplicates that predate the
+        // canonicalization fix above all resolve to the same canonicalPath, so one delete
+        // clears every one of them instead of leaving the rest to flood the list back up.
+        boolean changed = entries.removeIf(entry -> canonicalPath.equals(canonicalRecentPath(entry[0])));
+        if (changed) {
+            saveRecentEntries(entries);
         }
     }
 
