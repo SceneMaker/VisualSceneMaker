@@ -116,6 +116,51 @@ tasks.register('updatePluginSpecs') {
     }
 }
 
+// =====================================================================
+// htmlgui-ws renderer sync
+// =====================================================================
+// editor/web-ui/public/vsm-renderer.js is a vendored copy of
+// plugins/htmlgui-ws/src/main/resources/renderer/vsm-renderer.js, used only by the
+// Screen Editor's live preview iframe (which runs inside the editor's own web-ui bundle,
+// not the plugin's HTTP server, so it can't just fetch the plugin's copy at request time).
+// The two drifted for five months — the vendored copy was missing vsm-chat-input entirely
+// plus several other fixes — before anyone noticed, because nothing tied them together.
+//
+// verifyHtmlGuiRendererSync (hooked into 'check') fails the build when they differ.
+// syncHtmlGuiRenderer copies the plugin's copy (the source of truth) over the vendored one.
+// =====================================================================
+def htmlGuiRendererSource = file("${projectDir}/plugins/htmlgui-ws/src/main/resources/renderer/vsm-renderer.js")
+def htmlGuiRendererVendored = file("${projectDir}/editor/web-ui/public/vsm-renderer.js")
+
+tasks.register('verifyHtmlGuiRendererSync') {
+    group = 'verification'
+    description = 'Verifies editor/web-ui/public/vsm-renderer.js matches the plugin\'s renderer. ' +
+            'Fails if stale — run ./gradlew syncHtmlGuiRenderer.'
+    doLast {
+        if (htmlGuiRendererSource.text != htmlGuiRendererVendored.text) {
+            throw new GradleException(
+                "editor/web-ui/public/vsm-renderer.js is out of sync with " +
+                "plugins/htmlgui-ws/src/main/resources/renderer/vsm-renderer.js " +
+                "(the Screen Editor preview will silently drift from the runtime renderer).\n\n" +
+                "Run:  ./gradlew syncHtmlGuiRenderer\n" +
+                "Then: cd editor/web-ui && npm run build   (to refresh the built web-ui resources)"
+            )
+        }
+        logger.lifecycle('editor/web-ui/public/vsm-renderer.js is current.')
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'verifyHtmlGuiRendererSync'
+}
+
+tasks.register('syncHtmlGuiRenderer', Copy) {
+    group = 'verification'
+    description = 'Copies plugins/htmlgui-ws\'s renderer.js over the vendored Screen Editor preview copy.'
+    from htmlGuiRendererSource
+    into htmlGuiRendererVendored.parentFile
+}
+
 group 'de.dfki'
 def resolvedVersionTag = versioning.info.lastTag
 if (resolvedVersionTag == null
