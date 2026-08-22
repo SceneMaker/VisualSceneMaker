@@ -13,10 +13,29 @@ import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodeGraphics;
 import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodePosition;
+import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.ConstructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.ParenExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.TernaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.ContainsList;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.ArrayVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.MemberVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActionActivity;
+import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -213,9 +232,18 @@ public final class SelectionCommandService {
             return context.errorResponse("PROJECT_NOT_FOUND", "Project not found");
         }
 
-        List<BasicNode> clipboardNodes = context.clipboardNodes(pid);
-        List<ClipboardEdgeData> clipboardEdges = context.clipboardEdges(pid);
-        Set<String> clipboardStartNodeIds = context.clipboardStartNodeIds(pid);
+        String sourceProjectId = params.optString("sourceProjectId", "");
+        if (sourceProjectId.isBlank()) {
+            sourceProjectId = pid;
+        }
+        if (!sourceProjectId.equals(pid) && context.runtimeProject(sourceProjectId) == null) {
+            return context.errorResponse("SOURCE_PROJECT_NOT_FOUND",
+                    "Clipboard source project is no longer open");
+        }
+
+        List<BasicNode> clipboardNodes = context.clipboardNodes(sourceProjectId);
+        List<ClipboardEdgeData> clipboardEdges = context.clipboardEdges(sourceProjectId);
+        Set<String> clipboardStartNodeIds = context.clipboardStartNodeIds(sourceProjectId);
         if (clipboardNodes.isEmpty()) {
             JSONObject response = new JSONObject();
             response.put("status", "ok");
@@ -363,16 +391,36 @@ public final class SelectionCommandService {
             createEdgeFromClipboard(context, pid, sourceNode, targetNode, ce);
         }
 
+        List<BasicNode> pastedNodesFlat = new ArrayList<>();
+        for (String newId : newNodeIds) {
+            BasicNode pastedNode = context.resolveNodeById(activeSuperNode, newId);
+            if (pastedNode == null) {
+                continue;
+            }
+            if (pastedNode instanceof SuperNode) {
+                context.collectNodes((SuperNode) pastedNode, pastedNodesFlat);
+            } else {
+                pastedNodesFlat.add(pastedNode);
+            }
+        }
+        List<String> referenceWarnings = collectMissingReferenceWarnings(
+                pastedNodesFlat, project.getSceneScript(), activeSuperNode);
+
         context.markDirty(pid);
         JSONObject snapshot = context.createSceneFlowSnapshot(project, pid, snapshotTarget, sceneFlow);
         JSONObject response = context.buildSceneFlowResponse(snapshot);
         response.put("nodeIds", new JSONArray(newNodeIds));
-        if (!droppedEdges.isEmpty()) {
+        if (!droppedEdges.isEmpty() || !referenceWarnings.isEmpty()) {
             JSONArray warnings = new JSONArray();
-            warnings.put("Paste: " + droppedEdges.size() + " edge(s) could not be reconnected "
-                    + "because their target nodes were not part of the selection. "
-                    + "Redraw them manually.");
-            for (String desc : droppedEdges) {
+            if (!droppedEdges.isEmpty()) {
+                warnings.put("Paste: " + droppedEdges.size() + " edge(s) could not be reconnected "
+                        + "because their target nodes were not part of the selection. "
+                        + "Redraw them manually.");
+                for (String desc : droppedEdges) {
+                    warnings.put(desc);
+                }
+            }
+            for (String desc : referenceWarnings) {
                 warnings.put(desc);
             }
             response.put("warnings", warnings);
@@ -380,6 +428,166 @@ public final class SelectionCommandService {
         context.broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
         context.recordHistory(pid, "SceneFlow.Selection.Paste");
         return response;
+    }
+
+    /**
+     * Best-effort, non-blocking check for pasted content that only made sense in the source
+     * project: scenes played by name and variables read/written by name are copied by value/text
+     * (see {@link #collectEdgesForClipboard}/{@code copySelectionForProject}), so they silently do
+     * nothing (scenes) or would fail at runtime (variables) unless the target project happens to
+     * declare a matching name. Agent/device calls are deliberately not checked here: the command
+     * model has no structural field naming the called agent (see {@code PlayActionActivity}/
+     * {@code StopActionActivity}, whose payload is a free-form {@link Expression}), so any such
+     * check would be a fragile text heuristic rather than a real reference check.
+     */
+    private List<String> collectMissingReferenceWarnings(final List<BasicNode> pastedNodes,
+                                                          final SceneScript sceneScript,
+                                                          final SuperNode pasteLocation) {
+        List<String> warnings = new ArrayList<>();
+
+        Set<String> reportedScenes = new HashSet<>();
+        for (BasicNode node : pastedNodes) {
+            for (Command cmd : node.getCmdList()) {
+                if (!(cmd instanceof PlayScenesActivity)) {
+                    continue;
+                }
+                Expression argument = ((PlayScenesActivity) cmd).getArgument();
+                if (!(argument instanceof StringLiteral)) {
+                    continue;
+                }
+                String sceneName = ((StringLiteral) argument).getValue();
+                if (sceneName == null || sceneName.isBlank() || !reportedScenes.add(sceneName)) {
+                    continue;
+                }
+                if (sceneScript == null || sceneScript.getSceneGroup(sceneName) == null) {
+                    warnings.add("Pasted command plays scene '" + sceneName
+                            + "', which the target project does not define.");
+                }
+            }
+        }
+
+        // Variables visible at the paste location: the target's own scope chain (walking up to
+        // the SceneFlow root, which is itself a node with a global var-def list) plus whatever
+        // node-local variables travelled along with the pasted nodes themselves.
+        Set<String> visibleVarNames = new HashSet<>();
+        for (BasicNode ancestor = pasteLocation; ancestor != null; ancestor = ancestor.getParentNode()) {
+            for (VariableDefinition def : ancestor.getVarDefList()) {
+                visibleVarNames.add(def.getName());
+            }
+        }
+        for (BasicNode node : pastedNodes) {
+            for (VariableDefinition def : node.getVarDefList()) {
+                visibleVarNames.add(def.getName());
+            }
+        }
+
+        Set<String> reportedVars = new HashSet<>();
+        for (BasicNode node : pastedNodes) {
+            for (Command cmd : node.getCmdList()) {
+                List<Expression> expressions = new ArrayList<>();
+                collectTopLevelExpressions(cmd, expressions);
+                Set<String> referencedNames = new HashSet<>();
+                for (Expression expr : expressions) {
+                    collectVariableReferences(expr, referencedNames);
+                }
+                for (String name : referencedNames) {
+                    if (!visibleVarNames.contains(name) && reportedVars.add(name)) {
+                        warnings.add("Pasted command references variable '" + name
+                                + "', which is not declared in the target project.");
+                    }
+                }
+            }
+        }
+
+        return warnings;
+    }
+
+    /** Collects the expressions a single {@link Command} exposes directly, without recursing
+     *  into their sub-expressions (that's {@link #collectVariableReferences}'s job). */
+    private void collectTopLevelExpressions(final Command cmd, final List<Expression> out) {
+        if (cmd instanceof Assignment) {
+            Assignment assignment = (Assignment) cmd;
+            if (assignment.getLeftExpression() != null) {
+                out.add(assignment.getLeftExpression());
+            }
+            if (assignment.getInitExpression() != null) {
+                out.add(assignment.getInitExpression());
+            }
+        } else if (cmd instanceof PlayActionActivity) {
+            PlayActionActivity activity = (PlayActionActivity) cmd;
+            if (activity.getCommand() != null) {
+                out.add(activity.getCommand());
+            }
+            out.addAll(activity.getArgList());
+        } else if (cmd instanceof StopActionActivity) {
+            StopActionActivity activity = (StopActionActivity) cmd;
+            if (activity.getCommand() != null) {
+                out.add(activity.getCommand());
+            }
+            out.addAll(activity.getArgList());
+        } else if (cmd instanceof PlayScenesActivity) {
+            PlayScenesActivity activity = (PlayScenesActivity) cmd;
+            if (activity.getArgument() != null) {
+                out.add(activity.getArgument());
+            }
+            out.addAll(activity.getArgList());
+        } else if (cmd instanceof PlayDialogAction) {
+            PlayDialogAction activity = (PlayDialogAction) cmd;
+            if (activity.getArg() != null) {
+                out.add(activity.getArg());
+            }
+            out.addAll(activity.getArgList());
+        } else if (cmd instanceof Expression) {
+            out.add((Expression) cmd);
+        }
+    }
+
+    /** Recursively collects referenced variable names without evaluating the expression.
+     *  Mirrors {@code de.dfki.vsm.runtime.interpreter.GuardDependencyExtractor}, except calls
+     *  ({@link CallingExpression}/{@link ConstructExpression}) are descended into here instead of
+     *  treated as opaque, since we're after every name mentioned rather than re-evaluation triggers. */
+    private void collectVariableReferences(final Expression expr, final Set<String> out) {
+        if (expr == null) {
+            return;
+        }
+        if (expr instanceof SimpleVariable) {
+            out.add(((SimpleVariable) expr).getName());
+        } else if (expr instanceof MemberVariable) {
+            out.add(((MemberVariable) expr).getName());
+        } else if (expr instanceof ArrayVariable) {
+            out.add(((ArrayVariable) expr).getName());
+            collectVariableReferences(((ArrayVariable) expr).getExpression(), out);
+        } else if (expr instanceof BinaryExpression) {
+            collectVariableReferences(((BinaryExpression) expr).getLeftExp(), out);
+            collectVariableReferences(((BinaryExpression) expr).getRightExp(), out);
+        } else if (expr instanceof UnaryExpression) {
+            collectVariableReferences(((UnaryExpression) expr).getExp(), out);
+        } else if (expr instanceof TernaryExpression) {
+            collectVariableReferences(((TernaryExpression) expr).getCondition(), out);
+            collectVariableReferences(((TernaryExpression) expr).getThenExp(), out);
+            collectVariableReferences(((TernaryExpression) expr).getElseExp(), out);
+        } else if (expr instanceof ParenExpression) {
+            collectVariableReferences(((ParenExpression) expr).getExp(), out);
+        } else if (expr instanceof ArrayExpression) {
+            for (Expression e : ((ArrayExpression) expr).getExpList()) {
+                collectVariableReferences(e, out);
+            }
+        } else if (expr instanceof StructExpression) {
+            for (Assignment a : ((StructExpression) expr).getExpList()) {
+                collectVariableReferences(a.getInitExpression(), out);
+            }
+        } else if (expr instanceof ContainsList) {
+            collectVariableReferences(((ContainsList) expr).getListExp(), out);
+            collectVariableReferences(((ContainsList) expr).getItemExp(), out);
+        } else if (expr instanceof CallingExpression) {
+            for (Expression e : ((CallingExpression) expr).getArgList()) {
+                collectVariableReferences(e, out);
+            }
+        } else if (expr instanceof ConstructExpression) {
+            for (Expression e : ((ConstructExpression) expr).getArgList()) {
+                collectVariableReferences(e, out);
+            }
+        }
     }
 
     private void createEdgeFromClipboard(final Context context,

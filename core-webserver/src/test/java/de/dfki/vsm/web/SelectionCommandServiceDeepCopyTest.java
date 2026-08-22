@@ -8,7 +8,12 @@ import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
+import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -424,6 +429,265 @@ class SelectionCommandServiceDeepCopyTest {
         assertNotNull(pastedB);
         assertEquals(1, pastedA.getIEdgeList().size());
         assertEquals(pastedB.getId(), pastedA.getIEdgeAt(0).getTargetUnid());
+    }
+
+    @Test
+    void pasteFromDifferentSourceProjectCopiesIntoTargetProject() {
+        SelectionCommandService service = new SelectionCommandService();
+        TestContext context = new TestContext();
+        String sourcePid = "source-project";
+        String targetPid = "target-project";
+
+        RunTimeProject sourceProject = new RunTimeProject();
+        context.projects.put(sourcePid, sourceProject);
+        SceneFlow sourceRoot = sourceProject.getSceneFlow();
+
+        RunTimeProject targetProject = new RunTimeProject();
+        context.projects.put(targetPid, targetProject);
+        SceneFlow targetRoot = targetProject.getSceneFlow();
+
+        BasicNode source = new BasicNode();
+        source.setId("N1");
+        source.setName("Source");
+        source.setParentNode(sourceRoot);
+        sourceRoot.addNode(source);
+
+        BasicNode target = new BasicNode();
+        target.setId("N2");
+        target.setName("Target");
+        target.setParentNode(sourceRoot);
+        sourceRoot.addNode(target);
+
+        InterruptEdge iedge = new InterruptEdge();
+        iedge.setSourceNode(source);
+        iedge.setSourceUnid(source.getId());
+        iedge.setTargetNode(target);
+        iedge.setTargetUnid(target.getId());
+        iedge.setCondition(new BoolLiteral(true));
+        iedge.setGraphics(new EdgeGraphics());
+        source.addIEdge(iedge);
+
+        JSONObject copyParams = new JSONObject();
+        copyParams.put("projectId", sourcePid);
+        copyParams.put("nodeIds", new JSONArray().put("N1").put("N2"));
+        JSONObject copyResult = service.dispatch("SceneFlow.Selection.Copy", copyParams, ignored -> { }, context);
+        assertEquals("ok", copyResult.optString("status"));
+
+        // the target project's own clipboard was never populated
+        assertTrue(context.clipboardNodes(targetPid).isEmpty());
+
+        JSONObject pasteParams = new JSONObject();
+        pasteParams.put("projectId", targetPid);
+        pasteParams.put("sourceProjectId", sourcePid);
+        pasteParams.put("superNodeId", "");
+        pasteParams.put("dx", 10);
+        pasteParams.put("dy", 10);
+        JSONObject pasteResult = service.dispatch("SceneFlow.Selection.Paste", pasteParams, ignored -> { }, context);
+        assertEquals("ok", pasteResult.optString("status"));
+
+        JSONArray pastedIds = pasteResult.optJSONArray("nodeIds");
+        assertNotNull(pastedIds);
+        assertEquals(2, pastedIds.length());
+
+        // the source project itself is untouched
+        assertEquals(2, sourceRoot.getNodeList().size());
+
+        List<BasicNode> targetTopLevel = targetRoot.getNodeAndSuperNodeList();
+        BasicNode pastedSource = targetTopLevel.stream()
+                .filter(n -> "Source".equals(n.getName()))
+                .findFirst()
+                .orElse(null);
+        BasicNode pastedTarget = targetTopLevel.stream()
+                .filter(n -> "Target".equals(n.getName()))
+                .findFirst()
+                .orElse(null);
+
+        assertNotNull(pastedSource);
+        assertNotNull(pastedTarget);
+        assertNotEquals("N1", pastedSource.getId());
+        assertNotEquals("N2", pastedTarget.getId());
+        assertEquals(1, pastedSource.getIEdgeList().size());
+        assertEquals(pastedTarget.getId(), pastedSource.getIEdgeAt(0).getTargetUnid());
+    }
+
+    @Test
+    void pasteFromClosedSourceProjectReturnsError() {
+        SelectionCommandService service = new SelectionCommandService();
+        TestContext context = new TestContext();
+        String targetPid = "target-only";
+
+        RunTimeProject targetProject = new RunTimeProject();
+        context.projects.put(targetPid, targetProject);
+
+        JSONObject pasteParams = new JSONObject();
+        pasteParams.put("projectId", targetPid);
+        pasteParams.put("sourceProjectId", "no-such-project");
+        JSONObject pasteResult = service.dispatch("SceneFlow.Selection.Paste", pasteParams, ignored -> { }, context);
+
+        assertEquals("error", pasteResult.optString("status"));
+        assertEquals("SOURCE_PROJECT_NOT_FOUND", pasteResult.optString("code"));
+    }
+
+    @Test
+    void pasteWarnsWhenPlayedSceneIsMissingFromTargetSceneScript() {
+        SelectionCommandService service = new SelectionCommandService();
+        TestContext context = new TestContext();
+        String pid = "scene-warning-missing";
+
+        RunTimeProject project = new RunTimeProject();
+        context.projects.put(pid, project);
+        SceneFlow root = project.getSceneFlow();
+
+        BasicNode node = new BasicNode();
+        node.setId("N1");
+        node.setName("Source");
+        node.setParentNode(root);
+        node.addCmd(new PlayScenesActivity(new StringLiteral("Greeting")));
+        root.addNode(node);
+
+        JSONObject copyParams = new JSONObject();
+        copyParams.put("projectId", pid);
+        copyParams.put("nodeIds", new JSONArray().put("N1"));
+        service.dispatch("SceneFlow.Selection.Copy", copyParams, ignored -> { }, context);
+
+        JSONObject pasteParams = new JSONObject();
+        pasteParams.put("projectId", pid);
+        pasteParams.put("superNodeId", "");
+        pasteParams.put("dx", 10);
+        pasteParams.put("dy", 10);
+        JSONObject pasteResult = service.dispatch("SceneFlow.Selection.Paste", pasteParams, ignored -> { }, context);
+
+        assertEquals("ok", pasteResult.optString("status"));
+        JSONArray warnings = pasteResult.optJSONArray("warnings");
+        assertNotNull(warnings, "expected a warning about the missing scene");
+        boolean mentionsScene = false;
+        for (int i = 0; i < warnings.length(); i++) {
+            if (warnings.getString(i).contains("Greeting")) {
+                mentionsScene = true;
+            }
+        }
+        assertTrue(mentionsScene, "expected a warning mentioning the missing scene 'Greeting': " + warnings);
+    }
+
+    @Test
+    void pasteDoesNotWarnWhenPlayedSceneExistsInTargetSceneScript() {
+        SelectionCommandService service = new SelectionCommandService();
+        TestContext context = new TestContext();
+        String pid = "scene-warning-present";
+
+        RunTimeProject project = new RunTimeProject();
+        context.projects.put(pid, project);
+        project.getSceneScript().parseTXT("scene en Greeting\nBob: Hi there.\n");
+        SceneFlow root = project.getSceneFlow();
+
+        BasicNode node = new BasicNode();
+        node.setId("N1");
+        node.setName("Source");
+        node.setParentNode(root);
+        node.addCmd(new PlayScenesActivity(new StringLiteral("Greeting")));
+        root.addNode(node);
+
+        JSONObject copyParams = new JSONObject();
+        copyParams.put("projectId", pid);
+        copyParams.put("nodeIds", new JSONArray().put("N1"));
+        service.dispatch("SceneFlow.Selection.Copy", copyParams, ignored -> { }, context);
+
+        JSONObject pasteParams = new JSONObject();
+        pasteParams.put("projectId", pid);
+        pasteParams.put("superNodeId", "");
+        pasteParams.put("dx", 10);
+        pasteParams.put("dy", 10);
+        JSONObject pasteResult = service.dispatch("SceneFlow.Selection.Paste", pasteParams, ignored -> { }, context);
+
+        assertEquals("ok", pasteResult.optString("status"));
+        JSONArray warnings = pasteResult.optJSONArray("warnings");
+        if (warnings != null) {
+            for (int i = 0; i < warnings.length(); i++) {
+                assertFalse(warnings.getString(i).contains("Greeting"),
+                        "did not expect a warning about scene 'Greeting': " + warnings);
+            }
+        }
+    }
+
+    @Test
+    void pasteWarnsWhenCommandReferencesUndeclaredGlobalVariable() {
+        SelectionCommandService service = new SelectionCommandService();
+        TestContext context = new TestContext();
+        String pid = "var-warning-missing";
+
+        RunTimeProject project = new RunTimeProject();
+        context.projects.put(pid, project);
+        SceneFlow root = project.getSceneFlow();
+
+        BasicNode node = new BasicNode();
+        node.setId("N1");
+        node.setName("Source");
+        node.setParentNode(root);
+        node.addCmd(new SimpleVariable("undeclaredVar"));
+        root.addNode(node);
+
+        JSONObject copyParams = new JSONObject();
+        copyParams.put("projectId", pid);
+        copyParams.put("nodeIds", new JSONArray().put("N1"));
+        service.dispatch("SceneFlow.Selection.Copy", copyParams, ignored -> { }, context);
+
+        JSONObject pasteParams = new JSONObject();
+        pasteParams.put("projectId", pid);
+        pasteParams.put("superNodeId", "");
+        pasteParams.put("dx", 10);
+        pasteParams.put("dy", 10);
+        JSONObject pasteResult = service.dispatch("SceneFlow.Selection.Paste", pasteParams, ignored -> { }, context);
+
+        assertEquals("ok", pasteResult.optString("status"));
+        JSONArray warnings = pasteResult.optJSONArray("warnings");
+        assertNotNull(warnings, "expected a warning about the undeclared variable");
+        boolean mentionsVar = false;
+        for (int i = 0; i < warnings.length(); i++) {
+            if (warnings.getString(i).contains("undeclaredVar")) {
+                mentionsVar = true;
+            }
+        }
+        assertTrue(mentionsVar, "expected a warning mentioning 'undeclaredVar': " + warnings);
+    }
+
+    @Test
+    void pasteDoesNotWarnWhenReferencedVariableIsDeclaredGlobally() {
+        SelectionCommandService service = new SelectionCommandService();
+        TestContext context = new TestContext();
+        String pid = "var-warning-present";
+
+        RunTimeProject project = new RunTimeProject();
+        context.projects.put(pid, project);
+        SceneFlow root = project.getSceneFlow();
+        root.addVarDef(new VariableDefinition("declaredVar", "String", null));
+
+        BasicNode node = new BasicNode();
+        node.setId("N1");
+        node.setName("Source");
+        node.setParentNode(root);
+        node.addCmd(new SimpleVariable("declaredVar"));
+        root.addNode(node);
+
+        JSONObject copyParams = new JSONObject();
+        copyParams.put("projectId", pid);
+        copyParams.put("nodeIds", new JSONArray().put("N1"));
+        service.dispatch("SceneFlow.Selection.Copy", copyParams, ignored -> { }, context);
+
+        JSONObject pasteParams = new JSONObject();
+        pasteParams.put("projectId", pid);
+        pasteParams.put("superNodeId", "");
+        pasteParams.put("dx", 10);
+        pasteParams.put("dy", 10);
+        JSONObject pasteResult = service.dispatch("SceneFlow.Selection.Paste", pasteParams, ignored -> { }, context);
+
+        assertEquals("ok", pasteResult.optString("status"));
+        JSONArray warnings = pasteResult.optJSONArray("warnings");
+        if (warnings != null) {
+            for (int i = 0; i < warnings.length(); i++) {
+                assertFalse(warnings.getString(i).contains("declaredVar"),
+                        "did not expect a warning about declared variable 'declaredVar': " + warnings);
+            }
+        }
     }
 
     private static final class TestContext implements SelectionCommandService.Context {

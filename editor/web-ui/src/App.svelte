@@ -11812,7 +11812,8 @@ Sentence:
       kind: "nodes-comments",
       nodeIds: copiedNodeIds,
       comments,
-      origin: { x: minX, y: minY }
+      origin: { x: minX, y: minY },
+      sourceProjectId: selectedProjectId
     };
     sceneFlowPasteIndex = 0;
     if (copiedNodeIds.length) {
@@ -11867,10 +11868,13 @@ Sentence:
       return;
     }
     const newSelections = [];
+    const clipboardSourceProjectId = sceneFlowClipboard.sourceProjectId || selectedProjectId;
+    const isCrossProjectPaste = clipboardSourceProjectId !== selectedProjectId;
 
     if (sceneFlowClipboard.nodeIds?.length) {
       const response = await runSceneFlowCommand("SceneFlow.Selection.Paste", {
         projectId: selectedProjectId,
+        sourceProjectId: clipboardSourceProjectId,
         superNodeId: sceneFlow?.superNodeId || "",
         dx,
         dy
@@ -11886,6 +11890,10 @@ Sentence:
       });
       if (Array.isArray(response.warnings) && response.warnings.length > 0) {
         statusMessage = response.warnings[0];
+      } else if (isCrossProjectPaste && nodeIds.length) {
+        const sourceName = projects.find((p) => p.projectId === clipboardSourceProjectId)?.name
+          || clipboardSourceProjectId;
+        statusMessage = `Pasted ${nodeIds.length} item(s) from "${sourceName}".`;
       }
     }
 
