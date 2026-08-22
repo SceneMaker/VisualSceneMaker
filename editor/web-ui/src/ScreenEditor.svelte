@@ -4,6 +4,9 @@
   import { EditorState } from "@codemirror/state";
   import { json } from "@codemirror/lang-json";
   import { linter, lintGutter } from "@codemirror/lint";
+  import { insertChildAtPath, pathKey } from "./screenTree.js";
+  import ScreenElementRow from "./ScreenElementRow.svelte";
+  import ScreenElementProperties from "./ScreenElementProperties.svelte";
 
   export let projectId = null;
   export let plugin    = null;
@@ -106,9 +109,35 @@
 
   let editorMode    = "visual";
   let parsedSchema  = null;
-  let expandedEl    = null;          // index of expanded top-level element
-  let expandedChild = null;          // { pi, ci } for expanded panel child
+  // Which rows are expanded, at any depth — every element at every depth is now a
+  // ScreenElementRow, so one Set replaces what used to be expandedEl (depth 0) and
+  // expandedChild (depth 1) as separate variables. A Set rather than one exclusive "selected
+  // path": several rows at different depths can be open at once, and expanding a child must
+  // never depend on — or clear — whatever ancestor got you there (see ScreenElementRow's
+  // top-of-file comment for what went wrong when this was a single value).
+  let expandedPaths = new Set();
   let modeError     = "";
+
+  function toggleExpanded(path) {
+    const key = pathKey(path);
+    const next = new Set(expandedPaths);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    expandedPaths = next;
+  }
+
+  /** Applies a full elements tree produced by editing at any depth. */
+  function applyElementsTree(newElements) {
+    parsedSchema.screens[selectedScreen].elements = newElements;
+    parsedSchema = { ...parsedSchema };
+    commitParsed();
+  }
+
+  /** Palette clicks add at the root; expand the new element the way addElement() used to. */
+  function addTopLevelElement(el) {
+    const newPath = [veElements.length];
+    applyElementsTree(insertChildAtPath(veElements, [], el));
+    expandedPaths = new Set(expandedPaths).add(pathKey(newPath));
+  }
 
   let previewIframe  = null;         // bound to the preview <iframe>
   let previewLoaded  = false;        // true once the iframe fires its load event
@@ -266,116 +295,6 @@
       parsedSchema.screens[selectedScreen][key] = value;
     }
     parsedSchema = { ...parsedSchema };
-    commitParsed();
-  }
-
-  // ── visual editor: top-level element props ────────────────────────────────
-  function setProp(i, key, value) {
-    const els = [...veElements];
-    if (value === undefined) delete els[i][key];
-    else els[i] = { ...els[i], [key]: value };
-    parsedSchema.screens[selectedScreen].elements = els;
-    parsedSchema = { ...parsedSchema };
-    commitParsed();
-  }
-
-  function setStyleProp(i, key, value) {
-    const els = [...veElements];
-    const style = { ...(els[i].style ?? {}) };
-    if (value === "" || value === undefined) delete style[key];
-    else style[key] = value;
-    els[i] = { ...els[i], style: Object.keys(style).length ? style : undefined };
-    if (!els[i].style) delete els[i].style;
-    parsedSchema.screens[selectedScreen].elements = els;
-    parsedSchema = { ...parsedSchema };
-    commitParsed();
-  }
-
-  function addElement(el) {
-    const screen = parsedSchema?.screens?.[selectedScreen];
-    if (!screen) return;
-    screen.elements  = [...(screen.elements ?? []), el];
-    parsedSchema     = { ...parsedSchema };
-    expandedEl       = screen.elements.length - 1;
-    expandedChild    = null;
-    commitParsed();
-  }
-
-  function deleteElement(i) {
-    const screen = parsedSchema?.screens?.[selectedScreen];
-    if (!screen) return;
-    screen.elements = screen.elements.filter((_, idx) => idx !== i);
-    parsedSchema = { ...parsedSchema };
-    if (expandedEl === i) expandedEl = null;
-    else if (expandedEl > i) expandedEl--;
-    commitParsed();
-  }
-
-  function moveElement(i, dir) {
-    const screen = parsedSchema?.screens?.[selectedScreen];
-    if (!screen) return;
-    const els = [...screen.elements], j = i + dir;
-    if (j < 0 || j >= els.length) return;
-    [els[i], els[j]] = [els[j], els[i]];
-    screen.elements = els;
-    parsedSchema = { ...parsedSchema };
-    expandedEl = j;
-    commitParsed();
-  }
-
-  // ── visual editor: panel child props ─────────────────────────────────────
-  function setChildProp(pi, ci, key, value) {
-    const els = [...veElements];
-    const ch  = [...(els[pi].children ?? [])];
-    if (value === undefined) delete ch[ci][key];
-    else ch[ci] = { ...ch[ci], [key]: value };
-    els[pi] = { ...els[pi], children: ch };
-    parsedSchema.screens[selectedScreen].elements = els;
-    parsedSchema = { ...parsedSchema };
-    commitParsed();
-  }
-
-  function setChildStyleProp(pi, ci, key, value) {
-    const els   = [...veElements];
-    const ch    = [...(els[pi].children ?? [])];
-    const style = { ...(ch[ci].style ?? {}) };
-    if (value === "" || value === undefined) delete style[key];
-    else style[key] = value;
-    ch[ci] = { ...ch[ci], style: Object.keys(style).length ? style : undefined };
-    if (!ch[ci].style) delete ch[ci].style;
-    els[pi] = { ...els[pi], children: ch };
-    parsedSchema.screens[selectedScreen].elements = els;
-    parsedSchema = { ...parsedSchema };
-    commitParsed();
-  }
-
-  function addChild(pi, el) {
-    const els = [...veElements];
-    els[pi] = { ...els[pi], children: [...(els[pi].children ?? []), el] };
-    parsedSchema.screens[selectedScreen].elements = els;
-    parsedSchema = { ...parsedSchema };
-    expandedChild = { pi, ci: els[pi].children.length - 1 };
-    commitParsed();
-  }
-
-  function deleteChild(pi, ci) {
-    const els = [...veElements];
-    els[pi] = { ...els[pi], children: (els[pi].children ?? []).filter((_, idx) => idx !== ci) };
-    parsedSchema.screens[selectedScreen].elements = els;
-    parsedSchema = { ...parsedSchema };
-    if (expandedChild?.pi === pi && expandedChild?.ci === ci) expandedChild = null;
-    commitParsed();
-  }
-
-  function moveChild(pi, ci, dir) {
-    const els = [...veElements];
-    const ch  = [...(els[pi].children ?? [])], j = ci + dir;
-    if (j < 0 || j >= ch.length) return;
-    [ch[ci], ch[j]] = [ch[j], ch[ci]];
-    els[pi] = { ...els[pi], children: ch };
-    parsedSchema.screens[selectedScreen].elements = els;
-    parsedSchema = { ...parsedSchema };
-    expandedChild = { pi, ci: j };
     commitParsed();
   }
 
@@ -647,7 +566,7 @@
           <div class="se-palette-row">
             {#each group.items as item}
               <button class="se-palette-tile" title="{item.label}"
-                      on:click={() => addElement(item.create())}>
+                      on:click={() => addTopLevelElement(item.create())}>
                 <span class="se-tile-icon">{item.icon}</span>
                 <span class="se-tile-name">{item.label}</span>
               </button>
@@ -778,1131 +697,16 @@
               <div class="ve-empty">No elements yet — pick one from the palette.</div>
             {/if}
 
-            {#each veElements as el, i}
-              {@const exp = expandedEl === i}
-              <div class="ve-card" class:ve-card-expanded={exp}>
-
-                <div class="ve-card-header" role="button" tabindex="0"
-                     on:click={() => { expandedEl = exp ? null : i; if (!exp) expandedChild = null; }}
-                     on:keydown={e => e.key==="Enter" && (expandedEl = exp ? null : i)}>
-                  <div class="ve-card-arrows">
-                    <button class="ve-arrow" disabled={i===0}
-                            on:click|stopPropagation={() => moveElement(i,-1)}>▲</button>
-                    <button class="ve-arrow" disabled={i===veElements.length-1}
-                            on:click|stopPropagation={() => moveElement(i,1)}>▼</button>
-                  </div>
-                  <span class="ve-type-badge">{typeLabel(el.type)}</span>
-                  <span class="ve-card-summary">{elementSummary(el)}</span>
-                  <span class="ve-expand-icon">{exp ? "▾" : "▸"}</span>
-                  <button class="ve-delete" on:click|stopPropagation={() => deleteElement(i)}>×</button>
-                </div>
-
-                {#if exp}
-                <div class="ve-props">
-
-                  <!-- ── Align-self (common to all elements) ── -->
-                  {#if el.type !== "vsm-panel"}
-                  <label class="ve-prop-label">Align in layout</label>
-                  <div class="ve-align-row">
-                    {#each alignItemsOpts as opt}
-                      <button class="ve-align-btn"
-                              class:ve-align-active={el.style?.["align-self"] === opt.v}
-                              on:click={() => setStyleProp(i, "align-self",
-                                el.style?.["align-self"] === opt.v ? "" : opt.v)}
-                              title={opt.label}>{opt.label}</button>
-                    {/each}
-                  </div>
-                  {/if}
-
-                  <!-- ── Type-specific props ── -->
-
-                  {#if el.type === "sl-text" || el.type === "wa-text"}
-                    <label class="ve-prop-label">Content</label>
-                    <textarea class="ve-textarea" rows="2"
-                              value={el.content ?? ""}
-                              on:input={e => setProp(i,"content",e.target.value)}></textarea>
-                    <label class="ve-prop-label">Text color</label>
-                    <input class="ve-color" type="color"
-                           value={parseColorAlpha(el.style?.color ?? '#000000').hex}
-                           on:input={e => setStyleProp(i,"color",
-                             buildColorAlpha(e.target.value, parseColorAlpha(el.style?.color ?? '#000000').opacity))}>
-                    <input class="ve-opacity" type="number" min="0" max="100"
-                           value={parseColorAlpha(el.style?.color ?? '#000000').opacity}
-                           on:input={e => setStyleProp(i,"color",
-                             buildColorAlpha(parseColorAlpha(el.style?.color ?? '#000000').hex, e.target.value))}>
-                    <span class="ve-opacity-unit">%</span>
-                    <div class="ve-row" style="gap:.5rem">
-                      <label class="ve-prop-label">Font size</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="1rem"
-                             value={el.style?.["font-size"] ?? ""}
-                             on:input={e => setStyleProp(i,"font-size",e.target.value || undefined)}>
-                    </div>
-                    <label class="ve-prop-label">Font</label>
-                    <select class="ve-select"
-                            value={fontOpts.some(f => f.v === (el.style?.["font-family"] ?? "")) ? (el.style?.["font-family"] ?? "") : "__custom__"}
-                            on:change={e => setStyleProp(i,"font-family", e.target.value === "__custom__" ? undefined : (e.target.value || undefined))}>
-                      {#each fontOpts as f}<option value={f.v}>{f.label}</option>{/each}
-                      {#if el.style?.["font-family"] && !fontOpts.some(f => f.v === el.style?.["font-family"])}
-                        <option value="__custom__">{el.style["font-family"]}</option>
-                      {/if}
-                    </select>
-                    <label class="ve-prop-label">Style</label>
-                    <div class="ve-align-row">
-                      <button class="ve-align-btn"
-                              class:ve-align-active={el.style?.["font-weight"] === "bold"}
-                              on:click={() => setStyleProp(i,"font-weight",
-                                el.style?.["font-weight"] === "bold" ? "" : "bold")}><b>B</b></button>
-                      <button class="ve-align-btn"
-                              class:ve-align-active={el.style?.["font-style"] === "italic"}
-                              on:click={() => setStyleProp(i,"font-style",
-                                el.style?.["font-style"] === "italic" ? "" : "italic")}><i>I</i></button>
-                      {#each textAlignOpts as opt}
-                        <button class="ve-align-btn"
-                                class:ve-align-active={el.style?.["text-align"] === opt.v}
-                                on:click={() => setStyleProp(i,"text-align",
-                                  el.style?.["text-align"] === opt.v ? "" : opt.v)}
-                                title={opt.label}>{opt.label}</button>
-                      {/each}
-                    </div>
-
-                  {:else if el.type === "sl-button" || el.type === "wa-button"}
-                    <label class="ve-prop-label">Label</label>
-                    <input class="ve-input" type="text" value={el.label ?? ""}
-                           on:input={e => setProp(i,"label",e.target.value)}>
-                    <label class="ve-prop-label">Icon <span class="ve-hint">(leave blank to use only the label)</span></label>
-                    <div class="ve-row" style="gap:.5rem">
-                      <select class="ve-select" value={el.icon ?? ""}
-                              on:change={e => setProp(i,"icon",e.target.value || undefined)}>
-                        {#each BUTTON_ICONS as opt}<option value={opt.v}>{opt.label}</option>{/each}
-                      </select>
-                      {#if el.icon && ICON_SVG[el.icon]}
-                        <span class="ve-icon-preview">{@html ICON_SVG[el.icon]}</span>
-                      {/if}
-                    </div>
-                    <label class="ve-prop-label">Variant</label>
-                    <select class="ve-select" value={el.variant ?? "default"}
-                            on:change={e => setProp(i,"variant",e.target.value)}>
-                      <option value="default">Default</option>
-                      <option value="primary">Primary</option>
-                      <option value="success">Success</option>
-                      <option value="warning">Warning</option>
-                      <option value="danger">Danger</option>
-                    </select>
-                    <label class="ve-prop-label">Sends to variable</label>
-                    <select class="ve-select" value={el.sendsVar ?? ""}
-                            on:change={e => setProp(i,"sendsVar",e.target.value)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-                    <label class="ve-prop-label">Value to send</label>
-                    <input class="ve-input" type="text" value={el.sendsValue ?? ""}
-                           on:input={e => setProp(i,"sendsValue",e.target.value)}>
-
-                  {:else if el.type === "sl-range" || el.type === "wa-range"}
-                    <label class="ve-prop-label">Label</label>
-                    <input class="ve-input" type="text" value={el.label ?? ""}
-                           on:input={e => setProp(i,"label",e.target.value)}>
-                    <div class="ve-row-trio">
-                      <div><label class="ve-prop-label">Min</label>
-                        <input class="ve-input" type="number" value={el.min ?? 0}
-                               on:input={e => setProp(i,"min",+e.target.value)}></div>
-                      <div><label class="ve-prop-label">Max</label>
-                        <input class="ve-input" type="number" value={el.max ?? 100}
-                               on:input={e => setProp(i,"max",+e.target.value)}></div>
-                      <div><label class="ve-prop-label">Step</label>
-                        <input class="ve-input" type="number" value={el.step ?? 1}
-                               on:input={e => setProp(i,"step",+e.target.value)}></div>
-                    </div>
-                    <label class="ve-prop-label">Binds to variable</label>
-                    <select class="ve-select" value={el.bindVar ?? ""}
-                            on:change={e => setProp(i,"bindVar",e.target.value)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-
-                  {:else if el.type === "sl-input" || el.type === "wa-input"}
-                    <label class="ve-prop-label">Label</label>
-                    <input class="ve-input" type="text" value={el.label ?? ""}
-                           on:input={e => setProp(i,"label",e.target.value)}>
-                    <label class="ve-prop-label">Placeholder</label>
-                    <input class="ve-input" type="text" value={el.placeholder ?? ""}
-                           on:input={e => setProp(i,"placeholder",e.target.value)}>
-                    <label class="ve-prop-label">Binds to variable</label>
-                    <select class="ve-select" value={el.bindVar ?? ""}
-                            on:change={e => setProp(i,"bindVar",e.target.value)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-
-                  {:else if el.type === "sl-textarea" || el.type === "wa-textarea"}
-                    <label class="ve-prop-label">Label</label>
-                    <input class="ve-input" type="text" value={el.label ?? ""}
-                           on:input={e => setProp(i,"label",e.target.value)}>
-                    <label class="ve-prop-label">Placeholder</label>
-                    <input class="ve-input" type="text" value={el.placeholder ?? ""}
-                           on:input={e => setProp(i,"placeholder",e.target.value)}>
-                    <label class="ve-prop-label">Binds to variable</label>
-                    <select class="ve-select" value={el.bindVar ?? ""}
-                            on:change={e => setProp(i,"bindVar",e.target.value)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-
-                  {:else if el.type === "sl-select" || el.type === "wa-select"}
-                    <label class="ve-prop-label">Label</label>
-                    <input class="ve-input" type="text" value={el.label ?? ""}
-                           on:input={e => setProp(i,"label",e.target.value)}>
-                    <label class="ve-prop-label">Options <span class="ve-hint">(one per line, or value=Label)</span></label>
-                    <textarea class="ve-textarea" rows="4"
-                              value={optionsToText(el.options)}
-                              on:change={e => setProp(i,"options",textToOptions(e.target.value))}></textarea>
-                    <label class="ve-prop-label">Binds to variable</label>
-                    <select class="ve-select" value={el.bindVar ?? ""}
-                            on:change={e => setProp(i,"bindVar",e.target.value)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-
-                  {:else if el.type === "sl-checkbox" || el.type === "wa-checkbox"}
-                    <label class="ve-prop-label">Label</label>
-                    <input class="ve-input" type="text" value={el.label ?? ""}
-                           on:input={e => setProp(i,"label",e.target.value)}>
-                    <label class="ve-prop-label">Binds to variable <span class="ve-hint">(stores true/false)</span></label>
-                    <select class="ve-select" value={el.bindVar ?? ""}
-                            on:change={e => setProp(i,"bindVar",e.target.value)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-
-                  <!-- ── Image ── -->
-                  {:else if el.type === "vsm-image"}
-                    <div class="ve-media-hint">Place files in <code>screens-assets/</code> inside your project folder and use <code>/assets/filename.ext</code></div>
-                    <label class="ve-prop-label">Source</label>
-                    <input class="ve-input" type="text" placeholder="/assets/photo.jpg or https://…"
-                           value={el.src ?? ""}
-                           on:input={e => setProp(i,"src",e.target.value)}>
-                    <label class="ve-prop-label">Alt text</label>
-                    <input class="ve-input" type="text" placeholder="Description for accessibility"
-                           value={el.alt ?? ""}
-                           on:input={e => setProp(i,"alt",e.target.value)}>
-                    <div class="ve-row" style="gap:.5rem">
-                      <label class="ve-prop-label">Width</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="100%"
-                             value={el.width ?? ""}
-                             on:input={e => setProp(i,"width",e.target.value || undefined)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="auto"
-                             value={el.height ?? ""}
-                             on:input={e => setProp(i,"height",e.target.value || undefined)}>
-                    </div>
-                    <label class="ve-prop-label">Object fit</label>
-                    <select class="ve-select" value={el.objectFit ?? ""}
-                            on:change={e => setProp(i,"objectFit",e.target.value || undefined)}>
-                      <option value="">— default —</option>
-                      <option value="contain">Contain (show whole image)</option>
-                      <option value="cover">Cover (fill box, crop)</option>
-                      <option value="fill">Fill (stretch)</option>
-                      <option value="none">None</option>
-                    </select>
-
-                  <!-- ── Video ── -->
-                  {:else if el.type === "vsm-video"}
-                    <div class="ve-media-hint">Place files in <code>screens-assets/</code> inside your project folder and use <code>/assets/filename.ext</code></div>
-                    <label class="ve-prop-label">Source</label>
-                    <input class="ve-input" type="text" placeholder="/assets/video.mp4 or https://…"
-                           value={el.src ?? ""}
-                           on:input={e => setProp(i,"src",e.target.value)}>
-                    <div class="ve-row" style="gap:.5rem">
-                      <label class="ve-prop-label">Width</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="100%"
-                             value={el.width ?? ""}
-                             on:input={e => setProp(i,"width",e.target.value || undefined)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="auto"
-                             value={el.height ?? ""}
-                             on:input={e => setProp(i,"height",e.target.value || undefined)}>
-                    </div>
-                    <div class="ve-row" style="gap:1rem;flex-wrap:wrap">
-                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem">
-                        <input type="checkbox" checked={el.controls !== false}
-                               on:change={e => setProp(i,"controls",e.target.checked)}>
-                        Controls</label>
-                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem">
-                        <input type="checkbox" checked={!!el.autoplay}
-                               on:change={e => setProp(i,"autoplay",e.target.checked || undefined)}>
-                        Autoplay</label>
-                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem">
-                        <input type="checkbox" checked={!!el.loop}
-                               on:change={e => setProp(i,"loop",e.target.checked || undefined)}>
-                        Loop</label>
-                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem">
-                        <input type="checkbox" checked={!!el.muted}
-                               on:change={e => setProp(i,"muted",e.target.checked || undefined)}>
-                        Muted <span class="ve-hint">(required for autoplay)</span></label>
-                    </div>
-
-                  <!-- ── Audio ── -->
-                  {:else if el.type === "vsm-audio"}
-                    <div class="ve-media-hint">Place files in <code>screens-assets/</code> inside your project folder and use <code>/assets/filename.ext</code></div>
-                    <label class="ve-prop-label">Source</label>
-                    <input class="ve-input" type="text" placeholder="/assets/sound.mp3 or https://…"
-                           value={el.src ?? ""}
-                           on:input={e => setProp(i,"src",e.target.value)}>
-                    <div class="ve-row" style="gap:1rem;flex-wrap:wrap">
-                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem">
-                        <input type="checkbox" checked={el.controls !== false}
-                               on:change={e => setProp(i,"controls",e.target.checked)}>
-                        Controls</label>
-                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem">
-                        <input type="checkbox" checked={!!el.autoplay}
-                               on:change={e => setProp(i,"autoplay",e.target.checked || undefined)}>
-                        Autoplay</label>
-                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem">
-                        <input type="checkbox" checked={!!el.loop}
-                               on:change={e => setProp(i,"loop",e.target.checked || undefined)}>
-                        Loop</label>
-                    </div>
-
-                  <!-- ── Embed (YouTube / iframe) ── -->
-                  {:else if el.type === "vsm-embed"}
-                    <div class="ve-media-hint">For YouTube use the embed URL: <code>https://www.youtube.com/embed/VIDEO_ID</code></div>
-                    <label class="ve-prop-label">Embed URL</label>
-                    <input class="ve-input" type="text" placeholder="https://www.youtube.com/embed/…"
-                           value={el.src ?? ""}
-                           on:input={e => setProp(i,"src",e.target.value)}>
-                    <label class="ve-prop-label">Title <span class="ve-hint">(accessibility)</span></label>
-                    <input class="ve-input" type="text" placeholder="Video title"
-                           value={el.title ?? ""}
-                           on:input={e => setProp(i,"title",e.target.value || undefined)}>
-                    <div class="ve-row" style="gap:.5rem">
-                      <label class="ve-prop-label">Width</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="100%"
-                             value={el.width ?? "100%"}
-                             on:input={e => setProp(i,"width",e.target.value)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="315px"
-                             value={el.height ?? "315px"}
-                             on:input={e => setProp(i,"height",e.target.value)}>
-                    </div>
-
-                  <!-- ── Filler ── -->
-                  {:else if el.type === "vsm-filler"}
-                    <div class="ve-row" style="align-items:center;gap:.5rem">
-                      <label class="ve-prop-label" style="min-width:0">Flex grow</label>
-                      <input type="checkbox" checked={el.flexGrow ?? false}
-                             on:change={e => setProp(i,"flexGrow", e.target.checked)}>
-                      <span class="ve-hint" style="margin-left:.25rem">fills remaining space</span>
-                    </div>
-                    {#if !el.flexGrow}
-                    <div class="ve-row" style="gap:.5rem">
-                      <label class="ve-prop-label">Width</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="e.g. 100%"
-                             value={el.width ?? ""}
-                             on:input={e => setProp(i,"width", e.target.value || undefined)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="e.g. 2rem"
-                             value={el.height ?? ""}
-                             on:input={e => setProp(i,"height", e.target.value || undefined)}>
-                    </div>
-                    {/if}
-
-                  <!-- ── Speech Bubble ── -->
-                  {:else if el.type === "vsm-bubble"}
-                    <label class="ve-prop-label">Content</label>
-                    <textarea class="ve-textarea" rows="2"
-                              value={el.content ?? ""}
-                              on:input={e => setProp(i,"content",e.target.value)}></textarea>
-                    <label class="ve-prop-label">Speaker name <span class="ve-hint">(optional label above bubble)</span></label>
-                    <input class="ve-input" type="text" placeholder="Agent, User, …"
-                           value={el.speaker ?? ""}
-                           on:input={e => setProp(i,"speaker",e.target.value || undefined)}>
-                    <label class="ve-prop-label">Tail direction <span class="ve-hint">(left/right follows "Align in layout")</span></label>
-                    <select class="ve-select" value={el.tail ?? "bottom"}
-                            on:change={e => setProp(i,"tail",e.target.value)}>
-                      <option value="bottom">Bottom</option>
-                      <option value="top">Top</option>
-                      <option value="">None</option>
-                    </select>
-                    <label class="ve-prop-label">Background</label>
-                    <input class="ve-color" type="color"
-                           value={parseColorAlpha(el.background ?? '#e8f4fd').hex}
-                           on:input={e => setProp(i,"background",
-                             buildColorAlpha(e.target.value, parseColorAlpha(el.background ?? '#e8f4fd').opacity))}>
-                    <input class="ve-opacity" type="number" min="0" max="100"
-                           value={parseColorAlpha(el.background ?? '#e8f4fd').opacity}
-                           on:input={e => setProp(i,"background",
-                             buildColorAlpha(parseColorAlpha(el.background ?? '#e8f4fd').hex, e.target.value))}>
-                    <span class="ve-opacity-unit">%</span>
-                    <label class="ve-prop-label">Text color</label>
-                    <input class="ve-color" type="color"
-                           value={parseColorAlpha(el.style?.color ?? '#000000').hex}
-                           on:input={e => setStyleProp(i,"color",
-                             buildColorAlpha(e.target.value, parseColorAlpha(el.style?.color ?? '#000000').opacity))}>
-                    <input class="ve-opacity" type="number" min="0" max="100"
-                           value={parseColorAlpha(el.style?.color ?? '#000000').opacity}
-                           on:input={e => setStyleProp(i,"color",
-                             buildColorAlpha(parseColorAlpha(el.style?.color ?? '#000000').hex, e.target.value))}>
-                    <span class="ve-opacity-unit">%</span>
-                    <div class="ve-row" style="gap:.5rem">
-                      <label class="ve-prop-label">Font size</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="1rem"
-                             value={el.style?.["font-size"] ?? ""}
-                             on:input={e => setStyleProp(i,"font-size",e.target.value || undefined)}>
-                    </div>
-                    <label class="ve-prop-label">Font</label>
-                    <select class="ve-select"
-                            value={fontOpts.some(f => f.v === (el.style?.["font-family"] ?? "")) ? (el.style?.["font-family"] ?? "") : "__custom__"}
-                            on:change={e => setStyleProp(i,"font-family", e.target.value === "__custom__" ? undefined : (e.target.value || undefined))}>
-                      {#each fontOpts as f}<option value={f.v}>{f.label}</option>{/each}
-                      {#if el.style?.["font-family"] && !fontOpts.some(f => f.v === el.style?.["font-family"])}
-                        <option value="__custom__">{el.style["font-family"]}</option>
-                      {/if}
-                    </select>
-                    <label class="ve-prop-label">Style</label>
-                    <div class="ve-align-row">
-                      <button class="ve-align-btn"
-                              class:ve-align-active={el.style?.["font-weight"] === "bold"}
-                              on:click={() => setStyleProp(i,"font-weight",
-                                el.style?.["font-weight"] === "bold" ? "" : "bold")}><b>B</b></button>
-                      <button class="ve-align-btn"
-                              class:ve-align-active={el.style?.["font-style"] === "italic"}
-                              on:click={() => setStyleProp(i,"font-style",
-                                el.style?.["font-style"] === "italic" ? "" : "italic")}><i>I</i></button>
-                      {#each textAlignOpts as opt}
-                        <button class="ve-align-btn"
-                                class:ve-align-active={el.style?.["text-align"] === opt.v}
-                                on:click={() => setStyleProp(i,"text-align",
-                                  el.style?.["text-align"] === opt.v ? "" : opt.v)}
-                                title={opt.label}>{opt.label}</button>
-                      {/each}
-                    </div>
-                    <label class="ve-prop-label">Binds to variable <span class="ve-hint">(overrides content)</span></label>
-                    <select class="ve-select" value={el.bindVar ?? ""}
-                            on:change={e => setProp(i,"bindVar",e.target.value || undefined)}>
-                      <option value="">— static content —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-
-                  <!-- ── Chart ── -->
-                  {:else if el.type === "vsm-chart"}
-                    <label class="ve-prop-label">Chart type</label>
-                    <select class="ve-select" value={el.chartType ?? "bar"}
-                            on:change={e => setProp(i,"chartType",e.target.value)}>
-                      <option value="bar">Bar</option>
-                      <option value="line">Line</option>
-                    </select>
-                    <label class="ve-prop-label">Data variable <span class="ve-hint">(holds JSON dataset)</span></label>
-                    <select class="ve-select" value={el.dataVar ?? ""}
-                            on:change={e => setProp(i,"dataVar",e.target.value || undefined)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-                    <label class="ve-prop-label">Dataset label</label>
-                    <input class="ve-input" type="text" placeholder="My data"
-                           value={el.label ?? ""}
-                           on:input={e => setProp(i,"label",e.target.value || undefined)}>
-                    <label class="ve-prop-label">Color</label>
-                    <input class="ve-color" type="color"
-                           value={parseColorAlpha(el.color ?? '#5b8edc').hex}
-                           on:input={e => setProp(i,"color",e.target.value)}>
-                    {#if (el.chartType ?? "bar") === "line"}
-                    <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
-                      <label class="ve-prop-label" style="min-width:0">Fill area</label>
-                      <input type="checkbox" checked={!!el.fill}
-                             on:change={e => setProp(i,"fill",e.target.checked || undefined)}>
-                    </div>
-                    {/if}
-                    <div class="ve-row" style="gap:.5rem;margin-top:.25rem">
-                      <label class="ve-prop-label">Width</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="100%"
-                             value={el.width ?? ""}
-                             on:input={e => setProp(i,"width",e.target.value || undefined)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="300px"
-                             value={el.height ?? "300px"}
-                             on:input={e => setProp(i,"height",e.target.value || undefined)}>
-                    </div>
-                    <div class="ve-media-hint">
-                      Variable must hold JSON: <code>{"{"}"labels":["A","B"],"data":[10,25]{"}"}</code><br>
-                      Multi-series: <code>{"{"}"labels":[…],"datasets":[{"{"}"label":"S1","data":[…],"color":"#f00"{"}"}]{"}"}  </code>
-                    </div>
-
-                  <!-- ── Feed ── -->
-                  {:else if el.type === "vsm-feed"}
-                    <label class="ve-prop-label">Data variable <span class="ve-hint">(JSON array of messages)</span></label>
-                    <select class="ve-select" value={el.dataVar ?? ""}
-                            on:change={e => setProp(i,"dataVar",e.target.value || undefined)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-                    <label class="ve-prop-label">Height</label>
-                    <input class="ve-input" type="text" placeholder="400px"
-                           value={el.height ?? "400px"}
-                           on:input={e => setProp(i,"height",e.target.value || undefined)}>
-                    <label class="ve-prop-label">Agent label</label>
-                    <input class="ve-input" type="text" placeholder="Agent"
-                           value={el.agentLabel ?? "Agent"}
-                           on:input={e => setProp(i,"agentLabel",e.target.value || undefined)}>
-                    <label class="ve-prop-label">User label</label>
-                    <input class="ve-input" type="text" placeholder="You"
-                           value={el.userLabel ?? "You"}
-                           on:input={e => setProp(i,"userLabel",e.target.value || undefined)}>
-                    <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
-                      <label class="ve-prop-label" style="min-width:0">Show agent label</label>
-                      <input type="checkbox" checked={el.showAgentLabel !== false}
-                             on:change={e => setProp(i,"showAgentLabel", e.target.checked ? undefined : false)}>
-                      <label class="ve-prop-label" style="min-width:0;margin-left:.5rem">Show user label</label>
-                      <input type="checkbox" checked={el.showUserLabel !== false}
-                             on:change={e => setProp(i,"showUserLabel", e.target.checked ? undefined : false)}>
-                    </div>
-                    <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
-                      <label class="ve-prop-label">Agent bg</label>
-                      <input class="ve-color" type="color"
-                             value={parseColorAlpha(el.agentColor ?? '#e8f4fd').hex}
-                             on:input={e => setProp(i,"agentColor",e.target.value)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">User bg</label>
-                      <input class="ve-color" type="color"
-                             value={parseColorAlpha(el.userColor ?? '#eafbe8').hex}
-                             on:input={e => setProp(i,"userColor",e.target.value)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">System bg</label>
-                      <input class="ve-color" type="color"
-                             value={parseColorAlpha(el.systemColor ?? '#f5f5f5').hex}
-                             on:input={e => setProp(i,"systemColor",e.target.value)}>
-                    </div>
-                    <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
-                      <label class="ve-prop-label">Agent text</label>
-                      <input class="ve-color" type="color"
-                             value={parseColorAlpha(el.agentTextColor ?? '#000000').hex}
-                             on:input={e => setProp(i,"agentTextColor",e.target.value === '#000000' ? undefined : e.target.value)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">User text</label>
-                      <input class="ve-color" type="color"
-                             value={parseColorAlpha(el.userTextColor ?? '#000000').hex}
-                             on:input={e => setProp(i,"userTextColor",e.target.value === '#000000' ? undefined : e.target.value)}>
-                    </div>
-                    <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
-                      <label class="ve-prop-label">Font size</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="1rem"
-                             value={el.fontSize ?? ""}
-                             on:input={e => setProp(i,"fontSize",e.target.value || undefined)}>
-                    </div>
-                    <label class="ve-prop-label">Font</label>
-                    <select class="ve-select"
-                            value={fontOpts.some(f => f.v === (el.fontFamily ?? "")) ? (el.fontFamily ?? "") : "__custom__"}
-                            on:change={e => setProp(i,"fontFamily", e.target.value === "__custom__" ? undefined : (e.target.value || undefined))}>
-                      {#each fontOpts as f}<option value={f.v}>{f.label}</option>{/each}
-                      {#if el.fontFamily && !fontOpts.some(f => f.v === el.fontFamily)}
-                        <option value="__custom__">{el.fontFamily}</option>
-                      {/if}
-                    </select>
-                    <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
-                      <label class="ve-prop-label" style="min-width:0">Show timestamps</label>
-                      <input type="checkbox" checked={!!el.showTimestamps}
-                             on:change={e => setProp(i,"showTimestamps",e.target.checked || undefined)}>
-                    </div>
-                    <div class="ve-media-hint">
-                      Use <code>appendMessage(var='…', role='agent', text='…')</code> PlayAction to add messages at runtime.<br>
-                      Roles: <code>agent</code> (left, tail) · <code>user</code> (right, tail) · <code>system</code> (center, italic)
-                    </div>
-
-                  <!-- ── Animate ── -->
-                  {:else if el.type === "vsm-animate"}
-                    {@const rateHints = { heartbeat:"BPM (e.g. 72)", breathe:"breaths/min (e.g. 15)", wave:"Hz (e.g. 4)", pulse:"Hz (e.g. 1)", spinner:"RPM (e.g. 60)" }}
-                    <label class="ve-prop-label">Animation</label>
-                    <select class="ve-select" value={el.animation ?? "heartbeat"}
-                            on:change={e => setProp(i,"animation",e.target.value)}>
-                      <option value="heartbeat">❤ Heartbeat</option>
-                      <option value="breathe">○ Breathe</option>
-                      <option value="pulse">◎ Pulse</option>
-                      <option value="spinner">↻ Spinner</option>
-                      <option value="wave">▋▋▋ Wave</option>
-                    </select>
-                    <div class="ve-row" style="gap:.5rem">
-                      <label class="ve-prop-label">Width</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="80px"
-                             value={el.width ?? "80px"}
-                             on:input={e => setProp(i,"width",e.target.value || undefined)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="80px"
-                             value={el.height ?? "80px"}
-                             on:input={e => setProp(i,"height",e.target.value || undefined)}>
-                    </div>
-                    <label class="ve-prop-label">Default color</label>
-                    <input class="ve-color" type="color"
-                           value={parseColorAlpha(el.color ?? '#e26d5a').hex}
-                           on:input={e => setProp(i,"color",e.target.value)}>
-                    <label class="ve-prop-label">Rate variable <span class="ve-hint">{rateHints[el.animation ?? "heartbeat"] ?? ""}</span></label>
-                    <select class="ve-select" value={el.rateVar ?? ""}
-                            on:change={e => setProp(i,"rateVar",e.target.value || undefined)}>
-                      <option value="">— none (use default) —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-                    <label class="ve-prop-label">Color variable <span class="ve-hint">(overrides default color)</span></label>
-                    <select class="ve-select" value={el.colorVar ?? ""}
-                            on:change={e => setProp(i,"colorVar",e.target.value || undefined)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-                    {#if (el.animation ?? "heartbeat") === "breathe"}
-                    <label class="ve-prop-label">Amplitude variable <span class="ve-hint">(0–100, controls expansion)</span></label>
-                    <select class="ve-select" value={el.amplitudeVar ?? ""}
-                            on:change={e => setProp(i,"amplitudeVar",e.target.value || undefined)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-                    {/if}
-                    <label class="ve-prop-label">Opacity variable <span class="ve-hint">(0–100)</span></label>
-                    <select class="ve-select" value={el.opacityVar ?? ""}
-                            on:change={e => setProp(i,"opacityVar",e.target.value || undefined)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-
-                  <!-- ── Chat Input ── -->
-                  {:else if el.type === "vsm-chat-input"}
-                    <label class="ve-prop-label">Sends to variable</label>
-                    <select class="ve-select" value={el.sendsVar ?? ""}
-                            on:change={e => setProp(i,"sendsVar",e.target.value)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-                    <label class="ve-prop-label">Placeholder</label>
-                    <input class="ve-input" type="text" placeholder="Type your message…"
-                           value={el.placeholder ?? ""}
-                           on:input={e => setProp(i,"placeholder",e.target.value || undefined)}>
-                    <label class="ve-prop-label">Send button style</label>
-                    <div class="ve-row" style="gap:.5rem">
-                      <select class="ve-select" value={el.icon ?? "send"}
-                              on:change={e => setProp(i,"icon", e.target.value === "send" ? undefined : "")}>
-                        <option value="send">Icon (paper plane)</option>
-                        <option value="">Text label</option>
-                      </select>
-                      {#if (el.icon ?? "send") === "send"}
-                        <span class="ve-icon-preview">{@html ICON_SVG.send}</span>
-                      {/if}
-                    </div>
-                    <label class="ve-prop-label">Button label <span class="ve-hint">(text when style is "Text label"; title/aria-label either way)</span></label>
-                    <input class="ve-input" type="text" placeholder="Send"
-                           value={el.buttonLabel ?? ""}
-                           on:input={e => setProp(i,"buttonLabel",e.target.value || undefined)}>
-                    <label class="ve-prop-label">Disabled variable <span class="ve-hint">(Bool — disables input when true)</span></label>
-                    <select class="ve-select" value={el.disabledVar ?? ""}
-                            on:change={e => setProp(i,"disabledVar",e.target.value || undefined)}>
-                      <option value="">— none —</option>
-                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                    </select>
-                    <div class="ve-media-hint">
-                      User types a message and presses Enter or clicks the button.<br>
-                      The text is sent to the selected variable and the field is cleared.
-                    </div>
-
-                  <!-- ── Panel ── -->
-                  {:else if el.type === "vsm-panel"}
-                    <div class="ve-row">
-                      <label class="ve-label">Background</label>
-                      <input class="ve-color" type="color"
-                             value={parseColorAlpha(el.background ?? '#f5f5f5').hex}
-                             on:input={e => setProp(i,"background",
-                               buildColorAlpha(e.target.value, parseColorAlpha(el.background ?? '#f5f5f5').opacity))}>
-                      <input class="ve-opacity" type="number" min="0" max="100"
-                             value={parseColorAlpha(el.background ?? '#f5f5f5').opacity}
-                             on:input={e => setProp(i,"background",
-                               buildColorAlpha(parseColorAlpha(el.background ?? '#f5f5f5').hex, e.target.value))}>
-                      <span class="ve-opacity-unit">%</span>
-                      <label class="ve-label" style="margin-left:.5rem">Padding</label>
-                      <input class="ve-input ve-input-short" type="text" placeholder="1rem"
-                             value={el.padding ?? ""}
-                             on:input={e => setProp(i,"padding",e.target.value)}>
-                    </div>
-                    <div class="ve-row">
-                      <label class="ve-label">Layout</label>
-                      <select class="ve-select" value={el.layout ?? "flex-column"}
-                              on:change={e => setProp(i,"layout",e.target.value)}>
-                        <option value="flex-column">Column</option>
-                        <option value="flex-row">Row</option>
-                      </select>
-                    </div>
-                    {@const panelIsRow = (el.layout ?? 'flex-column') === 'flex-row'}
-                    <label class="ve-prop-label">Horizontal</label>
-                    <div class="ve-align-row">
-                      {#each (panelIsRow ? justifyOpts : alignItemsOpts) as opt}
-                        <button class="ve-align-btn"
-                                class:ve-align-active={el.alignItems === opt.v}
-                                on:click={() => setProp(i,"alignItems",
-                                  el.alignItems === opt.v ? undefined : opt.v)}
-                                title={opt.label}>{opt.label}</button>
-                      {/each}
-                    </div>
-                    <label class="ve-prop-label">Vertical</label>
-                    <div class="ve-align-row">
-                      {#each (panelIsRow ? alignItemsOpts : justifyOpts) as opt}
-                        <button class="ve-align-btn"
-                                class:ve-align-active={el.justifyContent === opt.v}
-                                on:click={() => setProp(i,"justifyContent",
-                                  el.justifyContent === opt.v ? undefined : opt.v)}
-                                title={opt.label}>{opt.label}</button>
-                      {/each}
-                    </div>
-                    <label class="ve-prop-label">Align in screen</label>
-                    <div class="ve-align-row">
-                      {#each alignItemsOpts as opt}
-                        <button class="ve-align-btn"
-                                class:ve-align-active={el.style?.["align-self"] === opt.v}
-                                on:click={() => setStyleProp(i,"align-self",
-                                  el.style?.["align-self"] === opt.v ? "" : opt.v)}
-                                title={opt.label}>{opt.label}</button>
-                      {/each}
-                    </div>
-                    <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
-                      <label class="ve-prop-label" style="min-width:0">Grow to fill</label>
-                      <input type="checkbox" checked={el.flexGrow ?? false}
-                             on:change={e => setProp(i,"flexGrow", e.target.checked || undefined)}>
-                      <span class="ve-hint">claims remaining space in layout</span>
-                    </div>
-
-                    <!-- Panel children -->
-                    <div class="ve-children-bar">
-                      <span class="ve-prop-label">Children</span>
-                      <div class="ve-add-group">
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"sl-text",content:"Text"})}>+Text</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"sl-button",label:"Button",sendsVar:"",sendsValue:""})}>+Button</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"sl-range",label:"Slider",min:0,max:100,step:1})}>+Slider</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"sl-input",label:"Input",bindVar:""})}>+Input</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"sl-select",label:"Select",options:["Option 1","Option 2"],bindVar:""})}>+Select</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"sl-checkbox",label:"Checkbox",bindVar:""})}>+Check</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-filler",flexGrow:true})}>+Filler</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-image",src:"",alt:""})}>+Image</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-video",src:"",controls:true})}>+Video</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-audio",src:"",controls:true})}>+Audio</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-embed",src:"",width:"100%",height:"315px"})}>+Embed</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-bubble",content:"Hello!",tail:"bottom",background:"#e8f4fd"})}>+Bubble</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-chart",chartType:"bar",dataVar:"",label:"",color:"#5b8edc",height:"300px"})}>+Chart</button>
-                        <button class="ve-add-btn ve-add-btn-feed" on:click={() => addChild(i,{type:"vsm-feed",dataVar:"",height:"400px",agentColor:"#e8f4fd",userColor:"#eafbe8",systemColor:"#f5f5f5",agentLabel:"Agent",userLabel:"You"})}>+Feed</button>
-                        <button class="ve-add-btn ve-add-btn-animate" on:click={() => addChild(i,{type:"vsm-animate",animation:"heartbeat",color:"#e26d5a",width:"80px",height:"80px"})}>+Animate</button>
-                      </div>
-                    </div>
-
-                    {#if (el.children ?? []).length === 0}
-                      <div class="ve-empty">No children yet.</div>
-                    {/if}
-
-                    {#each (el.children ?? []) as child, ci}
-                      {@const cexp = expandedChild?.pi === i && expandedChild?.ci === ci}
-                      <div class="ve-child-card" class:ve-child-expanded={cexp}>
-                        <div class="ve-child-header" role="button" tabindex="0"
-                             on:click={() => expandedChild = cexp ? null : {pi:i,ci}}
-                             on:keydown={e => e.key==="Enter" && (expandedChild = cexp ? null : {pi:i,ci})}>
-                          <div class="ve-card-arrows">
-                            <button class="ve-arrow" disabled={ci===0}
-                                    on:click|stopPropagation={() => moveChild(i,ci,-1)}>▲</button>
-                            <button class="ve-arrow" disabled={ci===(el.children?.length??0)-1}
-                                    on:click|stopPropagation={() => moveChild(i,ci,1)}>▼</button>
-                          </div>
-                          <span class="ve-type-badge ve-type-badge-sm">{typeLabel(child.type)}</span>
-                          <span class="ve-card-summary">{elementSummary(child)}</span>
-                          <span class="ve-expand-icon">{cexp ? "▾" : "▸"}</span>
-                          <button class="ve-delete" on:click|stopPropagation={() => deleteChild(i,ci)}>×</button>
-                        </div>
-
-                        {#if cexp}
-                        <div class="ve-child-props">
-                          <label class="ve-prop-label">Align in panel</label>
-                          <div class="ve-align-row">
-                            {#each alignItemsOpts as opt}
-                              <button class="ve-align-btn"
-                                      class:ve-align-active={child.style?.["align-self"] === opt.v}
-                                      on:click={() => setChildStyleProp(i,ci,"align-self",
-                                        child.style?.["align-self"] === opt.v ? "" : opt.v)}
-                                      title={opt.label}>{opt.label}</button>
-                            {/each}
-                          </div>
-
-                          {#if child.type === "sl-text" || child.type === "wa-text"}
-                            <label class="ve-prop-label">Content</label>
-                            <textarea class="ve-textarea" rows="2"
-                                      value={child.content ?? ""}
-                                      on:input={e => setChildProp(i,ci,"content",e.target.value)}></textarea>
-                            <label class="ve-prop-label">Text color</label>
-                            <input class="ve-color" type="color"
-                                   value={parseColorAlpha(child.style?.color ?? '#000000').hex}
-                                   on:input={e => setChildStyleProp(i,ci,"color",
-                                     buildColorAlpha(e.target.value, parseColorAlpha(child.style?.color ?? '#000000').opacity))}>
-                            <input class="ve-opacity" type="number" min="0" max="100"
-                                   value={parseColorAlpha(child.style?.color ?? '#000000').opacity}
-                                   on:input={e => setChildStyleProp(i,ci,"color",
-                                     buildColorAlpha(parseColorAlpha(child.style?.color ?? '#000000').hex, e.target.value))}>
-                            <span class="ve-opacity-unit">%</span>
-                            <div class="ve-row" style="gap:.5rem;margin-top:.25rem">
-                              <label class="ve-prop-label">Font size</label>
-                              <input class="ve-input ve-input-short" type="text" placeholder="1rem"
-                                     value={child.style?.["font-size"] ?? ""}
-                                     on:input={e => setChildStyleProp(i,ci,"font-size",e.target.value || undefined)}>
-                            </div>
-                            <label class="ve-prop-label">Font</label>
-                            <select class="ve-select"
-                                    value={fontOpts.some(f => f.v === (child.style?.["font-family"] ?? "")) ? (child.style?.["font-family"] ?? "") : "__custom__"}
-                                    on:change={e => setChildStyleProp(i,ci,"font-family", e.target.value === "__custom__" ? undefined : (e.target.value || undefined))}>
-                              {#each fontOpts as f}<option value={f.v}>{f.label}</option>{/each}
-                              {#if child.style?.["font-family"] && !fontOpts.some(f => f.v === child.style?.["font-family"])}
-                                <option value="__custom__">{child.style["font-family"]}</option>
-                              {/if}
-                            </select>
-                            <label class="ve-prop-label">Style</label>
-                            <div class="ve-align-row">
-                              <button class="ve-align-btn"
-                                      class:ve-align-active={child.style?.["font-weight"] === "bold"}
-                                      on:click={() => setChildStyleProp(i,ci,"font-weight",
-                                        child.style?.["font-weight"] === "bold" ? "" : "bold")}><b>B</b></button>
-                              <button class="ve-align-btn"
-                                      class:ve-align-active={child.style?.["font-style"] === "italic"}
-                                      on:click={() => setChildStyleProp(i,ci,"font-style",
-                                        child.style?.["font-style"] === "italic" ? "" : "italic")}><i>I</i></button>
-                              {#each textAlignOpts as opt}
-                                <button class="ve-align-btn"
-                                        class:ve-align-active={child.style?.["text-align"] === opt.v}
-                                        on:click={() => setChildStyleProp(i,ci,"text-align",
-                                          child.style?.["text-align"] === opt.v ? "" : opt.v)}
-                                        title={opt.label}>{opt.label}</button>
-                              {/each}
-                            </div>
-
-                          {:else if child.type === "sl-button" || child.type === "wa-button"}
-                            <label class="ve-prop-label">Label</label>
-                            <input class="ve-input" type="text" value={child.label ?? ""}
-                                   on:input={e => setChildProp(i,ci,"label",e.target.value)}>
-                            <label class="ve-prop-label">Icon <span class="ve-hint">(leave blank to use only the label)</span></label>
-                            <div class="ve-row" style="gap:.5rem">
-                              <select class="ve-select" value={child.icon ?? ""}
-                                      on:change={e => setChildProp(i,ci,"icon",e.target.value || undefined)}>
-                                {#each BUTTON_ICONS as opt}<option value={opt.v}>{opt.label}</option>{/each}
-                              </select>
-                              {#if child.icon && ICON_SVG[child.icon]}
-                                <span class="ve-icon-preview">{@html ICON_SVG[child.icon]}</span>
-                              {/if}
-                            </div>
-                            <label class="ve-prop-label">Variant</label>
-                            <select class="ve-select" value={child.variant ?? "default"}
-                                    on:change={e => setChildProp(i,ci,"variant",e.target.value)}>
-                              <option value="default">Default</option>
-                              <option value="primary">Primary</option>
-                              <option value="success">Success</option>
-                              <option value="warning">Warning</option>
-                              <option value="danger">Danger</option>
-                            </select>
-                            <label class="ve-prop-label">Sends to variable</label>
-                            <select class="ve-select" value={child.sendsVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"sendsVar",e.target.value)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-                            <label class="ve-prop-label">Value to send</label>
-                            <input class="ve-input" type="text" value={child.sendsValue ?? ""}
-                                   on:input={e => setChildProp(i,ci,"sendsValue",e.target.value)}>
-
-                          {:else if child.type === "sl-range" || child.type === "wa-range"}
-                            <label class="ve-prop-label">Label</label>
-                            <input class="ve-input" type="text" value={child.label ?? ""}
-                                   on:input={e => setChildProp(i,ci,"label",e.target.value)}>
-                            <div class="ve-row-trio">
-                              <div><label class="ve-prop-label">Min</label>
-                                <input class="ve-input" type="number" value={child.min ?? 0}
-                                       on:input={e => setChildProp(i,ci,"min",+e.target.value)}></div>
-                              <div><label class="ve-prop-label">Max</label>
-                                <input class="ve-input" type="number" value={child.max ?? 100}
-                                       on:input={e => setChildProp(i,ci,"max",+e.target.value)}></div>
-                              <div><label class="ve-prop-label">Step</label>
-                                <input class="ve-input" type="number" value={child.step ?? 1}
-                                       on:input={e => setChildProp(i,ci,"step",+e.target.value)}></div>
-                            </div>
-                            <label class="ve-prop-label">Binds to variable</label>
-                            <select class="ve-select" value={child.bindVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"bindVar",e.target.value)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-
-                          {:else if child.type === "sl-input" || child.type === "wa-input"}
-                            <label class="ve-prop-label">Label</label>
-                            <input class="ve-input" type="text" value={child.label ?? ""}
-                                   on:input={e => setChildProp(i,ci,"label",e.target.value)}>
-                            <label class="ve-prop-label">Placeholder</label>
-                            <input class="ve-input" type="text" value={child.placeholder ?? ""}
-                                   on:input={e => setChildProp(i,ci,"placeholder",e.target.value)}>
-                            <label class="ve-prop-label">Binds to variable</label>
-                            <select class="ve-select" value={child.bindVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"bindVar",e.target.value)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-
-                          {:else if child.type === "sl-select" || child.type === "wa-select"}
-                            <label class="ve-prop-label">Label</label>
-                            <input class="ve-input" type="text" value={child.label ?? ""}
-                                   on:input={e => setChildProp(i,ci,"label",e.target.value)}>
-                            <label class="ve-prop-label">Options <span class="ve-hint">(one per line)</span></label>
-                            <textarea class="ve-textarea" rows="3"
-                                      value={optionsToText(child.options)}
-                                      on:change={e => setChildProp(i,ci,"options",textToOptions(e.target.value))}></textarea>
-                            <label class="ve-prop-label">Binds to variable</label>
-                            <select class="ve-select" value={child.bindVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"bindVar",e.target.value)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-
-                          {:else if child.type === "sl-checkbox" || child.type === "wa-checkbox"}
-                            <label class="ve-prop-label">Label</label>
-                            <input class="ve-input" type="text" value={child.label ?? ""}
-                                   on:input={e => setChildProp(i,ci,"label",e.target.value)}>
-                            <label class="ve-prop-label">Binds to variable</label>
-                            <select class="ve-select" value={child.bindVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"bindVar",e.target.value)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-
-                          {:else if child.type === "vsm-filler"}
-                            <div class="ve-row" style="align-items:center;gap:.5rem">
-                              <label class="ve-prop-label" style="min-width:0">Flex grow</label>
-                              <input type="checkbox" checked={child.flexGrow ?? false}
-                                     on:change={e => setChildProp(i,ci,"flexGrow", e.target.checked)}>
-                              <span class="ve-hint" style="margin-left:.25rem">fills remaining space</span>
-                            </div>
-                            {#if !child.flexGrow}
-                            <div class="ve-row" style="gap:.5rem">
-                              <label class="ve-prop-label">Width</label>
-                              <input class="ve-input ve-input-short" type="text" placeholder="e.g. 100%"
-                                     value={child.width ?? ""}
-                                     on:input={e => setChildProp(i,ci,"width", e.target.value || undefined)}>
-                              <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
-                              <input class="ve-input ve-input-short" type="text" placeholder="e.g. 2rem"
-                                     value={child.height ?? ""}
-                                     on:input={e => setChildProp(i,ci,"height", e.target.value || undefined)}>
-                            </div>
-                            {/if}
-
-                          {:else if child.type === "vsm-bubble"}
-                            <label class="ve-prop-label">Content</label>
-                            <textarea class="ve-textarea" rows="2"
-                                      value={child.content ?? ""}
-                                      on:input={e => setChildProp(i,ci,"content",e.target.value)}></textarea>
-                            <label class="ve-prop-label">Speaker name</label>
-                            <input class="ve-input" type="text" placeholder="Agent, User, …"
-                                   value={child.speaker ?? ""}
-                                   on:input={e => setChildProp(i,ci,"speaker",e.target.value || undefined)}>
-                            <label class="ve-prop-label">Tail direction <span class="ve-hint">(left/right follows alignment)</span></label>
-                            <select class="ve-select" value={child.tail ?? "bottom"}
-                                    on:change={e => setChildProp(i,ci,"tail",e.target.value)}>
-                              <option value="bottom">Bottom</option>
-                              <option value="top">Top</option>
-                              <option value="">None</option>
-                            </select>
-                            <label class="ve-prop-label">Background</label>
-                            <input class="ve-color" type="color"
-                                   value={parseColorAlpha(child.background ?? '#e8f4fd').hex}
-                                   on:input={e => setChildProp(i,ci,"background",
-                                     buildColorAlpha(e.target.value, parseColorAlpha(child.background ?? '#e8f4fd').opacity))}>
-                            <input class="ve-opacity" type="number" min="0" max="100"
-                                   value={parseColorAlpha(child.background ?? '#e8f4fd').opacity}
-                                   on:input={e => setChildProp(i,ci,"background",
-                                     buildColorAlpha(parseColorAlpha(child.background ?? '#e8f4fd').hex, e.target.value))}>
-                            <span class="ve-opacity-unit">%</span>
-                            <label class="ve-prop-label">Text color</label>
-                            <input class="ve-color" type="color"
-                                   value={parseColorAlpha(child.style?.color ?? '#000000').hex}
-                                   on:input={e => setChildStyleProp(i,ci,"color",
-                                     buildColorAlpha(e.target.value, parseColorAlpha(child.style?.color ?? '#000000').opacity))}>
-                            <input class="ve-opacity" type="number" min="0" max="100"
-                                   value={parseColorAlpha(child.style?.color ?? '#000000').opacity}
-                                   on:input={e => setChildStyleProp(i,ci,"color",
-                                     buildColorAlpha(parseColorAlpha(child.style?.color ?? '#000000').hex, e.target.value))}>
-                            <span class="ve-opacity-unit">%</span>
-                            <div class="ve-row" style="gap:.5rem">
-                              <label class="ve-prop-label">Font size</label>
-                              <input class="ve-input ve-input-short" type="text" placeholder="1rem"
-                                     value={child.style?.["font-size"] ?? ""}
-                                     on:input={e => setChildStyleProp(i,ci,"font-size",e.target.value || undefined)}>
-                            </div>
-                            <label class="ve-prop-label">Font</label>
-                            <select class="ve-select"
-                                    value={fontOpts.some(f => f.v === (child.style?.["font-family"] ?? "")) ? (child.style?.["font-family"] ?? "") : "__custom__"}
-                                    on:change={e => setChildStyleProp(i,ci,"font-family", e.target.value === "__custom__" ? undefined : (e.target.value || undefined))}>
-                              {#each fontOpts as f}<option value={f.v}>{f.label}</option>{/each}
-                              {#if child.style?.["font-family"] && !fontOpts.some(f => f.v === child.style?.["font-family"])}
-                                <option value="__custom__">{child.style["font-family"]}</option>
-                              {/if}
-                            </select>
-                            <label class="ve-prop-label">Style</label>
-                            <div class="ve-align-row">
-                              <button class="ve-align-btn"
-                                      class:ve-align-active={child.style?.["font-weight"] === "bold"}
-                                      on:click={() => setChildStyleProp(i,ci,"font-weight",
-                                        child.style?.["font-weight"] === "bold" ? "" : "bold")}><b>B</b></button>
-                              <button class="ve-align-btn"
-                                      class:ve-align-active={child.style?.["font-style"] === "italic"}
-                                      on:click={() => setChildStyleProp(i,ci,"font-style",
-                                        child.style?.["font-style"] === "italic" ? "" : "italic")}><i>I</i></button>
-                              {#each textAlignOpts as opt}
-                                <button class="ve-align-btn"
-                                        class:ve-align-active={child.style?.["text-align"] === opt.v}
-                                        on:click={() => setChildStyleProp(i,ci,"text-align",
-                                          child.style?.["text-align"] === opt.v ? "" : opt.v)}
-                                        title={opt.label}>{opt.label}</button>
-                              {/each}
-                            </div>
-                            <label class="ve-prop-label">Binds to variable</label>
-                            <select class="ve-select" value={child.bindVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"bindVar",e.target.value || undefined)}>
-                              <option value="">— static content —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-
-                          {:else if child.type === "vsm-chart"}
-                            <label class="ve-prop-label">Chart type</label>
-                            <select class="ve-select" value={child.chartType ?? "bar"}
-                                    on:change={e => setChildProp(i,ci,"chartType",e.target.value)}>
-                              <option value="bar">Bar</option>
-                              <option value="line">Line</option>
-                            </select>
-                            <label class="ve-prop-label">Data variable</label>
-                            <select class="ve-select" value={child.dataVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"dataVar",e.target.value || undefined)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-                            <label class="ve-prop-label">Dataset label</label>
-                            <input class="ve-input" type="text" placeholder="My data"
-                                   value={child.label ?? ""}
-                                   on:input={e => setChildProp(i,ci,"label",e.target.value || undefined)}>
-                            <label class="ve-prop-label">Color</label>
-                            <input class="ve-color" type="color"
-                                   value={parseColorAlpha(child.color ?? '#5b8edc').hex}
-                                   on:input={e => setChildProp(i,ci,"color",e.target.value)}>
-                            <div class="ve-row" style="gap:.5rem;margin-top:.25rem">
-                              <label class="ve-prop-label">Height</label>
-                              <input class="ve-input ve-input-short" type="text" placeholder="300px"
-                                     value={child.height ?? "300px"}
-                                     on:input={e => setChildProp(i,ci,"height",e.target.value || undefined)}>
-                            </div>
-
-                          {:else if child.type === "vsm-animate"}
-                            <label class="ve-prop-label">Animation</label>
-                            <select class="ve-select" value={child.animation ?? "heartbeat"}
-                                    on:change={e => setChildProp(i,ci,"animation",e.target.value)}>
-                              <option value="heartbeat">❤ Heartbeat</option>
-                              <option value="breathe">○ Breathe</option>
-                              <option value="pulse">◎ Pulse</option>
-                              <option value="spinner">↻ Spinner</option>
-                              <option value="wave">▋▋▋ Wave</option>
-                            </select>
-                            <div class="ve-row" style="gap:.5rem">
-                              <label class="ve-prop-label">Width</label>
-                              <input class="ve-input ve-input-short" type="text" placeholder="80px"
-                                     value={child.width ?? "80px"}
-                                     on:input={e => setChildProp(i,ci,"width",e.target.value || undefined)}>
-                              <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
-                              <input class="ve-input ve-input-short" type="text" placeholder="80px"
-                                     value={child.height ?? "80px"}
-                                     on:input={e => setChildProp(i,ci,"height",e.target.value || undefined)}>
-                            </div>
-                            <label class="ve-prop-label">Default color</label>
-                            <input class="ve-color" type="color"
-                                   value={parseColorAlpha(child.color ?? '#e26d5a').hex}
-                                   on:input={e => setChildProp(i,ci,"color",e.target.value)}>
-                            <label class="ve-prop-label">Rate variable</label>
-                            <select class="ve-select" value={child.rateVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"rateVar",e.target.value || undefined)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-                            <label class="ve-prop-label">Color variable</label>
-                            <select class="ve-select" value={child.colorVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"colorVar",e.target.value || undefined)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-
-                          {:else if child.type === "vsm-feed"}
-                            <label class="ve-prop-label">Data variable</label>
-                            <select class="ve-select" value={child.dataVar ?? ""}
-                                    on:change={e => setChildProp(i,ci,"dataVar",e.target.value || undefined)}>
-                              <option value="">— none —</option>
-                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
-                            </select>
-                            <label class="ve-prop-label">Height</label>
-                            <input class="ve-input" type="text" placeholder="400px"
-                                   value={child.height ?? "400px"}
-                                   on:input={e => setChildProp(i,ci,"height",e.target.value || undefined)}>
-                            <label class="ve-prop-label">Agent label</label>
-                            <input class="ve-input" type="text" placeholder="Agent"
-                                   value={child.agentLabel ?? "Agent"}
-                                   on:input={e => setChildProp(i,ci,"agentLabel",e.target.value || undefined)}>
-                            <label class="ve-prop-label">User label</label>
-                            <input class="ve-input" type="text" placeholder="You"
-                                   value={child.userLabel ?? "You"}
-                                   on:input={e => setChildProp(i,ci,"userLabel",e.target.value || undefined)}>
-                            <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
-                              <label class="ve-prop-label" style="min-width:0">Show agent label</label>
-                              <input type="checkbox" checked={child.showAgentLabel !== false}
-                                     on:change={e => setChildProp(i,ci,"showAgentLabel", e.target.checked ? undefined : false)}>
-                              <label class="ve-prop-label" style="min-width:0;margin-left:.5rem">Show user label</label>
-                              <input type="checkbox" checked={child.showUserLabel !== false}
-                                     on:change={e => setChildProp(i,ci,"showUserLabel", e.target.checked ? undefined : false)}>
-                            </div>
-                            <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
-                              <label class="ve-prop-label">Agent bg</label>
-                              <input class="ve-color" type="color"
-                                     value={parseColorAlpha(child.agentColor ?? '#e8f4fd').hex}
-                                     on:input={e => setChildProp(i,ci,"agentColor",e.target.value)}>
-                              <label class="ve-prop-label" style="margin-left:.5rem">User bg</label>
-                              <input class="ve-color" type="color"
-                                     value={parseColorAlpha(child.userColor ?? '#eafbe8').hex}
-                                     on:input={e => setChildProp(i,ci,"userColor",e.target.value)}>
-                              <label class="ve-prop-label" style="margin-left:.5rem">System bg</label>
-                              <input class="ve-color" type="color"
-                                     value={parseColorAlpha(child.systemColor ?? '#f5f5f5').hex}
-                                     on:input={e => setChildProp(i,ci,"systemColor",e.target.value)}>
-                            </div>
-                            <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
-                              <label class="ve-prop-label">Agent text</label>
-                              <input class="ve-color" type="color"
-                                     value={parseColorAlpha(child.agentTextColor ?? '#000000').hex}
-                                     on:input={e => setChildProp(i,ci,"agentTextColor",e.target.value === '#000000' ? undefined : e.target.value)}>
-                              <label class="ve-prop-label" style="margin-left:.5rem">User text</label>
-                              <input class="ve-color" type="color"
-                                     value={parseColorAlpha(child.userTextColor ?? '#000000').hex}
-                                     on:input={e => setChildProp(i,ci,"userTextColor",e.target.value === '#000000' ? undefined : e.target.value)}>
-                            </div>
-                            <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
-                              <label class="ve-prop-label">Font size</label>
-                              <input class="ve-input ve-input-short" type="text" placeholder="1rem"
-                                     value={child.fontSize ?? ""}
-                                     on:input={e => setChildProp(i,ci,"fontSize",e.target.value || undefined)}>
-                            </div>
-                            <label class="ve-prop-label">Font</label>
-                            <select class="ve-select"
-                                    value={fontOpts.some(f => f.v === (child.fontFamily ?? "")) ? (child.fontFamily ?? "") : "__custom__"}
-                                    on:change={e => setChildProp(i,ci,"fontFamily", e.target.value === "__custom__" ? undefined : (e.target.value || undefined))}>
-                              {#each fontOpts as f}<option value={f.v}>{f.label}</option>{/each}
-                              {#if child.fontFamily && !fontOpts.some(f => f.v === child.fontFamily)}
-                                <option value="__custom__">{child.fontFamily}</option>
-                              {/if}
-                            </select>
-
-                          {:else}
-                            <p class="ve-unknown">Type <code>{child.type}</code> — edit in JSON tab.</p>
-                          {/if}
-                        </div>
-                        {/if}
-                      </div>
-                    {/each}
-
-                  {:else}
-                    <p class="ve-unknown">Type <code>{el.type}</code> — edit in JSON tab.</p>
-                  {/if}
-
-                </div>
-                {/if}
-              </div>
+            {#each veElements as el, i (i)}
+              <ScreenElementRow
+                elements={veElements} path={[i]}
+                {expandedPaths}
+                onToggle={toggleExpanded}
+                onChange={applyElementsTree}
+                {typeLabel} {elementSummary} {alignItemsOpts} {justifyOpts}
+                {textAlignOpts} {fontOpts} {variables}
+                {parseColorAlpha} {buildColorAlpha} {optionsToText} {textToOptions}
+                {BUTTON_ICONS} {ICON_SVG} />
             {/each}
           </div>
 
@@ -2212,45 +1016,45 @@
     font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em;
     color: var(--ide-muted); font-weight: 700; margin-bottom: 0.45rem;
   }
-  .ve-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
-  .ve-row:last-child { margin-bottom: 0; }
-  .ve-label { font-size: 0.78rem; color: var(--ide-muted); min-width: 72px; flex-shrink: 0; }
+  :global(.ve-row) { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+  :global(.ve-row:last-child) { margin-bottom: 0; }
+  :global(.ve-label) { font-size: 0.78rem; color: var(--ide-muted); min-width: 72px; flex-shrink: 0; }
 
-  .ve-color {
+  :global(.ve-color) {
     width: 2.2rem; height: 1.7rem; padding: 0.1rem; border-radius: 4px;
     border: 1px solid var(--ide-border-md); cursor: pointer; background: none;
   }
-  .ve-opacity {
+  :global(.ve-opacity) {
     width: 3.4rem; padding: 0.2rem 0.3rem; border-radius: 4px;
     border: 1px solid var(--ide-border-md); background: var(--ide-surface);
     color: var(--ide-text); font-size: 0.82rem; text-align: right;
   }
-  .ve-opacity-unit { font-size: 0.78rem; color: var(--ide-dim); }
-  .ve-media-hint {
+  :global(.ve-opacity-unit) { font-size: 0.78rem; color: var(--ide-dim); }
+  :global(.ve-media-hint) {
     font-size: 0.75rem; color: var(--ide-muted); margin-bottom: .4rem;
     padding: .3rem .5rem; background: var(--ide-surface);
     border: 1px solid var(--ide-border); border-radius: 5px; line-height: 1.5;
   }
-  .ve-media-hint code { font-size: 0.72rem; color: var(--ide-accent); font-family: 'DM Mono', monospace; }
-  .ve-select {
+  :global(.ve-media-hint code) { font-size: 0.72rem; color: var(--ide-accent); font-family: 'DM Mono', monospace; }
+  :global(.ve-select) {
     flex: 1; padding: 0.22rem 0.4rem;
     border: 1px solid var(--ide-border-md); border-radius: 5px;
     background: var(--ide-surface); color: var(--ide-text);
     font-size: 0.82rem; font-family: inherit;
   }
 
-  .ve-align-row { display: flex; gap: 0.2rem; flex-wrap: wrap; }
-  .ve-align-btn {
+  :global(.ve-align-row) { display: flex; gap: 0.2rem; flex-wrap: wrap; }
+  :global(.ve-align-btn) {
     padding: 0.15rem 0.42rem; border-radius: 4px;
     border: 1px solid var(--ide-border-md);
     background: var(--ide-surface); color: var(--ide-muted);
     font-size: 0.72rem; font-family: inherit; cursor: pointer; white-space: nowrap;
     transition: background 0.1s, color 0.1s;
   }
-  .ve-align-btn:hover { color: var(--ide-text); background: rgba(0,0,0,0.05); }
-  .ve-align-active { background: var(--ide-accent) !important; color: #fff !important; border-color: transparent; }
+  :global(.ve-align-btn:hover) { color: var(--ide-text); background: rgba(0,0,0,0.05); }
+  :global(.ve-align-active) { background: var(--ide-accent) !important; color: #fff !important; border-color: transparent; }
 
-  .ve-elements-header {
+  :global(.ve-elements-header) {
     display: flex; align-items: center;
     padding: 0.5rem 0.8rem;
     background: var(--ide-panel);
@@ -2259,110 +1063,124 @@
   }
 
   /* Element cards */
-  .ve-card { background: var(--ide-panel); border-bottom: 1px solid var(--ide-border); }
-  .ve-card-header {
+  :global(.ve-card) { background: var(--ide-panel); border-bottom: 1px solid var(--ide-border); }
+  /* Depth cue for nested rows (ScreenElementRow sets margin-left inline, scaled by depth) —
+     without this border a deeply-indented row just looks like empty space to its left. */
+  :global(.ve-card-nested) {
+    border-left: 2px solid var(--ide-border);
+    border-radius: 0 4px 4px 0;
+  }
+  :global(.ve-card-header) {
     display: flex; align-items: center; gap: 0.4rem;
     padding: 0.38rem 0.6rem; cursor: pointer; user-select: none;
     transition: background 0.1s;
   }
-  .ve-card-header:hover { background: rgba(0,0,0,0.03); }
-  .ve-card-expanded > .ve-card-header { background: var(--ide-glow); }
+  :global(.ve-card-header:hover) { background: rgba(0,0,0,0.03); }
+  :global(.ve-card-expanded > .ve-card-header) { background: var(--ide-glow); }
 
-  .ve-card-arrows { display: flex; flex-direction: column; gap: 0; }
-  .ve-arrow {
+  :global(.ve-card-arrows) { display: flex; flex-direction: column; gap: 0; }
+  :global(.ve-arrow) {
     padding: 1px 3px; border: none; background: none; cursor: pointer;
     font-size: 0.72rem; line-height: 1; color: var(--ide-muted); border-radius: 3px;
     transition: color 0.1s;
   }
-  .ve-arrow:hover:not(:disabled) { color: var(--ide-text); background: rgba(0,0,0,0.06); }
-  .ve-arrow:disabled { opacity: 0.12; cursor: default; }
+  :global(.ve-arrow:hover:not(:disabled)) { color: var(--ide-text); background: rgba(0,0,0,0.06); }
+  :global(.ve-arrow:disabled) { opacity: 0.12; cursor: default; }
 
-  .ve-type-badge {
+  :global(.ve-type-badge) {
     width: 1.55rem; height: 1.55rem; border-radius: 4px; flex-shrink: 0;
     background: var(--ide-glow); border: 1px solid rgba(56,139,253,0.2);
     color: var(--ide-accent);
     font-size: 0.65rem; font-weight: 700; font-family: 'DM Mono', monospace;
     display: flex; align-items: center; justify-content: center;
   }
-  .ve-type-badge-sm { width: 1.3rem; height: 1.3rem; font-size: 0.58rem; }
+  :global(.ve-type-badge-sm) { width: 1.3rem; height: 1.3rem; font-size: 0.58rem; }
 
-  .ve-card-summary {
+  :global(.ve-card-summary) {
     flex: 1; min-width: 0; font-size: 0.8rem;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     color: var(--ide-muted);
   }
-  .ve-expand-icon { font-size: 0.72rem; color: var(--ide-dim); flex-shrink: 0; }
-  .ve-delete {
+  :global(.ve-expand-icon) { font-size: 0.72rem; color: var(--ide-dim); flex-shrink: 0; }
+  :global(.ve-delete) {
     border: none; background: none; cursor: pointer;
     font-size: 0.95rem; padding: 0 0.15rem;
     color: var(--ide-danger); opacity: 0.22; flex-shrink: 0;
     transition: opacity 0.12s;
   }
-  .ve-delete:hover { opacity: 1; }
+  :global(.ve-delete:hover) { opacity: 1; }
 
   /* Properties */
-  .ve-props {
+  :global(.ve-props) {
     padding: 0.6rem 0.8rem 0.7rem;
     border-top: 1px solid var(--ide-border);
     background: var(--ide-surface);
     display: flex; flex-direction: column; gap: 0.32rem;
   }
-  .ve-prop-label { font-size: 0.72rem; color: var(--ide-muted); margin-top: 0.1rem; }
-  .ve-input {
+  /* Where a deeply-nested row's own fields actually are, in words — indentation alone stops
+     being enough to place yourself once a screen has three or four levels of panels. */
+  :global(.ve-breadcrumb) {
+    font-size: 0.7rem; color: var(--ide-dim);
+    padding-bottom: 0.3rem; margin-bottom: 0.15rem;
+    border-bottom: 1px solid var(--ide-border);
+  }
+  :global(.ve-prop-label) { font-size: 0.72rem; color: var(--ide-muted); margin-top: 0.1rem; }
+  :global(.ve-input) {
     flex: 1;
     border: 1px solid var(--ide-border-md); border-radius: 5px;
     background: var(--ide-panel); color: var(--ide-text);
     font-size: 0.82rem; font-family: inherit; width: 100%; box-sizing: border-box;
     padding: 0.22rem 0.45rem;
   }
-  .ve-input-short { width: 5rem; flex-shrink: 0; }
-  .ve-textarea {
+  :global(.ve-input-short) { width: 5rem; flex-shrink: 0; }
+  :global(.ve-textarea) {
     padding: 0.3rem 0.45rem; resize: vertical;
     border: 1px solid var(--ide-border-md); border-radius: 5px;
     background: var(--ide-panel); color: var(--ide-text);
     font-size: 0.82rem; font-family: inherit; width: 100%; box-sizing: border-box;
   }
-  .ve-row-trio { display: flex; gap: 0.4rem; }
-  .ve-row-trio > div { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+  :global(.ve-row-trio) { display: flex; gap: 0.4rem; }
+  :global(.ve-row-trio > div) { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
 
   /* Panel children */
-  .ve-children-bar {
+  :global(.ve-children-bar) {
     display: flex; align-items: center; justify-content: space-between;
     flex-wrap: wrap; gap: 0.3rem;
     padding: 0.4rem 0; margin-top: 0.3rem;
     border-top: 1px solid var(--ide-border);
   }
-  .ve-add-group { display: flex; flex-wrap: wrap; gap: 0.2rem; }
-  .ve-add-btn {
+  :global(.ve-add-group) { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+  :global(.ve-add-btn) {
     padding: 0.17rem 0.42rem;
     border: 1px solid var(--ide-border); border-radius: 4px;
     background: var(--ide-surface); color: var(--ide-muted);
     font-size: 0.7rem; font-family: inherit; cursor: pointer;
     transition: background 0.1s, color 0.1s;
   }
-  .ve-add-btn:hover { background: var(--ide-glow); color: var(--ide-accent); }
-  .ve-add-btn-feed    { color: var(--ide-success); border-color: rgba(63,185,80,0.3); }
-  .ve-add-btn-animate { color: var(--ide-danger);  border-color: rgba(248,81,73,0.3); }
+  :global(.ve-add-btn:hover) { background: var(--ide-glow); color: var(--ide-accent); }
+  :global(.ve-add-btn-feed)    { color: var(--ide-success); border-color: rgba(63,185,80,0.3); }
+  :global(.ve-add-btn-animate) { color: var(--ide-danger);  border-color: rgba(248,81,73,0.3); }
+  :global(.ve-add-btn-panel)   { color: var(--ide-accent);  border-color: rgba(56,139,253,0.3); }
 
-  .ve-child-card { border: 1px solid var(--ide-border); border-radius: 5px; margin-top: 0.3rem; overflow: hidden; }
-  .ve-child-header {
+  :global(.ve-child-card) { border: 1px solid var(--ide-border); border-radius: 5px; margin-top: 0.3rem; overflow: hidden; }
+  :global(.ve-child-header) {
     display: flex; align-items: center; gap: 0.35rem;
     padding: 0.3rem 0.5rem; cursor: pointer; user-select: none;
     background: var(--ide-panel); transition: background 0.1s;
   }
-  .ve-child-header:hover { background: rgba(0,0,0,0.03); }
-  .ve-child-props {
+  :global(.ve-child-header:hover) { background: rgba(0,0,0,0.03); }
+  :global(.ve-child-props) {
     padding: 0.5rem 0.6rem; background: var(--ide-surface);
     border-top: 1px solid var(--ide-border);
     display: flex; flex-direction: column; gap: 0.3rem;
   }
 
-  .ve-hint { font-size: 0.68rem; color: var(--ide-dim); font-weight: 400; }
-  .ve-icon-preview { display: inline-flex; align-items: center; color: var(--ide-text); opacity: 0.8; }
-  .ve-unknown { font-size: 0.8rem; color: var(--ide-muted); margin: 0; }
-  .ve-unknown code { background: var(--ide-panel); padding: 0 0.2rem; border-radius: 3px; font-family: 'DM Mono', monospace; }
-  .ve-empty { padding: 0.8rem; font-size: 0.8rem; color: var(--ide-dim); text-align: center; }
-  .ve-empty-full { flex: 1; display: flex; align-items: center; justify-content: center; }
+  :global(.ve-hint) { font-size: 0.68rem; color: var(--ide-dim); font-weight: 400; }
+  :global(.ve-icon-preview) { display: inline-flex; align-items: center; color: var(--ide-text); opacity: 0.8; }
+  :global(.ve-unknown) { font-size: 0.8rem; color: var(--ide-muted); margin: 0; }
+  :global(.ve-unknown code) { background: var(--ide-panel); padding: 0 0.2rem; border-radius: 3px; font-family: 'DM Mono', monospace; }
+  :global(.ve-empty) { padding: 0.8rem; font-size: 0.8rem; color: var(--ide-dim); text-align: center; }
+  :global(.ve-empty-full) { flex: 1; display: flex; align-items: center; justify-content: center; }
 
   /* Variable bar */
   .se-var-bar {

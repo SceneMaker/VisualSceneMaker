@@ -287,15 +287,27 @@ class VsmScreenRenderer extends LitElement {
         switch (el.type) {
 
             case 'sl-button':
-            case 'wa-button':
+            case 'wa-button': {
+                // toggleVar turns a one-shot "send a fixed value" button into a two-state
+                // toggle whose color reflects that variable's current value — driven either by
+                // the person clicking it (writes the opposite value) or by the flow (e.g. an
+                // updateVar PlayAction), so either side changing the one variable keeps both in
+                // sync instead of the button having its own separate notion of "pressed".
+                const isToggle = !!el.toggleVar;
+                const isActive = isToggle && this._varValues[el.toggleVar] === 'true';
+                const variant = isToggle ? (isActive ? 'success' : 'danger') : (el.variant ?? 'default');
+                const onClick = isToggle
+                    ? () => this._sendToVsm(el.toggleVar, isActive ? 'false' : 'true')
+                    : () => el.sendsVar && this._sendToVsm(el.sendsVar, el.sendsValue ?? 'true');
                 return html`
                     <sl-button
-                        variant=${el.variant ?? 'default'}
+                        variant=${variant}
                         style=${style}
-                        @click=${() => el.sendsVar && this._sendToVsm(el.sendsVar, el.sendsValue ?? 'true')}>
+                        @click=${onClick}>
                         ${el.icon ? renderIcon(el.icon) : html``}
                         ${el.label ?? ''}
                     </sl-button>`;
+            }
 
             case 'sl-input':
             case 'wa-input':
