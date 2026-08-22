@@ -63,21 +63,27 @@ public class LlmExecutor extends ActivityExecutor {
 
     private String resolveModel(final String configured, final String baseUrl) {
         boolean autoDetect = configured.isBlank() || "auto".equalsIgnoreCase(configured.trim());
+        // A specific model id needs no model-list round trip — skipping it here matters because
+        // launch() runs synchronously on RunTimeProject's plugin-launch loop (blocking the
+        // WS command thread that handles Runtime.Play): confirmed 2026-08-22 that with an
+        // explicit model id and an unreachable base_url, this fetch was the entire multi-second
+        // delay before the SceneFlow interpreter even got created.
+        if (!autoDetect) {
+            return configured.trim();
+        }
         try {
             List<LLMSupport.LLMModel> available = mLlm.fetchAvailableModels();
             String ids = available.stream().map(LLMSupport.LLMModel::id).collect(Collectors.joining(", "));
             mLogger.message("[llm] available models at " + baseUrl + ": " + ids);
-            if (autoDetect && !available.isEmpty()) {
+            if (!available.isEmpty()) {
                 String picked = available.get(0).id();
                 mLogger.message("[llm] auto-selected model: " + picked);
                 return picked;
             }
         } catch (Exception e) {
-            if (autoDetect) {
-                mLogger.warning("[llm] could not fetch models from " + baseUrl + ": " + e.getMessage());
-            }
+            mLogger.warning("[llm] could not fetch models from " + baseUrl + ": " + e.getMessage());
         }
-        return configured.isBlank() ? "gpt-4o-mini" : configured.trim();
+        return "gpt-4o-mini";
     }
 
     @Override

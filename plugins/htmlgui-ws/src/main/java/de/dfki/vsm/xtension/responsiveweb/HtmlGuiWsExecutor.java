@@ -50,9 +50,15 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     private final static String sCmdSeperatorChar = "$";
     // Browser process reference for cleanup
     private Process mBrowserProcess = null;
-    // Retry limit for variable updates that arrive before the interpreter is ready
-    private static final int VAR_RETRY_ATTEMPTS = 20;
+    // Poll interval for variable updates that arrive before the interpreter is ready
     private static final int VAR_RETRY_DELAY_MS = 250;
+    // Set by unload() so an in-flight retry thread (see applyVarUpdate) stops instead of
+    // outliving the plugin instance — confirmed 2026-08-22: RunTimeProject.launch() creates the
+    // Interpreter only after every plugin's own launch() returns (core/.../RunTimeProject.java),
+    // so a slow plugin sharing this project (e.g. Llm blocking on an unreachable base_url) can
+    // delay hasVariable() becoming true well past any fixed retry budget — a bounded retry count
+    // silently and permanently lost the browser's "connected" signal in that case.
+    private volatile boolean mUnloaded = false;
 
     public HtmlGuiWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -92,6 +98,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
+        mUnloaded = false;
         mLogger.message("Loading HTML GUI Executor (WebSocket) ...");
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
         final int html_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("html_port")));
@@ -563,30 +570,38 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     /**
      * Applies a variable update from the browser. If the SceneFlow interpreter is not yet
      * ready (race condition: browser connected before launch() completed), spawns a daemon
-     * thread to retry for up to VAR_RETRY_ATTEMPTS × VAR_RETRY_DELAY_MS milliseconds.
+     * thread that polls until the variable appears — no fixed attempt budget, since project
+     * launch time isn't bounded (a slow/unreachable plugin elsewhere in the same project can
+     * delay interpreter creation well past any fixed timeout; see mUnloaded's comment). The
+     * thread stops on its own once the project is unloaded.
      */
+    /**
+     * setVariable's raw-String overload rejects Bool-typed variables outright
+     * (SymbolEntry.write type-checks against the declared type, throwing "'true' has wrong
+     * type" — confirmed 2026-08-22 via mic_active) — so "true"/"false" must go through the
+     * boolean overload instead.
+     */
+    private void setVariableCoerced(String varName, String rawValue) {
+        if ("true".equalsIgnoreCase(rawValue) || "false".equalsIgnoreCase(rawValue)) {
+            mProject.setVariable(varName, Boolean.parseBoolean(rawValue));
+        } else {
+            mProject.setVariable(varName, rawValue);
+        }
+    }
+
     private void applyVarUpdate(String varName, String rawValue) {
         if (mProject.hasVariable(varName)) {
-            if ("true".equalsIgnoreCase(rawValue) || "false".equalsIgnoreCase(rawValue)) {
-                mProject.setVariable(varName, Boolean.parseBoolean(rawValue));
-            } else {
-                mProject.setVariable(varName, rawValue);
-            }
+            setVariableCoerced(varName, rawValue);
         } else {
             final String fVar = varName, fVal = rawValue;
             Thread t = new Thread(() -> {
-                for (int i = 0; i < VAR_RETRY_ATTEMPTS; i++) {
+                while (!mUnloaded) {
                     try { Thread.sleep(VAR_RETRY_DELAY_MS); } catch (InterruptedException e) { break; }
                     if (mProject.hasVariable(fVar)) {
-                        if ("true".equalsIgnoreCase(fVal) || "false".equalsIgnoreCase(fVal)) {
-                            mProject.setVariable(fVar, Boolean.parseBoolean(fVal));
-                        } else {
-                            mProject.setVariable(fVar, fVal);
-                        }
+                        setVariableCoerced(fVar, fVal);
                         return;
                     }
                 }
-                mLogger.warning("HtmlGuiWs: variable '" + fVar + "' not available after " + VAR_RETRY_ATTEMPTS + " retries");
             }, "vsm-varset-retry");
             t.setDaemon(true);
             t.start();
@@ -739,6 +754,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
     @Override
     public void unload() {
+        mUnloaded = true;
         websockets.clear();
         synchronized (mConvLogs) { mConvLogs.clear(); }
         // app is null if this instance was never actually launched (e.g. a project opened but
@@ -907,8 +923,14 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String screen = activity.get("screen").replace("'", "");
                 broadcast("loadScreen$" + screen);
             } else if (name.equalsIgnoreCase("updateVar")) {
+                // updateVar(var='…', value='…') — sets the actual SceneFlow variable (so a
+                // later guard/CEdge reading it sees the new value too, same as clearFeed
+                // already does for its own variable) and pushes it to the browser in the same
+                // call, so a flow-driven change and a person's own click stay in sync through
+                // one variable either way.
                 String varName = activity.get("var").replace("'", "");
                 String value   = activity.get("value").replace("'", "");
+                if (mProject.hasVariable(varName)) setVariableCoerced(varName, value);
                 broadcast("updateVar$" + varName + "$" + value);
             } else if (name.equalsIgnoreCase("appendMessage")) {
                 // appendMessage(var='…', role='agent|user|system', text='…'[, speaker='…'][, timestamp='…'])
