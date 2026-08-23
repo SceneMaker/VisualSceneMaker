@@ -8229,15 +8229,19 @@ Sentence:
     return "";
   }
 
-  // Returns the primary resolved node plus any canonical/alias counterparts visible at this level.
+  // Returns the primary resolved node plus its canonical counterpart, if `primary` is itself
+  // an alias occurrence. Deliberately does NOT fan out the other way (canonical → every alias
+  // that shares its refId): an AliasNode is a flyweight over the same shared node graph as its
+  // canonical SuperNode (no per-occurrence clone — see AliasNode.java), so once execution is
+  // inside that shared subgraph, the event's ancestor chain always resolves up to the canonical
+  // — there is no data telling us which of the (possibly several) alias call sites is actually
+  // live. Guessing "all of them" used to light up every occurrence at once, which misread as
+  // all of them genuinely executing concurrently when only one ever was.
   function resolveAllActivityNodeIds(payload) {
     const primary = resolveActivityNodeId(payload);
     if (!primary || !sceneFlow?.nodes) return primary ? [primary] : [];
     const result = new Set([primary]);
     for (const node of sceneFlow.nodes) {
-      if (node.type === "Alias" && node.refId === primary) {
-        result.add(node.id); // primary is canonical → also activate its aliases
-      }
       if (node.id === primary && node.type === "Alias" && node.refId) {
         result.add(node.refId); // primary is alias → also activate canonical (if visible)
       }
