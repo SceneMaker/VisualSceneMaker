@@ -31,6 +31,8 @@ public class LLMSupport {
     private final Duration mRequestTimeout;
     private volatile LLMModel mSelectedModel;
     private volatile Double mDefaultTemperature = null;
+    private volatile String mDefaultReasoningEffort = null;
+    private volatile Boolean mDefaultDisableThinking = null;
 
     public LLMSupport() {
         this(defaultHttpTransport(), "http://localhost:8234/v1/", null, Duration.ofSeconds(30));
@@ -108,6 +110,24 @@ public class LLMSupport {
         this.mDefaultTemperature = temperature;
     }
 
+    /**
+     * Reasoning effort applied to requests that don't set their own (e.g. "low", "medium", "high").
+     * Understood by OpenAI's o-series/gpt-5 models and several OpenAI-compatible servers; ignored
+     * by servers/models that don't support it.
+     */
+    public void setDefaultReasoningEffort(String reasoningEffort) {
+        this.mDefaultReasoningEffort = (reasoningEffort == null || reasoningEffort.isBlank()) ? null : reasoningEffort.trim();
+    }
+
+    /**
+     * When true, requests that don't override it ask the model to skip its reasoning/thinking pass
+     * (sent as {@code "enable_thinking": false}, the convention used by Qwen3 and other
+     * thinking-capable models served via vLLM/SGLang/Ollama/LM Studio).
+     */
+    public void setDefaultDisableThinking(Boolean disableThinking) {
+        this.mDefaultDisableThinking = disableThinking;
+    }
+
     public URI getBaseUri() {
         return mBaseUri;
     }
@@ -126,7 +146,7 @@ public class LLMSupport {
             throw new IllegalStateException("No LLM model selected.");
         }
         sLogger.message("Sending LLM prompt to model " + model.id());
-        JSONObject payload = prompt.toJson(model.id(), mDefaultTemperature);
+        JSONObject payload = prompt.toJson(model.id(), mDefaultTemperature, mDefaultReasoningEffort, mDefaultDisableThinking);
         HttpTransport.HttpResponseData response = mHttpTransport.postJson(
                 mBaseUri.resolve("chat/completions"),
                 payload.toString(),
@@ -258,14 +278,19 @@ public class LLMSupport {
         private final List<ChatMessage> mMessages;
         private final Double mTemperature;
         private final Integer mMaxTokens;
+        private final String mReasoningEffort;
+        private final Boolean mDisableThinking;
 
-        private LLMPrompt(List<ChatMessage> messages, Double temperature, Integer maxTokens) {
+        private LLMPrompt(List<ChatMessage> messages, Double temperature, Integer maxTokens,
+                           String reasoningEffort, Boolean disableThinking) {
             if (messages == null || messages.isEmpty()) {
                 throw new IllegalArgumentException("messages must not be empty");
             }
             this.mMessages = List.copyOf(messages);
             this.mTemperature = temperature;
             this.mMaxTokens = maxTokens;
+            this.mReasoningEffort = reasoningEffort;
+            this.mDisableThinking = disableThinking;
         }
 
         public static LLMPrompt of(String userPrompt) {
@@ -273,7 +298,7 @@ public class LLMSupport {
             if (trimmed.isEmpty()) {
                 throw new IllegalArgumentException("userPrompt must not be blank");
             }
-            return new LLMPrompt(List.of(new ChatMessage("user", trimmed)), null, null);
+            return new LLMPrompt(List.of(new ChatMessage("user", trimmed)), null, null, null, null);
         }
 
         public static Builder builder() {
@@ -281,6 +306,10 @@ public class LLMSupport {
         }
 
         JSONObject toJson(String modelId, Double defaultTemperature) {
+            return toJson(modelId, defaultTemperature, null, null);
+        }
+
+        JSONObject toJson(String modelId, Double defaultTemperature, String defaultReasoningEffort, Boolean defaultDisableThinking) {
             JSONObject root = new JSONObject();
             root.put("model", modelId);
             JSONArray array = new JSONArray();
@@ -298,6 +327,14 @@ public class LLMSupport {
             if (mMaxTokens != null) {
                 root.put("max_tokens", mMaxTokens);
             }
+            String reasoningEffort = mReasoningEffort != null ? mReasoningEffort : defaultReasoningEffort;
+            if (reasoningEffort != null) {
+                root.put("reasoning_effort", reasoningEffort);
+            }
+            Boolean disableThinking = mDisableThinking != null ? mDisableThinking : defaultDisableThinking;
+            if (disableThinking != null) {
+                root.put("enable_thinking", !disableThinking);
+            }
             return root;
         }
 
@@ -305,6 +342,8 @@ public class LLMSupport {
             private final List<ChatMessage> mMessages = new ArrayList<>();
             private Double mTemperature;
             private Integer mMaxTokens;
+            private String mReasoningEffort;
+            private Boolean mDisableThinking;
 
             public Builder temperature(double value) {
                 this.mTemperature = value;
@@ -313,6 +352,18 @@ public class LLMSupport {
 
             public Builder maxTokens(int value) {
                 this.mMaxTokens = value;
+                return this;
+            }
+
+            /** Per-request override of the reasoning effort (e.g. "low", "medium", "high"). */
+            public Builder reasoningEffort(String value) {
+                this.mReasoningEffort = value;
+                return this;
+            }
+
+            /** Per-request override of whether the model's thinking/reasoning pass is disabled. */
+            public Builder disableThinking(boolean value) {
+                this.mDisableThinking = value;
                 return this;
             }
 
@@ -341,7 +392,7 @@ public class LLMSupport {
             }
 
             public LLMPrompt build() {
-                return new LLMPrompt(mMessages, mTemperature, mMaxTokens);
+                return new LLMPrompt(mMessages, mTemperature, mMaxTokens, mReasoningEffort, mDisableThinking);
             }
         }
     }

@@ -45,9 +45,13 @@ public class LlmExecutor extends ActivityExecutor {
         String model      = configOrDefault("model",       "");
         double temp       = parseDoubleOrDefault(configOrDefault("temperature", "0.7"), 0.7);
         int    timeoutSec = parseIntOrDefault(configOrDefault("timeout_sec",    "30"),  30);
+        boolean disableThinking = parseBooleanOrDefault(configOrDefault("disable_thinking", "true"), true);
+        String  reasoningEffort = configOrDefault("reasoning_effort", "low");
 
         mLlm = new LLMSupport(baseUrl, apiKey.isBlank() ? null : apiKey, Duration.ofSeconds(timeoutSec));
         mLlm.setDefaultTemperature(temp);
+        mLlm.setDefaultDisableThinking(disableThinking);
+        mLlm.setDefaultReasoningEffort(reasoningEffort.isBlank() || "none".equalsIgnoreCase(reasoningEffort) ? null : reasoningEffort);
 
         mExecutor = Executors.newCachedThreadPool(r -> {
             Thread t = new Thread(r, "llm-executor");
@@ -58,7 +62,8 @@ public class LlmExecutor extends ActivityExecutor {
         // Discover available models; if model is empty/auto, pick the first one.
         String resolvedModel = resolveModel(model, baseUrl);
         mLlm.setSelectedModel(resolvedModel.isBlank() ? "gpt-4o-mini" : resolvedModel);
-        mLogger.message("[llm] launched, model=" + mLlm.getSelectedModel().id() + ", base_url=" + baseUrl);
+        mLogger.message("[llm] launched, model=" + mLlm.getSelectedModel().id() + ", base_url=" + baseUrl
+                + ", disable_thinking=" + disableThinking + ", reasoning_effort=" + reasoningEffort);
     }
 
     private String resolveModel(final String configured, final String baseUrl) {
@@ -201,5 +206,10 @@ public class LlmExecutor extends ActivityExecutor {
 
     private double parseDoubleOrDefault(final String v, final double def) {
         try { return Double.parseDouble(v.trim()); } catch (Exception e) { return def; }
+    }
+
+    private boolean parseBooleanOrDefault(final String v, final boolean def) {
+        if (v == null || v.isBlank()) return def;
+        return Boolean.parseBoolean(v.trim());
     }
 }

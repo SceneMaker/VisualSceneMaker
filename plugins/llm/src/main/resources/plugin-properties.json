@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.1",
-    "specHash": "1ce68bcb91460006",
+    "specVersion": "1.2",
+    "specHash": "a3da96c3b5d87357",
     "plugin": {
         "id": "llm",
         "name": "LLM",
@@ -60,6 +60,18 @@
                 "type": "int",
                 "default": "30",
                 "description": "Request timeout in seconds."
+            },
+            {
+                "name": "disable_thinking",
+                "type": "bool",
+                "default": "true",
+                "description": "Ask the model to skip its reasoning/thinking pass for faster responses. Sent as 'enable_thinking: false', the convention used by Qwen3 and other thinking-capable models served via vLLM/SGLang/Ollama/LM Studio. Ignored by servers/models that don't support it."
+            },
+            {
+                "name": "reasoning_effort",
+                "type": "string",
+                "default": "low",
+                "description": "Reasoning effort for models that support it (e.g. OpenAI o-series/gpt-5): 'low', 'medium', or 'high'. Set to 'none' to omit the field entirely. Ignored by servers/models that don't support it."
             }
         ]
     },
