@@ -5080,6 +5080,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         ref.name = fileName(projectPath);
         ref.runtimeProject.setProjectPath(projectPath);
         ref.runtimeProject.setProjectName(ref.name);
+        // Bring over every file the old directory has (assets/, gui/, audio/, .history/,
+        // anything else — same notion of "the project" handleProjectExport zips up) before
+        // write() lays down the canonical project.xml/sceneflow.xml/scenescript.xml below.
+        // A fixed sidecar-filename allowlist used to run here instead and silently dropped
+        // anything not on the list (e.g. a screens.json-referenced assets/ image).
+        copyProjectDirectoryContents(normalizedCurrentPath, projectPath);
         // withOriginalConfig: same reasoning as handleProjectSave — never persist the
         // runtime-mutated plugin config (pool ports, synthetic properties).
         boolean ok = mPortPoolManager.withOriginalConfig(pid,
@@ -5088,7 +5094,6 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ctx.status(500).result("Failed to save project");
             return;
         }
-        copySaveAsSidecarFiles(normalizedCurrentPath, projectPath);
         if (ref.editorConfigLoaded && ref.editorConfigDirty) {
             if (!saveEditorConfig(ref)) {
                 ctx.status(500).result("Failed to save editor config");
@@ -5104,14 +5109,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         writeJson(ctx, response);
     }
 
-    // Sidecar files that RunTimeProject.write() never touches — copied manually on Save As
-    // so the new location stays runnable (see ui-prefs.json/screens.json/character-config.json
-    // getters below and saveEditorConfig() for how each is normally written).
-    private static final String[] SAVE_AS_SIDECAR_FILES = {
-            "ui-prefs.json", "screens.json", "character-config.json", "editorconfig.xml"
-    };
-
-    private void copySaveAsSidecarFiles(String sourceDirPath, String targetDirPath) {
+    // Recursively copies every file from the source project directory into the target
+    // directory (assets/, gui/, audio/, .history/, ui-prefs.json, screens.json,
+    // character-config.json, editorconfig.xml, anything else on disk). Used by Save As
+    // before write() overwrites project.xml/sceneflow.xml/scenescript.xml with the current
+    // in-memory model, so a project that only carried resources referenced from
+    // screens.json (e.g. an assets/ image) doesn't silently lose them at the new location —
+    // a previous fixed-filename allowlist here only special-cased four known sidecar files.
+    private void copyProjectDirectoryContents(String sourceDirPath, String targetDirPath) {
         if (sourceDirPath == null || sourceDirPath.isBlank() || targetDirPath == null || targetDirPath.isBlank()) {
             return;
         }
@@ -5120,17 +5125,26 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         if (sourceDir.equals(targetDir) || !Files.isDirectory(sourceDir)) {
             return;
         }
-        for (String fileName : SAVE_AS_SIDECAR_FILES) {
-            Path source = sourceDir.resolve(fileName);
-            if (!Files.exists(source)) {
-                continue;
+        try {
+            Files.createDirectories(targetDir);
+        } catch (IOException exc) {
+            sLogger.warning("Warning: could not create Save As target directory " + targetDirPath
+                    + ": " + exc.getMessage());
+            return;
+        }
+        try (var paths = Files.walk(sourceDir)) {
+            for (Path source : paths.filter(Files::isRegularFile).toList()) {
+                Path relative = sourceDir.relativize(source);
+                Path target = targetDir.resolve(relative);
+                try {
+                    Files.createDirectories(target.getParent());
+                    Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+                } catch (Exception exc) {
+                    sLogger.warning("Warning: could not copy " + relative + " during Save As: " + exc.getMessage());
+                }
             }
-            try {
-                Files.copy(source, targetDir.resolve(fileName),
-                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-            } catch (Exception exc) {
-                sLogger.warning("Warning: could not copy " + fileName + " during Save As: " + exc.getMessage());
-            }
+        } catch (IOException exc) {
+            sLogger.warning("Warning: failed to walk source project directory during Save As: " + exc.getMessage());
         }
     }
 

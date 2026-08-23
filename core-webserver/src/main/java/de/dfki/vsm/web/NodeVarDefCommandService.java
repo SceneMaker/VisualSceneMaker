@@ -87,6 +87,16 @@ public final class NodeVarDefCommandService {
         }
 
         final List<VariableDefinition> list = dataNode.getVarDefList();
+        // A duplicate name here would only surface later, as Environment.create() throwing
+        // "Variable already defined" the first time Runtime.Play processes the Declare list —
+        // silently aborting the interpreter thread before any node ever runs. Reject it now
+        // instead, at the point that would introduce it.
+        final boolean duplicate = list.stream()
+                .anyMatch(existing -> existing.getName() != null && existing.getName().equals(varDef.getName()));
+        if (duplicate) {
+            return context.errorResponse("VARDEF_DUPLICATE",
+                    "A variable named '" + varDef.getName() + "' already exists on this node");
+        }
         final int insertIndex = index < 0 || index > list.size() ? list.size() : index;
         list.add(insertIndex, varDef);
 

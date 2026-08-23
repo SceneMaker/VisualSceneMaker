@@ -62,6 +62,31 @@ class SceneFlowIrSemanticValidatorTest {
                         && "warning".equalsIgnoreCase(issue.getSeverity())));
     }
 
+    /**
+     * A duplicate global variable name used to survive validation and only surface as
+     * Environment.create() throwing "Variable already defined" the first time Runtime.Play
+     * processed the Declare list — silently aborting the interpreter thread before any node
+     * ever ran (e.g. re-adding a plugin's declared variables to a project that already had them).
+     */
+    @Test
+    void rejectsVariableDefinitionThatAlreadyExists() {
+        JSONObject snapshot = baseSnapshot();
+        JSONObject ir = new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", new JSONArray()
+                        .put(new JSONObject()
+                                .put("op", "add_variable_definition")
+                                .put("ownerNodeId", "SceneFlow")
+                                .put("varDef", new JSONObject()
+                                        .put("name", "UIEvent")
+                                        .put("type", "Event"))));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, snapshot);
+        assertTrue(result.hasErrors(), "Expected re-declaring an existing variable to be an error");
+        assertTrue(result.getIssues().stream().anyMatch(issue -> "VARDEF_NAME_DUPLICATE".equals(issue.getCode())));
+    }
+
     @Test
     void canDisableRuleByIdViaMappingConfig() throws Exception {
         Path mapping = Files.createTempFile("semantic-rules", ".json");

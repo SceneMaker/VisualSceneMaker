@@ -182,6 +182,12 @@ public final class SceneFlowSituationPipeline {
         final List<JSONObject> candidates = generateCandidates(
                 situation, snapshot, effectiveSettings, generationWarnings);
         final Map<String, JSONObject> patternCatalog = loadPatternCatalogById();
+        // STANDALONE patches apply against createStandaloneBase()'s fresh, variable-less SceneFlow,
+        // not the donor snapshot's own flow — validating a STANDALONE candidate against the donor's
+        // variable list makes an "auto-created if missing" variable (ensureConditionVariablesDefined
+        // already skips the donor's vars for this same reason, above) look like a duplicate of a
+        // variable that, in the flow actually being built, was never declared.
+        final JSONObject validationSnapshot = snapshotForValidation(snapshot, effectiveSettings.outputMode());
 
         final SceneFlowIrSemanticValidator semanticValidator = new SceneFlowIrSemanticValidator();
         final SceneFlowIrCompiler compiler = new SceneFlowIrCompiler();
@@ -223,7 +229,7 @@ public final class SceneFlowSituationPipeline {
                         + " has low prompt-resolution confidence ("
                         + promptResolution.optDouble("confidence", 1.0d) + ").");
             }
-            final JSONArray activeSemanticRules = semanticValidator.describeActiveRules(candidate, snapshot);
+            final JSONArray activeSemanticRules = semanticValidator.describeActiveRules(candidate, validationSnapshot);
             attempt.put("activeSemanticRules", activeSemanticRules);
             accumulateActiveRuleSummary(activeRulesSummary, activeSemanticRules, i + 1);
             final JSONObject constraintResolution = extractConstraintResolution(candidate, effectiveSettings.constraintResolutionMode());
@@ -254,8 +260,8 @@ public final class SceneFlowSituationPipeline {
                 continue;
             }
 
-            final SemanticValidationResult semantic = semanticValidator.validate(candidate, snapshot);
-            final JSONArray semanticRuleExecution = semanticValidator.describeRuleExecution(candidate, snapshot, semantic);
+            final SemanticValidationResult semantic = semanticValidator.validate(candidate, validationSnapshot);
+            final JSONArray semanticRuleExecution = semanticValidator.describeRuleExecution(candidate, validationSnapshot, semantic);
             attempt.put("semanticRuleExecution", semanticRuleExecution);
             accumulateRuleExecutionSummary(ruleExecutionSummary, semanticRuleExecution);
             final JSONArray issues = new JSONArray();
@@ -470,6 +476,21 @@ public final class SceneFlowSituationPipeline {
             return loadSceneFlow(sceneFlowXmlPath);
         }
         return createStandaloneBase(snapshot);
+    }
+
+    // See the comment where this is called: STANDALONE candidates are validated against an empty
+    // variable list because that's what createStandaloneBase() actually builds against, regardless
+    // of what the donor snapshot happens to declare.
+    private JSONObject snapshotForValidation(final JSONObject snapshot, final OutputMode outputMode) {
+        if (outputMode != OutputMode.STANDALONE || snapshot == null) {
+            return snapshot;
+        }
+        final JSONObject copy = new JSONObject(snapshot.toString());
+        final JSONObject flow = copy.optJSONObject("flow");
+        if (flow != null) {
+            flow.put("variables", new JSONArray());
+        }
+        return copy;
     }
 
     private SceneFlow createStandaloneBase(final JSONObject snapshot) {

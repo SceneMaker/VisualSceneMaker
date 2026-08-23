@@ -1095,6 +1095,14 @@ public final class SceneFlowIrSemanticValidator {
         final String varType = varDef.optString("type", "").trim();
         if (varName.isEmpty()) {
             emitIssue(result, "VARDEF_NAME_MISSING", path + "/varDef/name", "Variable name is required.");
+        } else if (variableNames.contains(varName)) {
+            // bootstrapContext seeds variableNames from the SceneFlow the patch is applied to, so a
+            // name already in the set means either the destination declares it already or an earlier
+            // op in this same patch does — both would make Environment.create() throw
+            // "Variable already defined" the first time Runtime.Play processes the Declare list,
+            // silently aborting the interpreter thread before any node ever runs.
+            emitIssue(result, "VARDEF_NAME_DUPLICATE", path + "/varDef/name",
+                    "A variable named '" + varName + "' is already declared.");
         } else {
             variableNames.add(varName);
         }
