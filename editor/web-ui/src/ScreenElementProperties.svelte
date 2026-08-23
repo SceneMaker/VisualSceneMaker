@@ -589,6 +589,12 @@
                       <option value="">— none —</option>
                       {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
                     </select>
+                    <label class="ve-prop-label">Bind variable <span class="ve-hint">(String — pushing a value to it, e.g. via an updateVar flow action, sets the field's text, the same way a mic button's toggle variable drives its state)</span></label>
+                    <select class="ve-select" value={element.bindVar ?? ""}
+                            on:change={e => onSetProp("bindVar",e.target.value || undefined)}>
+                      <option value="">— none —</option>
+                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                    </select>
                     <label class="ve-prop-label">Placeholder</label>
                     <input class="ve-input" type="text" placeholder="Type your message…"
                            value={element.placeholder ?? ""}

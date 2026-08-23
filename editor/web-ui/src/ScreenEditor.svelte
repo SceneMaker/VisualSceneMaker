@@ -343,7 +343,10 @@
       return `${el.animation ?? "heartbeat"}${rateLabel}`;
     }
     if (el.type === "vsm-chat-input") {
-      return el.sendsVar ? `Chat input → ${el.sendsVar}` : "Chat input (no variable)";
+      const sends = el.sendsVar ? `→ ${el.sendsVar}` : "";
+      const binds = el.bindVar ? `← ${el.bindVar}` : "";
+      const vars  = [sends, binds].filter(Boolean).join(" ");
+      return vars ? `Chat input ${vars}` : "Chat input (no variable)";
     }
     if (el.type === "vsm-filler") {
       if (el.flexGrow) return "Flex spacer (fills remaining space)";
@@ -398,7 +401,7 @@
       { icon: "Ch",  label: "Chart",      create: () => ({ type:"vsm-chart", chartType:"bar", dataVar:"", label:"", color:"#5b8edc", height:"300px" }) },
       { icon: "Fd",  label: "Feed",       create: () => ({ type:"vsm-feed", dataVar:"", height:"400px", agentColor:"#e8f4fd", userColor:"#eafbe8", systemColor:"#f5f5f5", agentLabel:"Agent", userLabel:"You" }) },
       { icon: "Fx",  label: "Animate",    create: () => ({ type:"vsm-animate", animation:"heartbeat", color:"#e26d5a", width:"80px", height:"80px" }) },
-      { icon: "✉",   label: "Chat Input", create: () => ({ type:"vsm-chat-input", sendsVar:"", placeholder:"Type your message…", buttonLabel:"Send" }) },
+      { icon: "✉",   label: "Chat Input", create: () => ({ type:"vsm-chat-input", sendsVar:"", bindVar:"", placeholder:"Type your message…", buttonLabel:"Send" }) },
     ]},
   ];
 

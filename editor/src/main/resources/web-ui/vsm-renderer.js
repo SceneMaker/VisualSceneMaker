@@ -562,6 +562,7 @@ class VsmScreenRenderer extends LitElement {
                     : false;
                 return html`<vsm-chat-input-element
                     .config=${el}
+                    .value=${el.bindVar ? boundValue : undefined}
                     ?disabled=${isDisabled}
                     @vsm-send=${(e) => el.sendsVar && this._sendToVsm(el.sendsVar, e.detail.value)}
                     style=${style}></vsm-chat-input-element>`;
@@ -1168,6 +1169,13 @@ customElements.define('vsm-animate-element', VsmAnimateElement);
 //
 // Schema element fields:
 //   sendsVar    — SceneFlow variable name to write the submitted text to
+//   bindVar     — optional SceneFlow String variable; pushing a value to it (e.g. via an
+//                 updateVar PlayAction) sets the field's text, the same way a toggleVar
+//                 button reflects mic_active. The inner <sl-input> stays otherwise
+//                 uncontrolled (no declarative value binding), so re-renders triggered by
+//                 unrelated property changes (config, disabled) never clobber text a
+//                 person is still typing — a pushed value is applied imperatively, and only
+//                 when it actually differs from what was last applied.
 //   placeholder — input field placeholder text (default: 'Type your message…')
 //   icon        — send button icon, one of ICONS' keys (default: 'send'); '' shows buttonLabel
 //                 as text instead
@@ -1181,6 +1189,7 @@ class VsmChatInputElement extends LitElement {
     static properties = {
         config:   { type: Object },
         disabled: { type: Boolean },
+        value:    { type: String },
     };
 
     static styles = css`
@@ -1193,8 +1202,18 @@ class VsmChatInputElement extends LitElement {
 
     constructor() {
         super();
-        this.config   = {};
+        this.config = {};
         this.disabled = false;
+        this.value = undefined;
+        this._appliedValue = undefined;
+    }
+
+    updated(changed) {
+        if (changed.has('value') && this.value !== undefined && this.value !== this._appliedValue) {
+            const inputEl = this.renderRoot.querySelector('sl-input');
+            if (inputEl) inputEl.value = this.value;
+            this._appliedValue = this.value;
+        }
     }
 
     _submit(inputEl) {
@@ -1207,6 +1226,7 @@ class VsmChatInputElement extends LitElement {
         }));
         // Clear the Shoelace input imperatively after dispatch
         inputEl.value = '';
+        this._appliedValue = '';
     }
 
     render() {
