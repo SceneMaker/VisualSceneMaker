@@ -15285,7 +15285,7 @@ Sentence:
 
   function commandNodeHintStyle(node) {
     const history = !!node?.isHistory;
-    const fill = history ? "#ffffff" : sceneFlowNodeColorByFlavour(node);
+    const fill = history ? "#dcdcdc" : sceneFlowNodeColorByFlavour(node);
     const text = history ? "#000000" : "#ffffff";
     const border = history ? SCENEFLOW_FRAME_COLORS.node : fill;
     return `--cmd-node-fill:${fill};--cmd-node-text:${text};--cmd-node-border:${border};`;

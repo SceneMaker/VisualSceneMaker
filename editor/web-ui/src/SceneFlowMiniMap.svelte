@@ -8,7 +8,7 @@
 
   const COLORS = {
     node: "#7a7d81",
-    history: "#ffffff",
+    history: "#dcdcdc",
     edges: {
       eedge: "#7a7d81",
       fedge: "#5b8edc",

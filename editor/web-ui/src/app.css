@@ -6699,7 +6699,7 @@ button.ghost.start-toggle:disabled {
 }
 
 .node.history .node-shape {
-  fill: #ffffff;
+  fill: #dcdcdc;
 }
 
 .node.history .node-id {

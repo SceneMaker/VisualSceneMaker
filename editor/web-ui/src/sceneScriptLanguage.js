@@ -161,17 +161,8 @@ function tokenTurn(stream, state) {
     state.returnMode = MODE.TURN_BODY;
     return "variableName";
   }
-  if (stream.match(/^'(?:[^'\\]|\\.)*'/)) {
-    return "string";
-  }
   if (stream.match(/^'/)) {
-    return "punctuation";
-  }
-  if (stream.match(BOOL)) {
-    return "bool";
-  }
-  if (stream.match(NUMBER)) {
-    return "number";
+    return null;
   }
   if (stream.match(/^[\.\?!,;]/)) {
     state.mode = MODE.TURN_FOOT;
