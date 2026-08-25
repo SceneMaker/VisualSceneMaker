@@ -6488,6 +6488,20 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         if (tempStr != null && !tempStr.isBlank()) {
             llm.setDefaultTemperature(Double.parseDouble(tempStr));
         }
+        // Thinking-capable local models (e.g. Qwen3) default to emitting a reasoning trace before
+        // the answer when a request omits enable_thinking entirely - this is the gap that made
+        // placement second-opinion and semantic analysis far slower than the same model queried
+        // directly, where the client explicitly turns thinking off. Mirrors the LlmExecutor
+        // plugin's fast-by-default behavior; both are overridable per LLM entry.
+        // reasoningEffort defaults to "none" (field omitted) rather than a real level - confirmed
+        // 2026-08-24 that LM Studio's Qwen3 bridge forces thinking back on whenever a real effort
+        // level is present, even alongside disableThinking=true.
+        String disableThinkingStr = llmConfig.getProperty("disableThinking", "true");
+        llm.setDefaultDisableThinking(Boolean.parseBoolean(disableThinkingStr));
+        String reasoningEffort = llmConfig.getProperty("reasoningEffort", "none");
+        llm.setDefaultReasoningEffort(
+                reasoningEffort == null || reasoningEffort.isBlank() || "none".equalsIgnoreCase(reasoningEffort)
+                        ? null : reasoningEffort);
         return llm;
     }
 

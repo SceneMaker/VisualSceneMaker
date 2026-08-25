@@ -46,7 +46,12 @@ public class LlmExecutor extends ActivityExecutor {
         double temp       = parseDoubleOrDefault(configOrDefault("temperature", "0.7"), 0.7);
         int    timeoutSec = parseIntOrDefault(configOrDefault("timeout_sec",    "30"),  30);
         boolean disableThinking = parseBooleanOrDefault(configOrDefault("disable_thinking", "true"), true);
-        String  reasoningEffort = configOrDefault("reasoning_effort", "low");
+        // "none" (the default) omits the field entirely. Any real effort level ("low"/"medium"/...)
+        // makes LM Studio's Qwen3 bridge force enable_thinking back on even when disable_thinking
+        // is also sent - confirmed 2026-08-24 by replaying the exact request body with curl: adding
+        // reasoning_effort:"low" turned a 0-reasoning-token, ~0.5s reply into a 92-reasoning-token,
+        // ~4s one, regardless of disable_thinking. Only pass a real level when thinking is wanted.
+        String  reasoningEffort = configOrDefault("reasoning_effort", "none");
 
         mLlm = new LLMSupport(baseUrl, apiKey.isBlank() ? null : apiKey, Duration.ofSeconds(timeoutSec));
         mLlm.setDefaultTemperature(temp);

@@ -16,11 +16,15 @@ import org.w3c.dom.Element;
  * Stored as an &lt;LLM name="..."&gt; element inside the &lt;LLMs&gt; section of project.xml.
  *
  * Standard feature keys:
- * - baseUrl     : The OpenAI-compatible API base URL (e.g. http://localhost:8234/v1/)
- * - apiKey      : Optional API key for authentication
- * - model       : The selected model identifier
- * - temperature : Default sampling temperature (0.0 - 2.0)
- * - timeout     : Request timeout in seconds
+ * - baseUrl         : The OpenAI-compatible API base URL (e.g. http://localhost:8234/v1/)
+ * - apiKey          : Optional API key for authentication
+ * - model           : The selected model identifier
+ * - temperature     : Default sampling temperature (0.0 - 2.0)
+ * - timeout         : Request timeout in seconds
+ * - disableThinking : Skip a thinking-capable model's reasoning pass (default true; set "false" to
+ *                      let it think)
+ * - reasoningEffort  : Reasoning effort for models that honor it, e.g. "low"/"medium"/"high"
+ *                      (default "low"; "none" or blank omits the field)
  */
 public class LLMConfig extends ConfigElement {
 
