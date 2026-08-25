@@ -707,8 +707,56 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             msg.append(",\"turnStart\":true");
         msg.append("}");
         synchronized (mConvLogs) {
-            mConvLogs.computeIfAbsent(varName, k -> new ArrayList<>()).add(msg.toString());
-            String jsonArray = buildJsonArray(mConvLogs.get(varName));
+            List<String> log = mConvLogs.computeIfAbsent(varName, k -> new ArrayList<>());
+            removeTypingPlaceholder(log);
+            log.add(msg.toString());
+            String jsonArray = buildJsonArray(log);
+            if (mProject.hasVariable(varName)) mProject.setVariable(varName, jsonArray);
+            broadcast("updateVar$" + varName + "$" + jsonArray);
+        }
+    }
+
+    /**
+     * Drops a trailing "typing" placeholder (see {@link #showTypingIndicator}) from a conversation
+     * log, if one is pending. Callers hold {@code mConvLogs}'s lock already.
+     */
+    private void removeTypingPlaceholder(List<String> log) {
+        if (!log.isEmpty() && log.get(log.size() - 1).contains("\"typing\":true")) {
+            log.remove(log.size() - 1);
+        }
+    }
+
+    /**
+     * Appends a typing placeholder to the named feed. It sits exactly where the agent's next
+     * contribution will land: {@link #appendToConversationLog} strips it again before adding a
+     * real message, so an explicit appendMessage call or the next spoken scene replaces it
+     * automatically — callers never need to pair this with an explicit hideTyping.
+     */
+    private void showTypingIndicator(String varName, String role, String speaker) {
+        StringBuilder msg = new StringBuilder("{");
+        msg.append("\"role\":\"").append(escapeJson(role)).append("\"");
+        msg.append(",\"typing\":true");
+        if (speaker != null)
+            msg.append(",\"speaker\":\"").append(escapeJson(speaker.replace("'", ""))).append("\"");
+        msg.append(",\"turnStart\":true");
+        msg.append("}");
+        synchronized (mConvLogs) {
+            List<String> log = mConvLogs.computeIfAbsent(varName, k -> new ArrayList<>());
+            removeTypingPlaceholder(log);
+            log.add(msg.toString());
+            String jsonArray = buildJsonArray(log);
+            if (mProject.hasVariable(varName)) mProject.setVariable(varName, jsonArray);
+            broadcast("updateVar$" + varName + "$" + jsonArray);
+        }
+    }
+
+    /** Removes a pending typing placeholder without appending a message, e.g. on error/timeout. */
+    private void hideTypingIndicator(String varName) {
+        synchronized (mConvLogs) {
+            List<String> log = mConvLogs.get(varName);
+            if (log == null) return;
+            removeTypingPlaceholder(log);
+            String jsonArray = buildJsonArray(log);
             if (mProject.hasVariable(varName)) mProject.setVariable(varName, jsonArray);
             broadcast("updateVar$" + varName + "$" + jsonArray);
         }
@@ -945,6 +993,24 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String timestamp = activity.get("timestamp");
                 if (!varName.isEmpty()) {
                     appendToConversationLog(varName, role, speaker, text, timestamp);
+                }
+
+            } else if (name.equalsIgnoreCase("showTyping")) {
+                // showTyping(var='…'[, role='agent'][, speaker='…']) — placeholder bubble for
+                // "the agent is working on a reply"; the next appendMessage/spoken scene for the
+                // same variable replaces it automatically.
+                String varName = activity.get("var")   != null ? activity.get("var").replace("'", "")   : "";
+                String role    = activity.get("role")  != null ? activity.get("role").replace("'", "")  : "agent";
+                String speaker = activity.get("speaker");
+                if (!varName.isEmpty()) {
+                    showTypingIndicator(varName, role, speaker);
+                }
+
+            } else if (name.equalsIgnoreCase("hideTyping")) {
+                // hideTyping(var='…') — removes a pending typing placeholder without adding a message
+                String varName = activity.get("var") != null ? activity.get("var").replace("'", "") : "";
+                if (!varName.isEmpty()) {
+                    hideTypingIndicator(varName);
                 }
 
             } else if (name.equalsIgnoreCase("clearFeed")) {

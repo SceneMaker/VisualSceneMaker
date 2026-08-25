@@ -1145,11 +1145,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
         @Override
         public String allocateNodeId(String projectId, boolean superNode, Set<String> used) {
-            ProjectRef ref = projectStore.get(projectId);
-            if (ref == null) {
-                return superNode ? "S1" : "N1";
-            }
-            return WebUiServer.this.allocateNodeId(ref, superNode, used);
+            return WebUiServer.this.allocateNodeId(superNode, used);
         }
 
         @Override
@@ -1877,6 +1873,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 "SceneFlow.Node.Update");
         registerWsCommands((method, params, broadcaster) -> deleteNodeForProject(params, broadcaster),
                 "SceneFlow.Node.Delete");
+        registerWsCommands((method, params, broadcaster) -> sanitizeNodeIdsForProject(params, broadcaster),
+                "SceneFlow.Ids.Sanitize");
         registerWsCommands((method, params, broadcaster) -> moveNodeForProject(params, broadcaster),
                 "SceneFlow.Node.Move");
         registerWsCommands((method, params, broadcaster) -> edgeCrudCommandService.dispatch(method, params, broadcaster, edgeCrudCommandContext),
@@ -10659,82 +10657,16 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return (int) Math.round(value);
     }
 
-    private int computeNextNodeIndex(RunTimeProject rtp) {
-        return computeNextNodeIndex(rtp, false);
-    }
-
-    private int computeNextSuperNodeIndex(RunTimeProject rtp) {
-        return computeNextNodeIndex(rtp, true);
-    }
-
-    private int computeNextNodeIndex(RunTimeProject rtp, boolean superNodes) {
-        if (rtp == null || rtp.getSceneFlow() == null) {
-            return 1;
-        }
-        int max = 0;
-        SceneFlow sceneFlow = rtp.getSceneFlow();
-        List<BasicNode> nodes = new ArrayList<>();
-        collectNodes(sceneFlow, nodes);
-        for (BasicNode node : nodes) {
-            if (node == null) continue;
-            boolean isRoot = node instanceof SuperNode && ((SuperNode) node).getParentNode() == null;
-            if (isRoot) continue;
-            boolean isSuper = node instanceof SuperNode;
-            if (isSuper != superNodes) continue;
-            Integer val = parseNodeIndex(node.getId(), superNodes);
-            if (val != null && val > max) {
-                max = val;
-            }
-        }
-        return max + 1;
-    }
-
-    private Integer parseNodeIndex(String id, boolean superNode) {
-        if (id == null) return null;
-        String trimmed = id.trim();
-        if (trimmed.isEmpty()) return null;
+    private String allocateNodeId(boolean superNode, Set<String> used) {
         String prefix = superNode ? "S" : "N";
-        if (trimmed.length() > 1 && trimmed.startsWith(prefix)) {
-            String rest = trimmed.substring(1);
-            if (rest.matches("\\d+")) {
-                try {
-                    return Integer.parseInt(rest);
-                } catch (NumberFormatException ignore) {
-                    return null;
-                }
-            }
-            return null;
+        int candidate = 1;
+        while (used != null && used.contains(prefix + candidate)) {
+            candidate += 1;
         }
-        if (trimmed.matches("\\d+")) {
-            try {
-                return Integer.parseInt(trimmed);
-            } catch (NumberFormatException ignore) {
-                return null;
-            }
-        }
-        return null;
+        return prefix + candidate;
     }
 
-    private String allocateNodeId(ProjectRef ref, boolean superNode, Set<String> used) {
-        String prefix = superNode ? "S" : "N";
-        int next = superNode ? ref.nextSuperNodeIndex : ref.nextNodeIndex;
-        if (next < 1) {
-            next = 1;
-        }
-        String candidate;
-        do {
-            candidate = prefix + next;
-            next += 1;
-        } while (used != null && used.contains(candidate));
-        if (superNode) {
-            ref.nextSuperNodeIndex = next;
-        } else {
-            ref.nextNodeIndex = next;
-        }
-        return candidate;
-    }
-
-    private String normalizeNodeId(String id, boolean superNode, ProjectRef ref, Set<String> used) {
+    private String normalizeNodeId(String id, boolean superNode, Set<String> used) {
         String trimmed = id == null ? "" : id.trim();
         String prefix = superNode ? "S" : "N";
         if (!trimmed.isEmpty()) {
@@ -10748,7 +10680,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 }
             }
         }
-        return allocateNodeId(ref, superNode, used);
+        return allocateNodeId(superNode, used);
     }
 
     private JSONObject createNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
@@ -10777,9 +10709,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
         }
         if (nodeId.isBlank()) {
-            nodeId = allocateNodeId(ref, isSuperNode, usedIds);
+            nodeId = allocateNodeId(isSuperNode, usedIds);
         } else {
-            nodeId = normalizeNodeId(nodeId, isSuperNode, ref, usedIds);
+            nodeId = normalizeNodeId(nodeId, isSuperNode, usedIds);
         }
         String name = params.optString("name", "").trim();
         if (name.isBlank()) {
@@ -10805,7 +10737,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             SuperNode createdSuperNode = (SuperNode) node;
             BasicNode historyNode = createdSuperNode.getHistoryNode();
             if (historyNode == null) {
-                String historyNodeId = allocateNodeId(ref, false, usedIds);
+                String historyNodeId = allocateNodeId(false, usedIds);
                 usedIds.add(historyNodeId);
                 historyNode = new BasicNode();
                 historyNode.setId(historyNodeId);
@@ -10870,7 +10802,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         for (BasicNode existing : existingNodes) {
             if (existing != null && existing.getId() != null) usedIds.add(existing.getId());
         }
-        String aliasId = allocateNodeId(ref, true, usedIds);
+        String aliasId = allocateNodeId(true, usedIds);
 
         String name = params.optString("name", "").trim();
         if (name.isBlank()) {
@@ -11013,6 +10945,106 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 recordCommand(ref, "SceneFlow.Node.Delete", params);
                 return resp;
             }
+
+    /**
+     * Renumbers every node id in the flow down to the lowest available {@code N#}/{@code S#} range
+     * (basic nodes and supernodes numbered separately), in traversal order. Node create/delete never
+     * reclaims a freed number on its own ({@link #allocateNodeId} only fills gaps below the ids
+     * already in use), so a long-lived project can drift to ids far above its current node count;
+     * this is the explicit, user-triggered, undoable fix for that drift.
+     */
+    private JSONObject sanitizeNodeIdsForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+
+        List<BasicNode> allNodes = new ArrayList<>();
+        collectNodes(sceneFlow, allNodes);
+
+        Map<String, String> idMap = new HashMap<>();
+        int nextNode = 1;
+        int nextSuper = 1;
+        for (BasicNode node : allNodes) {
+            boolean isRoot = node instanceof SuperNode && ((SuperNode) node).getParentNode() == null;
+            if (isRoot) continue;
+            String oldId = node.getId();
+            String newId = node instanceof SuperNode ? ("S" + nextSuper++) : ("N" + nextNode++);
+            if (oldId != null && !oldId.equals(newId)) {
+                idMap.put(oldId, newId);
+            }
+        }
+
+        JSONObject resp;
+        if (idMap.isEmpty()) {
+            JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+            resp = buildSceneFlowResponse(snapshot);
+            resp.put("renumbered", 0);
+            return resp;
+        }
+
+        for (BasicNode node : allNodes) {
+            String newId = idMap.get(node.getId());
+            if (newId != null) {
+                node.setId(newId);
+            }
+        }
+
+        rebuildStartNodeMaps(sceneFlow);
+
+        List<AbstractEdge> edges = new ArrayList<>();
+        collectEdges(sceneFlow, edges);
+        for (AbstractEdge edge : edges) {
+            if (edge.getSourceNode() != null) {
+                edge.setSourceUnid(edge.getSourceNode().getId());
+            }
+            if (edge.getTargetNode() != null) {
+                edge.setTargetUnid(edge.getTargetNode().getId());
+            }
+            // mAltMap tuples carry a live BasicNode alongside the id string (see
+            // SuperNode.establishAltStartNodes) but that resolution pass doesn't run on every edit,
+            // so only the string half is trustworthy here; rewrite it directly via the id map rather
+            // than re-deriving it from the (possibly still-null) node reference.
+            for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> entry : edge.getAltMap().entrySet()) {
+                Tuple<String, BasicNode> startPair = entry.getKey();
+                Tuple<String, BasicNode> altPair = entry.getValue();
+                String remappedStart = idMap.get(startPair.getFirst());
+                if (remappedStart != null) {
+                    startPair.setFirst(remappedStart);
+                }
+                String remappedAlt = idMap.get(altPair.getFirst());
+                if (remappedAlt != null) {
+                    altPair.setFirst(remappedAlt);
+                }
+            }
+        }
+
+        // AliasNode.mRefId is a plain string matched by id whenever SceneFlow.establishAliases() next
+        // runs (project reload); it is not kept resolved across live edits, so it must be rewritten
+        // explicitly rather than re-derived from a live SuperNode pointer.
+        for (BasicNode node : allNodes) {
+            if (node instanceof AliasNode) {
+                AliasNode alias = (AliasNode) node;
+                String remapped = idMap.get(alias.getRefId());
+                if (remapped != null) {
+                    alias.setRefId(remapped);
+                }
+            }
+        }
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        resp = buildSceneFlowResponse(snapshot);
+        resp.put("renumbered", idMap.size());
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        recordHistory(ref, "SceneFlow.Ids.Sanitize");
+        recordCommand(ref, "SceneFlow.Ids.Sanitize", params);
+        return resp;
+    }
 
     private JSONObject moveNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -12116,17 +12148,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      * Rebuilds everything the server caches about a flow after the flow itself was replaced wholesale.
      *
      * <p>Both callers, undo and the Flow Assistant, swap the whole graph rather than editing it, so
-     * the id counters, the serialized node and edge lists and the edge dock points all describe a
-     * graph that no longer exists. Leaving any of them behind shows up as duplicate node ids or edges
-     * drawn to nowhere.
+     * the serialized node and edge lists and the edge dock points all describe a graph that no longer
+     * exists. Leaving any of them behind shows up as duplicate node ids or edges drawn to nowhere.
      */
     private void refreshSceneFlowDerivedState(ProjectRef ref) {
         normalizeSceneFlowIds(ref);
         ref.nodes = serializeNodes(ref.runtimeProject);
         ref.edges = serializeEdges(ref.runtimeProject);
         ref.comments = serializeComments(ref.runtimeProject);
-        ref.nextNodeIndex = computeNextNodeIndex(ref.runtimeProject);
-        ref.nextSuperNodeIndex = computeNextSuperNodeIndex(ref.runtimeProject);
         mEdgeLayout.clearDockPointsRecursive(ref.runtimeProject.getSceneFlow());
         initializeDockPointsForProject(ref);
         // Dock points are only read off edges that already have geometry, so an edge that arrived
@@ -12200,7 +12229,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 continue;
             }
             boolean isSuper = node instanceof SuperNode && !isRoot;
-            String normalized = normalizeNodeId(id, isSuper, ref, used);
+            String normalized = normalizeNodeId(id, isSuper, used);
             if (!normalized.equals(id)) {
                 node.setId(normalized);
                 id = normalized;
@@ -12384,12 +12413,6 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             return false;
         }
         boolean idChanged = false;
-        try {
-            ref.nextNodeIndex = computeNextNodeIndex(ref.runtimeProject);
-            ref.nextSuperNodeIndex = computeNextSuperNodeIndex(ref.runtimeProject);
-        } catch (Exception exc) {
-            sLogger.warning("Warning: failed to compute node indices: " + exc.getMessage());
-        }
         try {
             idChanged = normalizeSceneFlowIds(ref);
         } catch (Exception exc) {
@@ -12965,8 +12988,6 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // project — some plugins' launch() (e.g. htmlgui-ws) isn't safe to call twice (rebinds
         // its port unconditionally), unlike charamel-embed's own re-launch guard.
         boolean pluginsLaunchedForPreview = false;
-        int nextNodeIndex = 1;
-        int nextSuperNodeIndex = 1;
         String scriptText;
         int scriptVersion = 1;
         boolean scriptParseOk = true;

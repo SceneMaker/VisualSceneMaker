@@ -1565,6 +1565,7 @@
   let saveAsInputEl;
   let saveAsDialogEl;
   let loadConfirmDialogEl;
+  let sanitizeIdsDialogEl;
   let recentFailureDialogEl;
   let missingAgentDialogEl;
   let projectConfigDialogEl;
@@ -2121,6 +2122,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let lastNodeDefsId = "";
   let loadConfirmOpen = false;
   let loadConfirmReasons = [];
+  let sanitizeIdsDialogOpen = false;
+  let sanitizeIdsBusy = false;
 
   const edgeTypeLabels = {
     EEDGE: "Epsilon",
@@ -13065,7 +13068,7 @@ Sentence:
   }
 
   async function closeCmdDialog() {
-    if (cmdDialogOpen && wsConnected && !sceneFlowBusy && cmdInlineDrafts.length) {
+    if (cmdDialogOpen && wsConnected && cmdInlineDrafts.length) {
       for (let i = cmdInlineDrafts.length - 1; i >= 0; i -= 1) {
         await commitCmdInlineDraft(i);
       }
@@ -15175,10 +15178,12 @@ Sentence:
     if (cmdSelectedIndex !== null) {
       updateCmdInlineDraft(cmdSelectedIndex, text);
       cmdEditingIndex = null;
+      await commitCmdInlineDraft(cmdSelectedIndex);
     } else {
       const nextIndex = cmdInlineDrafts.length;
       cmdInlineDrafts = [...cmdInlineDrafts, text];
       cmdSelectedIndex = nextIndex;
+      await commitCmdInlineDraft(nextIndex);
     }
   }
 
@@ -15573,6 +15578,30 @@ Sentence:
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId
     });
+  }
+
+  function openSanitizeIdsDialog() {
+    if (!selectedProjectId || sceneFlowBusy) return;
+    sanitizeIdsDialogOpen = true;
+    focusDialog(sanitizeIdsDialogEl);
+  }
+
+  function cancelSanitizeIdsDialog() {
+    sanitizeIdsDialogOpen = false;
+  }
+
+  async function confirmSanitizeIds() {
+    if (!selectedProjectId) return;
+    sanitizeIdsBusy = true;
+    try {
+      await runSceneFlowCommand("SceneFlow.Ids.Sanitize", {
+        projectId: selectedProjectId,
+        superNodeId: sceneFlow?.superNodeId
+      });
+    } finally {
+      sanitizeIdsBusy = false;
+      sanitizeIdsDialogOpen = false;
+    }
   }
 
   async function downloadSceneFlowSnapshot() {
@@ -16374,6 +16403,10 @@ Sentence:
     }
     if (loadConfirmOpen) {
       cancelLoadConfirm();
+      return true;
+    }
+    if (sanitizeIdsDialogOpen) {
+      cancelSanitizeIdsDialog();
       return true;
     }
     return false;
@@ -17260,6 +17293,18 @@ Sentence:
             >
               <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="ghost icon-button flat"
+              on:click={openSanitizeIdsDialog}
+              disabled={!wsConnected || sceneFlowBusy}
+              aria-label="Renumber node IDs"
+              title="Renumber node IDs to the lowest available range"
+            >
+              <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5" />
               </svg>
             </button>
             <button
@@ -20045,6 +20090,31 @@ Sentence:
             Save and Close
           </button>
           <button type="button" class="danger" on:click={confirmReturnToLanding}>Close</button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if sanitizeIdsDialogOpen}
+    <div
+      class="modal-backdrop"
+      on:click|self={cancelSanitizeIdsDialog}
+      role="presentation"
+    >
+      <div class="modal" bind:this={sanitizeIdsDialogEl} role="dialog" aria-modal="true" aria-labelledby="sanitize-ids-title" tabindex="-1">
+        <h3 id="sanitize-ids-title">Renumber Node IDs?</h3>
+        <div class="modal-body">
+          <p>
+            This renumbers every node's ID to the lowest available range (basic nodes and
+            supernodes numbered separately, starting at 1). It affects the whole flow, not just
+            the current view, and is one undo step.
+          </p>
+        </div>
+        <div class="row">
+          <button type="button" class="ghost" on:click={cancelSanitizeIdsDialog} disabled={sanitizeIdsBusy}>Cancel</button>
+          <button type="button" class="primary" on:click={confirmSanitizeIds} disabled={sanitizeIdsBusy}>
+            {sanitizeIdsBusy ? "Renumbering..." : "Renumber"}
+          </button>
         </div>
       </div>
     </div>

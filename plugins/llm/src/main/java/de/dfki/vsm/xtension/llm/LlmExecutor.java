@@ -152,7 +152,7 @@ public class LlmExecutor extends ActivityExecutor {
                 }
 
                 LLMSupport.LLMCompletion result = mLlm.sendPrompt(llmPrompt);
-                String content = result.content();
+                String content = result.content().trim();
                 mProject.setVariable(targetVar, content);
                 mLogger.message("[llm] stored " + result.usage().totalTokens()
                         + " tokens → '" + targetVar + "': " + content.substring(0, Math.min(80, content.length())) + "…");

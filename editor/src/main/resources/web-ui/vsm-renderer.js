@@ -771,6 +771,8 @@ customElements.define('vsm-chart-element', VsmChartElement);
 //
 // Message object format:
 //   { "role": "agent"|"user"|"system", "text": "...", "speaker": "...", "timestamp": "..." }
+// A "typing": true entry (no text yet) renders as an animated placeholder bubble in that role's
+// own style, in place of the message that will replace it — see HtmlGuiWsExecutor.showTypingIndicator.
 //
 // Config (from the schema element):
 //   dataVar, agentColor, userColor, systemColor, agentLabel, userLabel,
@@ -844,6 +846,23 @@ class VsmFeedElement extends LitElement {
             padding: 0.1rem 0.5rem; margin-top: 0.1rem;
         }
         .vsm-feed-row.role-user .vsm-feed-timestamp { text-align: right; }
+
+        /* Typing placeholder — same bubble as a real message, animated dots instead of text.
+           currentColor ties the dots to whatever text color the role is configured with. */
+        .vsm-feed-bubble-typing {
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .vsm-feed-typing-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: currentColor; opacity: 0.5;
+            animation: vsm-feed-typing-bounce 1.2s infinite ease-in-out;
+        }
+        .vsm-feed-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .vsm-feed-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes vsm-feed-typing-bounce {
+            0%, 60%, 100% { transform: translateY(0);    opacity: 0.5; }
+            30%           { transform: translateY(-4px); opacity: 1;   }
+        }
     `;
 
     constructor() {
@@ -877,12 +896,14 @@ class VsmFeedElement extends LitElement {
         for (const msg of msgs) {
             const role = msg.role ?? 'agent';
             const last = groups[groups.length - 1];
-            const joinsLast = last && msg.turnStart !== true
+            // A typing placeholder always carries turnStart (server-side), so it never joins a
+            // preceding bubble and nothing after it ever joins back into it either.
+            const joinsLast = last && !last.typing && msg.turnStart !== true
                 && last.role === role && last.speaker === msg.speaker;
             if (joinsLast) {
                 last.text += (last.text ? ' ' : '') + (msg.text ?? '');
             } else {
-                groups.push({ role, speaker: msg.speaker, text: msg.text ?? '', timestamp: msg.timestamp });
+                groups.push({ role, speaker: msg.speaker, text: msg.text ?? '', timestamp: msg.timestamp, typing: msg.typing === true });
             }
         }
         return groups;
@@ -912,11 +933,15 @@ class VsmFeedElement extends LitElement {
                            : null;
         const speaker = showLabel ? (msg.speaker !== undefined ? msg.speaker : defaultLabel) : null;
 
+        const bubbleClass = 'vsm-feed-bubble' + (msg.typing ? ' vsm-feed-bubble-typing' : '');
+
         return html`
             <div class=${'vsm-feed-row role-' + role}>
                 ${speaker ? html`<div class="vsm-feed-speaker">${speaker}</div>` : html``}
-                <div class="vsm-feed-bubble" style=${bubbleStyle}>
-                    ${msg.text ?? ''}
+                <div class=${bubbleClass} style=${bubbleStyle}>
+                    ${msg.typing
+                        ? html`<span class="vsm-feed-typing-dot"></span><span class="vsm-feed-typing-dot"></span><span class="vsm-feed-typing-dot"></span>`
+                        : msg.text ?? ''}
                 </div>
                 ${msg.timestamp && cfg.showTimestamps
                     ? html`<div class="vsm-feed-timestamp">${msg.timestamp}</div>`

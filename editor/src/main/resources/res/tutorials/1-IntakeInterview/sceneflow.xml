@@ -457,6 +457,9 @@
         </Expression>
       </Assignment>
       <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[alex showTyping var='conversation_log']]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
         <StringLiteral><![CDATA[[llm send system='You are a clinical assistant. Write a concise, neutral 3-4 sentence intake summary in the third person. Use professional but accessible language. Do not add commentary or recommendations.' prompt='Patient name is {patient_name}, Main concern is {main_concern}, Duration is {duration_text}, Daily impact is {daily_impact}, Previous treatment is {previous_treatment}' responseVar='llm_summary']]]></StringLiteral>
       </PlayAction>
     </Commands>

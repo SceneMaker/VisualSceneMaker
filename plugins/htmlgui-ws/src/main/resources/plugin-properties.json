@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.6",
-    "specHash": "fa07637b9cb91da3",
+    "specVersion": "1.7",
+    "specHash": "259daed068d4cf6b",
     "plugin": {
         "id": "htmlgui-ws",
         "name": "Web Browser User Interface",
@@ -415,6 +415,47 @@
                     "type": "string",
                     "required": true,
                     "description": "Message text. Use @varName to read the value from a SceneFlow variable at call time (e.g. text='@llm_summary')."
+                }
+            ]
+        },
+        {
+            "name": "showTyping",
+            "type": "action",
+            "summary": "Show a typing-simulation bubble at the agent's next position in a vsm-feed",
+            "description": "Appends a transient placeholder bubble to the JSON array held in the named SceneFlow variable, rendered in that role's own chat-bubble style with an animated typing simulation instead of text. It sits exactly where the next contribution will appear: the next appendMessage call, or the next spoken scene, for the same variable replaces it automatically, so there is normally no need to call hideTyping.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Name of the SceneFlow String variable holding the conversation JSON array"
+                },
+                {
+                    "name": "role",
+                    "type": "string",
+                    "required": false,
+                    "default": "agent",
+                    "description": "Bubble role/style for the placeholder: agent | user | system"
+                },
+                {
+                    "name": "speaker",
+                    "type": "string",
+                    "required": false,
+                    "description": "Speaker label to show above the placeholder bubble"
+                }
+            ]
+        },
+        {
+            "name": "hideTyping",
+            "type": "action",
+            "summary": "Remove a pending typing bubble without appending a message",
+            "description": "Removes a typing placeholder previously shown via showTyping for the named variable, e.g. on error or timeout, without adding a real message in its place.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Name of the SceneFlow String variable to remove the typing placeholder from"
                 }
             ]
         },

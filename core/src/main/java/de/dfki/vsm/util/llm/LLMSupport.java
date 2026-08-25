@@ -170,7 +170,7 @@ public class LLMSupport {
             JSONObject choice = choices.optJSONObject(0);
             if (choice != null) {
                 content = choice.optJSONObject("message") != null
-                        ? choice.getJSONObject("message").optString("content", "")
+                        ? choice.getJSONObject("message").optString("content", "").trim()
                         : "";
             }
         }
