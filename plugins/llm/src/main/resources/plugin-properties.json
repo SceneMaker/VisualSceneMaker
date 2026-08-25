@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.2",
-    "specHash": "a3da96c3b5d87357",
+    "specVersion": "1.3",
+    "specHash": "dd83270f60924052",
     "plugin": {
         "id": "llm",
         "name": "LLM",
@@ -70,8 +70,8 @@
             {
                 "name": "reasoning_effort",
                 "type": "string",
-                "default": "low",
-                "description": "Reasoning effort for models that support it (e.g. OpenAI o-series/gpt-5): 'low', 'medium', or 'high'. Set to 'none' to omit the field entirely. Ignored by servers/models that don't support it."
+                "default": "none",
+                "description": "Reasoning effort for models that support it (e.g. OpenAI o-series/gpt-5, or Qwen3 via an LM Studio/vLLM/SGLang/Ollama bridge): 'low', 'medium', or 'high'. Default 'none' omits the field entirely so the fast, non-thinking path wins. Individual 'send' calls can override this per prompt when a compound instruction needs an actual reasoning pass - see the 'send' command's reasoning_effort param."
             }
         ]
     },
@@ -100,6 +100,18 @@
                     "required": false,
                     "default": "llm_response",
                     "description": "Name of the SceneFlow String variable to write the response into."
+                },
+                {
+                    "name": "reasoning_effort",
+                    "type": "string",
+                    "required": false,
+                    "description": "Per-call override of the plugin's reasoning_effort config ('low', 'medium', 'high', or 'none'). Use for prompts that need an actual reasoning pass (e.g. compound classify-or-extract instructions) while leaving the plugin's fast default in place for other calls."
+                },
+                {
+                    "name": "disable_thinking",
+                    "type": "bool",
+                    "required": false,
+                    "description": "Per-call override of the plugin's disable_thinking config."
                 }
             ]
         }

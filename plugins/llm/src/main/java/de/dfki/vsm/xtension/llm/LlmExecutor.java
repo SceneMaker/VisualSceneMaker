@@ -120,9 +120,11 @@ public class LlmExecutor extends ActivityExecutor {
             return;
         }
 
-        final String rawPrompt   = getActionFeatureValue("prompt",      activity.getFeatures());
-        final String rawSystem   = getActionFeatureValue("system",      activity.getFeatures());
-        final String rawRespVar  = getActionFeatureValue("responseVar", activity.getFeatures());
+        final String rawPrompt   = getActionFeatureValue("prompt",          activity.getFeatures());
+        final String rawSystem   = getActionFeatureValue("system",          activity.getFeatures());
+        final String rawRespVar  = getActionFeatureValue("responseVar",     activity.getFeatures());
+        final String rawEffort   = getActionFeatureValue("reasoning_effort", activity.getFeatures());
+        final String rawDisable  = getActionFeatureValue("disable_thinking", activity.getFeatures());
 
         if (rawPrompt == null || rawPrompt.isBlank()) {
             mLogger.warning("[llm] 'send' requires a 'prompt' parameter");
@@ -131,6 +133,15 @@ public class LlmExecutor extends ActivityExecutor {
 
         final String targetVar = (rawRespVar != null && !rawRespVar.isBlank())
                 ? stripQuotes(rawRespVar) : "llm_response";
+        // Per-call override: most calls should keep the plugin's fast, non-thinking default, but a
+        // compound instruction (e.g. "classify this OR extract that") can need an actual reasoning
+        // pass on small models - confirmed 2026-08-25 by replaying this project's own semantic-answer-
+        // checker prompt: identical request without reasoning_effort answered the leading yes/no
+        // framing bluntly ("No"), the same request with reasoning_effort='low' correctly extracted
+        // the concern. Only a real effort level re-enables thinking on LM Studio's Qwen3 bridge;
+        // disable_thinking alone (true or false) had no effect there.
+        final String  effortOverride  = rawEffort  != null ? stripQuotes(rawEffort) : null;
+        final Boolean disableOverride = rawDisable != null ? Boolean.valueOf(stripQuotes(rawDisable).trim()) : null;
 
         mLogger.message("[llm] queuing send → responseVar='" + targetVar + "'");
         mExecutor.execute(() -> {
@@ -139,17 +150,22 @@ public class LlmExecutor extends ActivityExecutor {
                 String system = rawSystem != null ? resolveVariables(stripQuotes(rawSystem)) : null;
                 mLogger.message("[llm] calling model=" + mLlm.getSelectedModel().id()
                         + " system=" + (system != null && !system.isBlank() ? "yes" : "no")
-                        + " promptLen=" + prompt.length());
+                        + " promptLen=" + prompt.length()
+                        + (effortOverride != null ? " reasoning_effort=" + effortOverride : "")
+                        + (disableOverride != null ? " disable_thinking=" + disableOverride : ""));
 
-                LLMSupport.LLMPrompt llmPrompt;
+                LLMSupport.LLMPrompt.Builder builder = LLMSupport.LLMPrompt.builder();
                 if (system != null && !system.isBlank()) {
-                    llmPrompt = LLMSupport.LLMPrompt.builder()
-                            .addSystemMessage(system)
-                            .addUserMessage(prompt)
-                            .build();
-                } else {
-                    llmPrompt = LLMSupport.LLMPrompt.of(prompt);
+                    builder.addSystemMessage(system);
                 }
+                builder.addUserMessage(prompt);
+                if (effortOverride != null && !effortOverride.isBlank() && !"none".equalsIgnoreCase(effortOverride)) {
+                    builder.reasoningEffort(effortOverride);
+                }
+                if (disableOverride != null) {
+                    builder.disableThinking(disableOverride);
+                }
+                LLMSupport.LLMPrompt llmPrompt = builder.build();
 
                 LLMSupport.LLMCompletion result = mLlm.sendPrompt(llmPrompt);
                 String content = result.content().trim();
