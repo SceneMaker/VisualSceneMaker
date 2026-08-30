@@ -12,5 +12,4 @@ repositories {
 
 dependencies {
     implementation project(":core")
-    implementation fileTree(dir: 'lib', include: '*.jar')
 }

@@ -1,17 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.alma;
 
-import de.affect.manage.AffectManager;
-import de.affect.manage.event.AffectUpdateEvent;
-import de.affect.manage.event.AffectUpdateListener;
-import de.affect.util.AppraisalTag;
-import de.affect.xml.AffectInputDocument;
-import de.affect.xml.AffectOutputDocument;
-import de.affect.xml.EmotionType;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -22,22 +10,30 @@ import de.dfki.vsm.runtime.interpreter.value.ListValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedList;
-import org.apache.xmlbeans.XmlException;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
+ * Talks to a standalone ALMA affect server (ALMA2025's {@code de.affect.frontend.Server}) over
+ * WebSocket instead of embedding the affect engine in-process. Appraisal actions on the SceneFlow
+ * side are unchanged; only the transport to ALMA changed, from a direct Java call into a bundled
+ * jar to an authenticated {@code /ws} connection.
  *
  * @author Patrick Gebhard
  */
-public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListener {
+public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Listener {
 
-    // The ALMA component
-    AffectManager mALMA;
-    // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+
+    private AlmaWsClient mClient;
+    private ExecutorService mExecutor;
+    private String mProjectXml;
+    private String mProjectFileName;
 
     public ALMAExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -49,8 +45,48 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
     }
 
     @Override
-    public void execute(AbstractActivity activity) {
+    public void launch() {
+        String wsUrl = configOrDefault("ws_url", "");
+        String tokenUrl = configOrDefault("keycloak_token_url", "");
+        String clientId = configOrDefault("client_id", "");
+        String clientSecret = configOrDefault("client_secret", "");
+        String projectRel = configOrDefault("project", "");
 
+        Path projectPath = Path.of(mProject.getProjectPath(), projectRel);
+        mProjectFileName = projectPath.getFileName().toString();
+
+        mClient = new AlmaWsClient(wsUrl, tokenUrl, clientId, clientSecret, this);
+        mExecutor = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "alma-ws");
+            t.setDaemon(true);
+            return t;
+        });
+
+        // launch() runs synchronously on RunTimeProject's plugin-launch loop (the WS command
+        // thread handling Runtime.Play) — connecting/authenticating must not block it.
+        mExecutor.execute(() -> {
+            try {
+                mProjectXml = Files.readString(projectPath);
+                mClient.connectAndInit(mProjectXml, mProjectFileName);
+                mLogger.message("[alma] connected to " + wsUrl);
+            } catch (Exception ex) {
+                mLogger.failure("[alma] connect failed: " + ex.getMessage());
+            }
+        });
+    }
+
+    @Override
+    public void unload() {
+        if (mClient != null) {
+            mClient.close();
+        }
+        if (mExecutor != null) {
+            mExecutor.shutdownNow();
+        }
+    }
+
+    @Override
+    public void execute(AbstractActivity activity) {
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
@@ -59,99 +95,78 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
                 for (String tm : timemarks) {
-                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    mLogger.warning("[alma] directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
             }
-        } else {
-            final String name = activity.getName();
-            final LinkedList<ActionFeature> features = activity.getFeatures();
-
-            if (name.equalsIgnoreCase("reset")) {
-                mLogger.message("Reset affect processing for  " + activity.getActor());
-                mALMA.resetCharacters();
-            }
-            if (AppraisalTag.instance().isAppraisalTag(name)) {
-                String elcitor = getActionFeatureValue("elicitor", features);
-                elcitor = (elcitor.isEmpty()) ? "Scene" : elcitor;
-
-                AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), name, "1.0", elcitor);
-                mLogger.message("Processing " + ai.toString());
-                mALMA.processSignal(ai);
-            }
+            return;
         }
-    }
 
-    @Override
-    public void launch() {
-        mLogger.message("Loading ALMA Regulated");
-        if (mALMA == null) {
-            // read config
-            String sALMACOMP = mProject.getProjectPath() + File.separator + mConfig.getProperty("computation");
-            sALMACOMP = sALMACOMP.replace("\\", "/");
-            mLogger.message("Computation " + sALMACOMP);
+        final String name = activity.getName();
+        final LinkedList<ActionFeature> features = activity.getFeatures();
 
-            String sALMADEF = mProject.getProjectPath() + File.separator + mConfig.getProperty("definition");
-            sALMADEF = sALMADEF.replace("\\", "/");
-            mLogger.message("Definition " + sALMACOMP);
-
-            try {
-                mALMA = new AffectManager(sALMACOMP, sALMADEF, true);
-            } catch (IOException | XmlException ex) {
-                mLogger.failure("Unable to load ALMA Regulated. ALMA Regulated not available.");
-                mLogger.failure(ex.getMessage());
-            }
-            mALMA.addAffectUpdateListener(this);
-        } else {
-            mALMA.startRealtimeOutput(mALMA.getDocumentManager().getAffectComputationParams());
-        }
-        
-        //mALMA.stepwiseAffectComputation();
-    }
-
-    @Override
-    public void unload() {
-        mALMA.stopAll();
-    }
-
-    @Override
-    public void update(AffectUpdateEvent event) {
-        AffectOutputDocument aod = event.getUpdate();
-
-        try {
-            for (AffectOutputDocument.AffectOutput.CharacterAffect character : aod.getAffectOutput().getCharacterAffectList()) {
-                // access cached data or create new cache
-                String name = character.getName();
-                String emotion = character.getDominantEmotion().getName().toString();
-                double eIntensity = Double.parseDouble(character.getDominantEmotion().getValue());
-                String mood = character.getMood().getMoodword().toString();
-                String mIntensity = character.getMood().getIntensity().toString();
-                String mTendency = character.getMoodTendency().getMoodword().toString();
-
-                LinkedList<AbstractValue> valueList = new LinkedList<>();
-
-                // get the intensity of all active emotions of the character
-                for (EmotionType et : character.getEmotions().getEmotionList()) {
-                    if (Float.parseFloat(et.getValue()) > 0.25f) {
-                        StringValue sv = new StringValue(et.getName().toString());
-                        valueList.add(sv);
-                    }
-                }
-
+        if ("reset".equalsIgnoreCase(name)) {
+            mLogger.message("[alma] reset for " + activity.getActor() + " (re-uploading project)");
+            mExecutor.execute(() -> {
                 try {
-                    ListValue list = new ListValue(valueList);
-                    mProject.setVariable("useremotions", list);
-                } catch (Exception e) {
-                    // System.out.println("not running");
+                    mClient.reset(mProjectXml, mProjectFileName);
+                } catch (Exception ex) {
+                    mLogger.failure("[alma] reset failed: " + ex.getMessage());
                 }
-            }
-        } catch (Exception e) {
-            mLogger.failure("Exception during affect update");
+            });
+            return;
+        }
+
+        if (AlmaWsClient.isAppraisalTag(name)) {
+            final String character = activity.getActor();
+            String rawElicitor = getActionFeatureValue("elicitor", features);
+            final String elicitor = rawElicitor.isEmpty() ? "Scene" : rawElicitor;
+            mLogger.message("[alma] appraisal " + name + " for " + character + " (elicitor=" + elicitor + ")");
+            mExecutor.execute(() -> mClient.sendAppraisal(character, name, "1.00", elicitor));
         }
     }
-    // get the value of a feature (added PG) - quick and dirty
 
-    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
+    @Override
+    public void onAuthResult(boolean ok) {
+        if (ok) {
+            mLogger.message("[alma] authenticated");
+        } else {
+            mLogger.failure("[alma] authentication failed");
+        }
+    }
+
+    @Override
+    public void onError(String message) {
+        mLogger.failure("[alma] " + message);
+    }
+
+    @Override
+    public void onAffectInfo(String character, String dominantEmotionType, double dominantEmotionIntensity,
+                              String moodName, String moodTendencyName) {
+        try {
+            mProject.setVariable("almadominantemotion", dominantEmotionType);
+            mProject.setVariable("almadominantemotionintensity", String.valueOf(dominantEmotionIntensity));
+            mProject.setVariable("almamood", moodName);
+            mProject.setVariable("almamoodtendency", moodTendencyName);
+        } catch (Exception e) {
+            mLogger.warning("[alma] could not set affect variables, project not running");
+        }
+    }
+
+    @Override
+    public void onEmotionVector(String character, List<String> activeEmotions) {
+        try {
+            LinkedList<AbstractValue> valueList = new LinkedList<>();
+            for (String emotion : activeEmotions) {
+                valueList.add(new StringValue(emotion));
+            }
+            mProject.setVariable("useremotions", new ListValue(valueList));
+        } catch (Exception e) {
+            mLogger.warning("[alma] could not set useremotions, project not running");
+        }
+    }
+
+    private String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
         for (ActionFeature af : features) {
             if (af.getKey().equalsIgnoreCase(name)) {
                 return af.getVal();
@@ -160,4 +175,8 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         return "";
     }
 
+    private String configOrDefault(String key, String fallback) {
+        String v = mConfig.getProperty(key);
+        return (v == null || v.isBlank()) ? fallback : v;
+    }
 }

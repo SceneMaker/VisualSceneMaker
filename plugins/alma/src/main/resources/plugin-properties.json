@@ -1,13 +1,13 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.0",
-    "specHash": "eeb51b074503b952",
+    "specVersion": "2.0",
+    "specHash": "c6294837791d91a9",
     "plugin": {
         "id": "alma",
         "name": "ALMA",
         "className": "de.dfki.vsm.xtension.alma.ALMAExecutor",
         "androidCompatible": false,
-        "description": "Simulation of emotions, mood based on appraisal and personality values",
+        "description": "Simulation of emotions, mood based on appraisal and personality values, via a remote ALMA server over WebSocket",
         "tags": [
             "emotion",
             "affective computing"
@@ -21,18 +21,35 @@
     },
     "config": {
         "required": [
-            
+            {
+                "name": "ws_url",
+                "type": "string",
+                "description": "ALMA server WebSocket URL, e.g. wss://alma.scaai.dfki.dev/ws for the hosted server, or ws://localhost:8080/ws for a local ALMA2025 instance"
+            },
+            {
+                "name": "project",
+                "type": "string",
+                "description": "Path to the ALMA project XML (AffectComputation + AffectDefinition), relative to this VSM project"
+            }
         ],
         "optional": [
             {
-                "name": "computation",
+                "name": "keycloak_token_url",
                 "type": "string",
-                "description": "Computation mode"
+                "machine_specific": true,
+                "description": "Keycloak token endpoint for the client-credentials grant, e.g. https://keycloak.scaai.dfki.dev/realms/vsm/protocol/openid-connect/token. Leave blank together with client_id/client_secret to skip authentication entirely (e.g. a local ALMA2025 run without OIDC_ISSUER_URL configured)"
             },
             {
-                "name": "definition",
+                "name": "client_id",
                 "type": "string",
-                "description": "Definition file"
+                "machine_specific": true,
+                "description": "Keycloak service-account client id used to authenticate to the ALMA server. Leave blank to skip authentication (local/unauthenticated ALMA2025)"
+            },
+            {
+                "name": "client_secret",
+                "type": "string",
+                "machine_specific": true,
+                "description": "Keycloak service-account client secret. Leave blank to skip authentication (local/unauthenticated ALMA2025)"
             }
         ]
     },
@@ -40,7 +57,7 @@
         {
             "name": "reset",
             "type": "action",
-            "summary": "Reset ALMA state",
+            "summary": "Reset ALMA state (re-uploads the project, clearing character state)",
             "params": [
                 
             ]
@@ -52,7 +69,31 @@
                 "var": "useremotions",
                 "type": "string",
                 "scope": "global",
-                "description": "User emotion state"
+                "description": "Active emotion type names (intensity > 0.25) for the last character update"
+            },
+            {
+                "var": "almadominantemotion",
+                "type": "string",
+                "scope": "global",
+                "description": "Dominant emotion type name for the last character update"
+            },
+            {
+                "var": "almadominantemotionintensity",
+                "type": "string",
+                "scope": "global",
+                "description": "Dominant emotion intensity for the last character update"
+            },
+            {
+                "var": "almamood",
+                "type": "string",
+                "scope": "global",
+                "description": "Current mood word for the last character update"
+            },
+            {
+                "var": "almamoodtendency",
+                "type": "string",
+                "scope": "global",
+                "description": "Mood-tendency word for the last character update"
             }
         ],
         "reads": [
