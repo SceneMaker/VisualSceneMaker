@@ -34,6 +34,7 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
     private ExecutorService mExecutor;
     private String mProjectXml;
     private String mProjectFileName;
+    private String connectedVar;
 
     public ALMAExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -51,6 +52,7 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
         String clientId = configOrDefault("client_id", "");
         String clientSecret = configOrDefault("client_secret", "");
         String projectRel = configOrDefault("project", "");
+        connectedVar = configOrDefault("connectedVar", "alma_connected");
 
         Path projectPath = Path.of(mProject.getProjectPath(), projectRel);
         mProjectFileName = projectPath.getFileName().toString();
@@ -62,6 +64,8 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
             return t;
         });
 
+        setBoolVar(connectedVar, false);
+
         // launch() runs synchronously on RunTimeProject's plugin-launch loop (the WS command
         // thread handling Runtime.Play) — connecting/authenticating must not block it.
         mExecutor.execute(() -> {
@@ -69,14 +73,22 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
                 mProjectXml = Files.readString(projectPath);
                 mClient.connectAndInit(mProjectXml, mProjectFileName);
                 mLogger.message("[alma] connected to " + wsUrl);
+                setBoolVar(connectedVar, true);
             } catch (Exception ex) {
                 mLogger.failure("[alma] connect failed: " + ex.getMessage());
+                setBoolVar(connectedVar, false);
             }
         });
     }
 
     @Override
     public void unload() {
+        if (connectedVar != null && !connectedVar.isBlank()) {
+            try {
+                mProject.setVariable(connectedVar, false);
+            } catch (Exception ignore) {
+            }
+        }
         if (mClient != null) {
             mClient.close();
         }
@@ -141,6 +153,12 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
     }
 
     @Override
+    public void onClose(int statusCode, String reason) {
+        mLogger.warning("[alma] connection closed (" + statusCode + ") " + reason);
+        setBoolVar(connectedVar, false);
+    }
+
+    @Override
     public void onAffectInfo(String character, String dominantEmotionType, double dominantEmotionIntensity,
                               String moodName, String moodTendencyName) {
         try {
@@ -178,5 +196,41 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
     private String configOrDefault(String key, String fallback) {
         String v = mConfig.getProperty(key);
         return (v == null || v.isBlank()) ? fallback : v;
+    }
+
+    /**
+     * Writes a Bool SceneFlow variable, retrying on the dedicated "alma-ws" thread if the
+     * interpreter isn't ready yet (setVariable returns false until its configuration is active).
+     * Safe to call from any thread (launch's async block, or a WebSocket callback thread) since it
+     * only ever enqueues onto mExecutor, never blocks the caller.
+     */
+    private void setBoolVar(final String varName, final boolean value) {
+        setBoolVar(varName, value, 20);
+    }
+
+    private void setBoolVar(final String varName, final boolean value, final int retriesLeft) {
+        if (varName == null || varName.isBlank() || mExecutor == null) {
+            return;
+        }
+        try {
+            mExecutor.execute(() -> {
+                try {
+                    if (mProject.setVariable(varName, value)) {
+                        return;
+                    }
+                } catch (Exception ignore) {
+                }
+                if (retriesLeft > 0) {
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                    setBoolVar(varName, value, retriesLeft - 1);
+                }
+            });
+        } catch (Exception ignore) {
+        }
     }
 }

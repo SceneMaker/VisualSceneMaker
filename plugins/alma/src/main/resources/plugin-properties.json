@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "2.0",
-    "specHash": "c6294837791d91a9",
+    "specVersion": "2.1",
+    "specHash": "b9493bcfa37f0336",
     "plugin": {
         "id": "alma",
         "name": "ALMA",
@@ -50,6 +50,13 @@
                 "type": "string",
                 "machine_specific": true,
                 "description": "Keycloak service-account client secret. Leave blank to skip authentication (local/unauthenticated ALMA2025)"
+            },
+            {
+                "name": "connectedVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "alma_connected",
+                "description": "SceneFlow variable set to true once connected to (and authenticated/initialized with) the ALMA server, and back to false on disconnect or connect failure"
             }
         ]
     },
@@ -65,6 +72,12 @@
     ],
     "variables": {
         "writes": [
+            {
+                "var": "connectedVar",
+                "type": "Bool",
+                "scope": "global",
+                "description": "true once connected to (and authenticated/initialized with) the ALMA server; false on disconnect or connect failure"
+            },
             {
                 "var": "useremotions",
                 "type": "string",

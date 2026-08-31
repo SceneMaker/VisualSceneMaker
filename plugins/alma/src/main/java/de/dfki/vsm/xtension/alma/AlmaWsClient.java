@@ -42,6 +42,9 @@ public class AlmaWsClient {
         void onEmotionVector(String character, List<String> activeEmotions);
 
         void onError(String message);
+
+        /** Fires when the socket closes, including an unexpected drop after a successful connect. */
+        void onClose(int statusCode, String reason);
     }
 
     /** Mirrors de.affect.util.AppraisalTag.EventTags/ActionTags/ObjectTags (ALMA2025) — public wire vocabulary. */
@@ -116,6 +119,13 @@ public class AlmaWsClient {
             @Override
             public void onError(WebSocket webSocket, Throwable error) {
                 mListener.onError(error.getMessage());
+            }
+
+            @Override
+            public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+                mSocket = null;
+                mListener.onClose(statusCode, reason);
+                return null;
             }
         };
 
