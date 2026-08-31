@@ -11,6 +11,8 @@ import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -27,6 +29,15 @@ import java.util.concurrent.Executors;
  * @author Patrick Gebhard
  */
 public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Listener {
+
+    /**
+     * Matches plugin-properties.json's "project" default and its "templates" block
+     * (resourcePath "templates/", targetDirs ["alma"]) — the add-device dialog installs this file
+     * via Project.Templates.Install, but that command never fires when a device is added through
+     * the Flow Assistant instead, so launch() self-heals it here for that path.
+     */
+    private static final String DEFAULT_PROJECT_REL = "alma/default-project.xml";
+    private static final String DEFAULT_PROJECT_RESOURCE = "/templates/" + DEFAULT_PROJECT_REL;
 
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -51,7 +62,7 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
         String tokenUrl = configOrDefault("keycloak_token_url", "");
         String clientId = configOrDefault("client_id", "");
         String clientSecret = configOrDefault("client_secret", "");
-        String projectRel = configOrDefault("project", "");
+        String projectRel = configOrDefault("project", DEFAULT_PROJECT_REL);
         connectedVar = configOrDefault("connectedVar", "alma_connected");
 
         Path projectPath = Path.of(mProject.getProjectPath(), projectRel);
@@ -70,6 +81,9 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
         // thread handling Runtime.Play) — connecting/authenticating must not block it.
         mExecutor.execute(() -> {
             try {
+                if (DEFAULT_PROJECT_REL.equals(projectRel)) {
+                    installDefaultProjectFileIfMissing(projectPath);
+                }
                 mProjectXml = Files.readString(projectPath);
                 mClient.connectAndInit(mProjectXml, mProjectFileName);
                 mLogger.message("[alma] connected to " + wsUrl);
@@ -181,6 +195,20 @@ public class ALMAExecutor extends ActivityExecutor implements AlmaWsClient.Liste
             mProject.setVariable("useremotions", new ListValue(valueList));
         } catch (Exception e) {
             mLogger.warning("[alma] could not set useremotions, project not running");
+        }
+    }
+
+    private void installDefaultProjectFileIfMissing(Path projectPath) throws IOException {
+        if (Files.exists(projectPath)) {
+            return;
+        }
+        try (InputStream in = ALMAExecutor.class.getResourceAsStream(DEFAULT_PROJECT_RESOURCE)) {
+            if (in == null) {
+                return;
+            }
+            Files.createDirectories(projectPath.getParent());
+            Files.copy(in, projectPath);
+            mLogger.message("[alma] installed default project XML at " + projectPath);
         }
     }
 

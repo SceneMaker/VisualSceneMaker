@@ -1,0 +1,738 @@
+<aml:Project xmlns:aml="xml.affect.de">
+  <AffectComputation xmlns="xml.affect.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <AvailableActs>
+      <ActSpecification use="true" name="Accuse" docu="Speaker rightly accuses the receiver."/>
+      <ActSpecification use="true" name="Admire" docu="Speaker expresses admiration for an action, event, or object associated with the receiver(s)."/>
+      <ActSpecification use="true" name="AnnounceConcern" docu="Speaker expresses concern to the receiver."/>
+      <ActSpecification use="true" name="Attack" docu="Speaker verbally attacks the receiver."/>
+      <ActSpecification use="true" name="Blame" docu="Speaker accuses the receiver of being guilty."/>
+      <ActSpecification use="true" name="Boast" docu="Speaker boasts about themselves in front of the receiver as an audience."/>
+      <ActSpecification use="true" name="BringBadNews" docu="Speaker has bad news for the receiver."/>
+      <ActSpecification use="true" name="BringGoodNews" docu="Speaker has good news for the receiver."/>
+      <ActSpecification use="true" name="Calm" docu="Speaker calms down the agitated receiver."/>
+      <ActSpecification use="true" name="ChargeStupidity" docu="Speaker accuses the receiver of having done something stupid (stronger than Blame)."/>
+      <ActSpecification use="true" name="Chide" docu="Speaker loudly complains about the receiver's current behavior (stronger than Correct)."/>
+      <ActSpecification use="true" name="CompareWithBetter" docu="Speaker compares themselves with a more successful person in the receiver's presence."/>
+      <ActSpecification use="true" name="ConcedeStupidity" docu="Speaker admits their own stupidity to the receiver."/>
+      <ActSpecification use="true" name="Condemn" docu="Speaker verbally expresses contempt toward the receiver."/>
+      <ActSpecification use="true" name="ConfirmBad" docu="Speaker sympathetically confirms a bad event to the receiver."/>
+      <ActSpecification use="true" name="ConfirmConcern" docu="Speaker confirms the concern previously expressed to the receiver."/>
+      <ActSpecification use="true" name="ConfirmConjuredBad" docu="Speaker rather aggressively confirms a conjured misfortune to the receiver."/>
+      <ActSpecification use="true" name="ConfirmFact" docu="Speaker confirms an event (neutrally)."/>
+      <ActSpecification use="true" name="ConfirmOffer" docu="Speaker confirms a previously made offer."/>
+      <ActSpecification use="true" name="Congratulate" docu="Speaker congratulates the receiver, who is associated with a good event, action, or object."/>
+      <ActSpecification use="true" name="ConjureBad" docu="Speaker conjures up misfortune against the receiver."/>
+      <ActSpecification use="true" name="Console" docu="Speaker consoles the receiver."/>
+      <ActSpecification use="true" name="CrazyAboutSwedenBeauty" docu="Speaker raves to the receiver about Sweden's beauty."/>
+      <ActSpecification use="true" name="Defend" docu="Speaker verbally defends themselves against the receiver."/>
+      <ActSpecification use="true" name="DenyOwnConfidence" docu="Speaker denies their own confidence to the receiver."/>
+      <ActSpecification use="true" name="DiffuseConcern" docu="Speaker dispels the receiver's concerns."/>
+      <ActSpecification use="true" name="Encourage" docu="Speaker encourages the receiver (stronger than GiveHope)."/>
+      <ActSpecification use="true" name="Excuse" docu="Speaker apologizes to the receiver."/>
+      <ActSpecification use="true" name="GiveHope" docu="Speaker supports the receiver."/>
+      <ActSpecification use="true" name="Insult" docu="Speaker verbally insults the receiver."/>
+      <ActSpecification use="true" name="LowerArtworkMichelangelo" docu="Speaker disparages Michelangelo's artworks to the receiver."/>
+      <ActSpecification use="true" name="NegCommentObject" docu="Speaker gives a negative comment about an object."/>
+      <ActSpecification use="true" name="OfferGood" docu="Speaker offers the receiver something good."/>
+      <ActSpecification use="true" name="PointToUgliness" docu="Speaker points out something obviously ugly to the receiver."/>
+      <ActSpecification use="true" name="PosCommentObject" docu="Speaker gives a positive comment about an object."/>
+      <ActSpecification use="true" name="PraiseAction" docu="Speaker sincerely praises the receiver's action."/>
+      <ActSpecification use="true" name="ProvideHelp" docu="Speaker announces help to the receiver."/>
+      <ActSpecification use="true" name="Provoke" docu="Speaker strongly provokes the receiver through a verbal statement or action (stronger than Tease)."/>
+      <ActSpecification use="true" name="Regret" docu="Speaker admits their own mistakes to the receiver."/>
+      <ActSpecification use="true" name="Reproach" docu="Speaker reproaches the receiver for previously made statements or actions."/>
+      <ActSpecification use="true" name="RequestHelp" docu="Speaker asks the receiver for help."/>
+      <ActSpecification use="true" name="RetractAccuse" docu="Speaker retracts an accusation against the receiver."/>
+      <ActSpecification use="true" name="RevealGuild" docu="Speaker admits to the receiver that they are guilty."/>
+      <ActSpecification use="true" name="ReviseDoWrong" docu="Speaker retracts a statement in which they wronged the receiver."/>
+      <ActSpecification use="true" name="Tease" docu="Speaker teases the receiver through a verbal statement or action."/>
+      <ActSpecification use="true" name="Thank" docu="Speaker thanks the receiver."/>
+      <ActSpecification use="true" name="ThreatenBad" docu="Speaker threatens the receiver with serious consequences."/>
+      <ActSpecification use="true" name="WishGood" docu="Speaker feels joy about a positive event associated with the receiver."/>
+    </AvailableActs>
+    <AvailableEmotions>
+      <EmotionSpecification name="Admiration" use="true" docu="Bewunderung"/>
+      <EmotionSpecification name="Anger" use="true" docu="Wut"/>
+      <EmotionSpecification name="Disappointment" use="true" docu="Enttäuschung"/>
+      <EmotionSpecification name="Disliking" use="true" docu="Abscheu vor etwas haben"/>
+      <EmotionSpecification name="Distress" use="true" docu="Unzufiedenheit mit Situation"/>
+      <EmotionSpecification name="Fear" use="true" docu="Sorge"/>
+      <EmotionSpecification name="FearsConfirmed" use="true" docu="Angst"/>
+      <EmotionSpecification name="Gloating" use="true" docu="Schadenfreude"/>
+      <EmotionSpecification name="Gratification" use="true" docu="Genugtuung"/>
+      <EmotionSpecification name="Gratitude" use="true" docu="Dankbarkeit"/>
+      <EmotionSpecification name="HappyFor" use="true" docu="Sich für jemanden freuen"/>
+      <EmotionSpecification name="Hate" use="true" docu="Hass"/>
+      <EmotionSpecification name="Hope" use="true" docu="Hoffnung"/>
+      <EmotionSpecification name="Joy" use="true" docu="Freude"/>
+      <EmotionSpecification name="Liking" use="true" docu="Etwas mögen"/>
+      <EmotionSpecification name="Love" use="true" docu="Liebe"/>
+      <EmotionSpecification name="Pity" use="true" docu="Mitleid"/>
+      <EmotionSpecification name="Pride" use="true" docu="Stolz"/>
+      <EmotionSpecification name="Relief" use="true" docu="Erleichterung"/>
+      <EmotionSpecification name="Remorse" use="true" docu="Reue"/>
+      <EmotionSpecification name="Reproach" use="true" docu="Verachtung"/>
+      <EmotionSpecification name="Resentment" use="true" docu="Mißgunst"/>
+      <EmotionSpecification name="Satisfaction" use="true" docu="Erfüllung"/>
+      <EmotionSpecification name="Shame" use="true" docu="Scham"/>
+    </AvailableEmotions>
+    <MoodRelations docu="Original values for personality are from Merabian (1996): Openness (Sophistication)= .33A + .67D. Conscientiousness= .32P+.30D Extraversion= .23P +.12A + .82D. Agreeableness= .83P +. 19A - .21D. Neurotism=.57P-.65A. Original values for EmotionRelations are taken from NECA (based on the Belfast BEEV study reported by Marc Schroeder and his reserach in affect bursts and from Merabian (fear, anger). Admiration was derived by Merabian values of physical attraction">
+      <OpennessRelation pleasure="0.16" arousal="0.24" dominance="0.46"/>
+      <ConscientiousnessRelation pleasure="0.25" arousal="0.0" dominance="0.19"/>
+      <ExtraversionRelation pleasure="0.29" arousal="0.0" dominance="0.59"/>
+      <AgreeablenessRelation pleasure="0.74" arousal="0.13" dominance="-0.18"/>
+      <NeurotismRelation pleasure="0.43" arousal="-0.49" dominance="0.0"/>
+      <EmotionRelation name="Admiration" pleasure="0.4" arousal="0.16" dominance="-0.24"/>
+      <EmotionRelation name="Anger" pleasure="-0.51" arousal="0.59" dominance="0.25"/>
+      <EmotionRelation name="Disliking" pleasure="-0.4" arousal="-0.2" dominance="0.1"/>
+      <EmotionRelation name="Disappointment" pleasure="-0.3" arousal="-0.4" dominance="-0.4"/>
+      <EmotionRelation name="Distress" pleasure="-0.4" arousal="0.2" dominance="0.5"/>
+      <EmotionRelation name="Fear" pleasure="-0.64" arousal="0.60" dominance="0.43"/>
+      <EmotionRelation name="FearsConfirmed" pleasure="-0.5" arousal="0.3" dominance="-0.7"/>
+      <EmotionRelation name="Gloating" pleasure="0.3" arousal="-0.3" dominance="0.1"/>
+      <EmotionRelation name="Gratification" pleasure="0.6" arousal="-0.3" dominance="0.4"/>
+      <EmotionRelation name="Gratitude" pleasure="0.2" arousal="0.5" dominance="-0.3"/>
+      <EmotionRelation name="HappyFor" pleasure="0.4" arousal="-0.2" dominance="-0.2"/>
+      <EmotionRelation name="Hate" pleasure="-0.4" arousal="-0.2" dominance="0.4"/>
+      <EmotionRelation name="Hope" pleasure="0.2" arousal="0.2" dominance="-0.1"/>
+      <EmotionRelation name="Joy" pleasure="0.4" arousal="0.2" dominance="0.1"/>
+      <EmotionRelation name="Liking" pleasure="0.40" arousal="-0.16" dominance="-0.24"/>
+      <EmotionRelation name="Love" pleasure="0.3" arousal="0.1" dominance="0.2"/>
+      <EmotionRelation name="Pity" pleasure="-0.4" arousal="-0.2" dominance="-0.5"/>
+      <EmotionRelation name="Pride" pleasure="0.4" arousal="0.3" dominance="0.3"/>
+      <EmotionRelation name="Relief" pleasure="0.2" arousal="-0.3" dominance="-0.4"/>
+      <EmotionRelation name="Remorse" pleasure="-0.3" arousal="0.1" dominance="-0.6"/>
+      <EmotionRelation name="Reproach" pleasure="-0.3" arousal="-0.3" dominance="0.3"/>
+      <EmotionRelation name="Resentment" pleasure="-0.2" arousal="-0.3" dominance="-0.2"/>
+      <EmotionRelation name="Satisfaction" pleasure="0.3" arousal="0.2" dominance="0.4"/>
+      <EmotionRelation name="Shame" pleasure="-0.3" arousal="0.1" dominance="-0.6"/>
+      <EmotionRelation name="Undefined" pleasure="0.0" arousal="0.0" dominance="0.0"/>
+    </MoodRelations>
+    <PersonalityRelations>
+      <PleasureRelation openness="0.0" conscientiousness="0.0" extraversion="0.21" agreeableness="0.59" neurotism="0.19"/>
+      <ArousalRelation openness="0.15" conscientiousness="0.0" extraversion="0.0" agreeableness="0.30" neurotism="0.57"/>
+      <DominanceRelation openness="0.25" conscientiousness="0.17" extraversion="0.60" agreeableness="-0.32" neurotism="0.0"/>
+    </PersonalityRelations>
+    <LLMConfigurations>
+      <LLM use="true" url="http://localhost" port="8234" llmid="dummy" timeout="120000" temperature="0.0"/>
+    </LLMConfigurations>
+    <PersonalityPrompt>Generate an English description that is 300 to 350 letters long about {{name}}'s personality using the Big Five personality trait values ranging from -1.0 to 1.0: {{traits}}</PersonalityPrompt>
+    <AppraisalTheoryPrompts>
+      <BigFiveAppraisal>First, identify scientific studies on humans about how Big Five traits impacts individual appraisal.</BigFiveAppraisal>
+      <ConnectionOCC>Second, check if they can be connected to the appraisal rules for event, action and object aspect from model of emotions from Orthony, Clore, and Collins.</ConnectionOCC>
+      <TraitonOCCAspect>Third, give an overview on personality trait impact for each OCC appraisal aspect using 3-5 relevant papers using the following Json object: { "influence-on-event": {"studies" : [ {"title"="study title", "authors"="authors", "description"="200 or less character long description of traits influence on the aspect", "link"="link to paper", "key-work"="true, if has more than 50 citations"/"false, otherwise"} ] }, "influence-on-action": {"studies" : [ {"title"="study title", "authors"="authors", "description"="200 or less character long description of traits influence on the aspect", "link"="link to paper", "key-work"="true, if has more than 50 citations"/"false, otherwise"} ] }, "influence-on-object": {"studies" : [ {"title"="study title", "authors"="authors", "description"="200 or less character long description of traits influence on the aspect", "link"="link to paper", "key-work"="true, if has more than 50 citations"/"false, otherwise"} ] } }</TraitonOCCAspect>
+      <TraitInfluenceOnEvent>Finally, estimate weights ranging from -1.0 to 1.0 for the 5 personality traits : openness, conscientiousness, extraversion, agreeableness, neuroticism on the OCC event variables desirability, likelihood, liking. First, distinguish according to the agency of the desirable event (self or other) and distinguish then between negative values (-1.0 to 0.0) and positive values (0.0 to 1.0) for the OCC variables. For the weight estimation use the following identified literature {{literature}}. Output: {"personality-influence-event" : [ {"agency-self" : [ {"desirability-positive" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"desirability-negative" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"likelihood-positive" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"likelihood-negative" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"liking-positive" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"liking-negative" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] } ] }, {"agency-other" : [ {"desirability-positive" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"desirability-negative" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"likelihood-positive" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"likelihood-negative" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"liking-positive" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"liking-negative" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] } ] } ] }</TraitInfluenceOnEvent>
+      <TraitInfluenceOnAction>Finally, estimate weights ranging from -1.0 to 1.0 for the 5 personality traits : openness, conscientiousness, extraversion, agreeableness, neuroticism on the OCC action variable praiseworthiness. Distinguish between negative values (-1.0 to 0.0) and positive values (0.0 to 1.0) for the OCC variable and consider the influence on the estimations based on different agency values: self or other. For the weight estimation use the following identified literature {{literature}}. Output: {"personality-influence-action" : [ {"praiseworthiness-positive" : [ {"agency-self" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"agency-other" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] } ] }, {"praiseworthiness-negative" : [ {"agency-self" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] }, {"agency-other" : [ {"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number} ] } ] } ] }</TraitInfluenceOnAction>
+      <TraitInfluenceOnObject>Finally, estimate weights ranging from -1.0 to 1.0 for the 5 personality traits : openness, conscientiousness, extraversion, agreeableness, neuroticism on the OCC object variable appealingness. Distinguish between negative values (-1.0 to 0.0) and positive values (0.0 to 1.0) for the OCC variable. For the weight estimation use the following identified literature {{literature}}. Output: {"personality-influence-object” : [ {“appealingness-positive" : [{"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number}]}, {“appealingness-negative" : [{"openness" : number}, {"conscientiousness " : number}, {"extraversion" : number}, {"agreeableness" : number}, {"neuroticism" : number}]}]}]</TraitInfluenceOnObject>
+    </AppraisalTheoryPrompts>
+    <AffectScriptPrompts>
+      <SignalGeneration>First, acknowledge and repeat the instructions for your future task in putting yourself into a person's position appraising situations actions, events that happen, and objects in a situation - all encoded in utterances or verbal descriptions that appear in the following context: {{context}}. The appraisal follows the theory of Orthony, Clore, and Collins (OCC) and  distinguish three appraisal targets in a situation: 1) an event in terms of its consequences for goals, 2) an action (own or other’s) in terms of how it measures up to standards/norms and who is responsible, and 3)an object (a thing, person, idea, artifact) in terms of your attitude toward it—how appealing it is. Personality and role influence which of the target is more in the appraisal focus. Only use {{entity1}}, {{entity2}}, {{entity3}} as reference persons/entities in appraisals. {{entity1}} has the BigFive personality {{entity1-personality}} and {{entity1-role}}. {{entity2}} has the BigFive personality {{entity2-personality}} and {{entity2-role}}. For the appraisal generation, use tags from the following OCC-conform appraisal taxonomy (tag=explanation): "BadActOther=Considers the actions of others to be bad, BadActSelf=Considers one's own actions to be bad, BadEvent=Bad event, BadEventForBadOther=Bad event for a person who is not valued, BadEventForGoodOther=Bad event for a person who is valued, BadLikelyFutureEvent=Likely bad event in the future, BadUnlikelyFutureEvent=Unlikely bad event in the future, EventConfirmed=Event occurred EventDisconfirmed=Event did not occur, GoodActOther=Considers the actions of others to be good, GoodActSelf=Considers one's own actions to be good, GoodEvent=Good event, GoodEventForGoodOther=Good event for a valued person,GoodEventForBadOther=Bad event for an unappreciated person, GoodLikelyFutureEvent=Likely good event in the future, GoodUnlikelyFutureEvent=Unlikely good event in the future, NastyThing=Finds something ugly, NiceThing=Finds something beautiful". Each tag can be specified with an intensity value ranging from 0.0 to 1.0. Use a “topic_id” to group related appraisals: 1) topic_id is a human-readable identifier for the underlying momentray situation/topic. All appraisals that refer to the same underlying momentary situation/topic MUST reuse the same topic_id. If this is the first appraisal of a situation, create a new topic_id. If the situation clearly continues an earlier one, reuse the corresponding topic_id from context. The tags EventConfirmed and EventDisconfirmed can only be used if a previous likely/unlikely future event for the same topic_id exists, and they MUST reuse exactly that topic_id.</SignalGeneration>
+      <TurnAppraisal>Put yourself into the position of {{performer}} and appraise:{{turn}}. Generate exactly {{appraisals}} tag/s with the highest intensity. Use the same topic_id for all appraisals that belong to the same underlying situation/topic. If this appraisal clearly continues a previously appraised situation/topic, reuse that topic_id; otherwise create a new one. Output: {"topic_id":topic_id, "{{performer}}": [ {"tag":tag, "intensity":number, "explanation":explanation} ] }</TurnAppraisal>
+      <TurnActAppraisal>Put yourself into the position of {{performer}} and appraise when you do {{act}} {{addressee}} with {{turn}}. Generate exactly {{appraisals}} tag/s with the highest intensity. Use the same topic_id for all appraisals that belong to the same underlying situation/topic. If this appraisal clearly continues a previously appraised situation/topic, reuse that topic_id; otherwise create a new one. Output: {"topic_id":topic_id, "{{performer}}": [ {"tag":tag, "intensity":number, "explanation":explanation} ] }</TurnActAppraisal>
+      <TurnActAppraisalAddressee>Put yourself into the position of {{addressee}} and appraise when {{performer}} does {{act}} you with {{turn}}. Generate exactly {{appraisals}} tag/s with the highest intensity. Use the same topic_id for all appraisals that belong to the same underlying situation/topic. If this appraisal clearly continues a previously appraised situation/topic, reuse that topic_id; otherwise create a new one. Output: {"topic_id":topic_id, "{{addressee}}": [ {"tag":tag, "intensity":number, "explanation":explanation} ] }</TurnActAppraisalAddressee>
+      <TurnActAppraisalListener>Put yourself into the position of {{listener}} and appraise when {{performer}} does {{act}} {{addressee}} with {{turn}}. Generate exactly {{appraisals}} tag/s with the highest intensity. Use the same topic_id for all appraisals that belong to the same underlying situation/topic. If this appraisal clearly continues a previously appraised situation/topic, reuse that topic_id; otherwise create a new one. Output: {"topic_id":topic_id, "{{listener}}": [ {"tag":tag, "intensity":number, "explanation":explanation} ] }</TurnActAppraisalListener>
+    </AffectScriptPrompts>
+    <RealtimeOutput enable="true" period="500">
+      <FileLog enable="false" file="docs/affect.log"/>
+      <ConsoleLog enable="false"/>
+    </RealtimeOutput>
+    <RuntimeInteractionMonitor enabled="true"/>
+  </AffectComputation>
+  <AffectDefinition xmlns="xml.affect.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <CharacterAffect name="Anne" monitored="false" docu="Testperson A">
+      <PersonalitySpecification derived="false" emotioninfluence="0.2" openness="0.1" conscientiousness="0.2" extraversion="0.5" agreeableness="0.3" neurotism="-0.3">
+        <TheoryDescription>Anne exhibits a balanced and socially engaged personality, shaped by her moderate openness (0.10), which suggests a preference for routine and familiarity over novelty or abstract thinking. Her slightly above-average conscientiousness (0.20) indicates a reliable and organized approach to tasks, though she may not be overly meticulous or driven by strict discipline. Anne is moderately extraverted (0.50), showing warmth, sociability, and a natural inclination toward interaction, making her comfortable in group settings and capable of forming connections with others. Her agreeableness (0.30) reflects a generally cooperative and empathetic nature, though she may occasionally prioritize her own needs over harmony. Notably, Anne demonstrates low neuroticism (-0.30), indicating emotional stability, resilience, and a calm demeanor even under stress. Overall, Anne is a composed, approachable individual who values social engagement and maintains a steady, reliable presence in both personal and professional contexts.</TheoryDescription>
+      </PersonalitySpecification>
+      <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+      <EmotionSpecification decaytime="60000" decayperiod="500" decayfunction="hyperbolic" baseline="0.5"/>
+      <Appraisal>
+        <Basic>
+          <GoodActOther praiseworthiness="0.5" agency="other"/>
+          <BadActSelf praiseworthiness="-0.5" agency="self"/>
+          <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+          <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+          <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+          <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+          <GoodActSelf praiseworthiness="0.5" agency="self"/>
+          <NastyThing appealingness="-0.8"/>
+          <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+          <EventDisconfirmed realization="false"/>
+          <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+          <NiceThing appealingness="0.5"/>
+          <BadEvent desirability="-0.5"/>
+          <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+          <EventConfirmed realization="true"/>
+          <GoodEvent desirability="0.5"/>
+          <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+        </Basic>
+        <SelfAct type="Regret">
+          <BadActSelf praiseworthiness="-0.8" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Accuse">
+          <BadActOther praiseworthiness="-0.7" agency="other"/>
+        </SelfAct>
+        <SelfAct type="ChargeStupidity">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="PraiseAction">
+          <GoodActOther praiseworthiness="0.5" agency="other"/>
+        </SelfAct>
+        <SelfAct type="LowerArtworkMichelangelo">
+          <NastyThing appealingness="-0.5"/>
+        </SelfAct>
+        <SelfAct type="Thank">
+          <GoodActOther praiseworthiness="0.7" agency="other"/>
+        </SelfAct>
+        <SelfAct type="BringGoodNews">
+          <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        </SelfAct>
+        <SelfAct type="CrazyAboutSwedenBeauty">
+          <NiceThing appealingness="0.7"/>
+        </SelfAct>
+        <SelfAct type="OfferGood">
+          <GoodActSelf praiseworthiness="0.6" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Console">
+          <BadEventForGoodOther desirability="-0.8" liking="0.7" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Attack">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="ConfirmFact">
+          <EventConfirmed realization="true"/>
+        </SelfAct>
+        <SelfAct type="ConfirmConcern">
+          <EventConfirmed realization="true"/>
+        </SelfAct>
+        <SelfAct type="Tease">
+          <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+        </SelfAct>
+        <SelfAct type="GiveHope">
+          <GoodActSelf praiseworthiness="0.3" agency="self"/>
+        </SelfAct>
+        <SelfAct type="NegCommentObject">
+          <NastyThing appealingness="-0.7"/>
+        </SelfAct>
+        <SelfAct type="Condemn">
+          <BadActOther praiseworthiness="-0.9" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Excuse">
+          <BadEvent desirability="-0.2"/>
+          <BadActSelf praiseworthiness="-0.2" agency="self"/>
+        </SelfAct>
+        <SelfAct type="ThreatenBad">
+          <BadEvent desirability="-0.7"/>
+          <BadActOther praiseworthiness="-0.7" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Chide">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Admire">
+          <GoodActOther praiseworthiness="0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Insult">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Blame">
+          <BadEvent desirability="-0.2"/>
+          <BadActOther praiseworthiness="-0.3" agency="other"/>
+        </SelfAct>
+        <SelfAct type="DiffuseConcern">
+          <GoodActSelf praiseworthiness="0.7" agency="self"/>
+        </SelfAct>
+        <SelfAct type="ConjureBad">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="RetractAccuse">
+          <BadEvent desirability="-0.4"/>
+          <BadActSelf praiseworthiness="-0.3" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Defend">
+          <GoodActSelf praiseworthiness="0.3" agency="self"/>
+        </SelfAct>
+        <SelfAct type="WishGood">
+          <GoodEventForGoodOther desirability="0.7" liking="0.6" agency="other"/>
+        </SelfAct>
+        <SelfAct type="BringBadNews">
+          <BadEventForGoodOther desirability="-0.7" liking="0.6" agency="other"/>
+        </SelfAct>
+        <SelfAct type="ConfirmOffer">
+          <EventConfirmed realization="true"/>
+          <GoodActSelf praiseworthiness="0.7" agency="self"/>
+        </SelfAct>
+        <SelfAct type="ConfirmConjuredBad">
+          <EventConfirmed realization="true"/>
+        </SelfAct>
+        <SelfAct type="Calm">
+          <GoodActSelf praiseworthiness="0.7" agency="self"/>
+        </SelfAct>
+        <SelfAct type="RequestHelp">
+          <BadEvent desirability="-0.4"/>
+        </SelfAct>
+        <SelfAct type="PosCommentObject">
+          <NiceThing appealingness="0.7"/>
+        </SelfAct>
+        <SelfAct type="Encourage">
+          <GoodActSelf praiseworthiness="0.7" agency="self"/>
+        </SelfAct>
+        <SelfAct type="RevealGuild">
+          <BadActSelf praiseworthiness="-0.7" agency="self"/>
+        </SelfAct>
+        <DirectAct type="PraiseAction" performer="Bruno">
+          <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        </DirectAct>
+        <DirectAct type="BringGoodNews" performer="Bruno">
+          <EventConfirmed realization="true"/>
+        </DirectAct>
+        <DirectAct type="Console" performer="Bruno">
+          <GoodActOther praiseworthiness="0.6" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Attack" performer="Bruno">
+          <BadLikelyFutureEvent desirability="-0.8" likelihood="0.3"/>
+        </DirectAct>
+        <DirectAct type="ReviseDoWrong" performer="Clementine">
+          <EventDisconfirmed realization="false"/>
+          <GoodActSelf praiseworthiness="0.1" agency="self"/>
+        </DirectAct>
+        <DirectAct type="ReviseDoWrong" performer="Bruno">
+          <EventDisconfirmed realization="false"/>
+          <GoodActSelf praiseworthiness="0.1" agency="self"/>
+        </DirectAct>
+        <DirectAct type="ConfirmConcern" performer="Clementine">
+          <EventConfirmed realization="true"/>
+        </DirectAct>
+        <DirectAct type="ConfirmConcern" performer="Bruno">
+          <EventConfirmed realization="true"/>
+        </DirectAct>
+        <DirectAct type="GiveHope" performer="Bruno">
+          <GoodLikelyFutureEvent desirability="0.7" likelihood="0.7"/>
+          <GoodActOther praiseworthiness="0.3" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Excuse" performer="Bruno">
+          <BadEvent desirability="-0.7"/>
+        </DirectAct>
+        <DirectAct type="AnnounceConcern" performer="Anne">
+          <BadLikelyFutureEvent desirability="-0.8" likelihood="0.7"/>
+        </DirectAct>
+        <DirectAct type="AnnounceConcern" performer="Bruno">
+          <BadActOther praiseworthiness="-0.2" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Condemn" performer="Bruno">
+          <EventConfirmed realization="true"/>
+          <BadActSelf praiseworthiness="-0.9" agency="self"/>
+        </DirectAct>
+        <DirectAct type="Chide" performer="Clementine">
+          <BadLikelyFutureEvent desirability="-1.0" likelihood="1.0"/>
+        </DirectAct>
+        <DirectAct type="Chide" performer="Bruno">
+          <BadLikelyFutureEvent desirability="-1.0" likelihood="1.0"/>
+        </DirectAct>
+        <DirectAct type="Confirm" performer="Bruno">
+          <EventConfirmed realization="true"/>
+        </DirectAct>
+        <DirectAct type="Admire" performer="Bruno">
+          <GoodActOther praiseworthiness="0.9" agency="other"/>
+        </DirectAct>
+        <DirectAct type="PointToUgliness" performer="Bruno">
+          <BadActOther praiseworthiness="-0.2" agency="other"/>
+          <NastyThing appealingness="-1.0"/>
+        </DirectAct>
+        <DirectAct type="Insult" performer="Clementine">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Insult" performer="Bruno">
+          <BadActOther praiseworthiness="-0.5" agency="other"/>
+        </DirectAct>
+        <DirectAct type="DiffuseConcern" performer="Clementine">
+          <EventDisconfirmed realization="false"/>
+        </DirectAct>
+        <DirectAct type="ConcedeStupidity" performer="Bruno">
+          <BadActOther praiseworthiness="-0.9" agency="other"/>
+        </DirectAct>
+        <DirectAct type="FaithIn" performer="Bruno">
+          <GoodLikelyFutureEvent desirability="0.6" likelihood="0.6"/>
+        </DirectAct>
+        <DirectAct type="Delight" performer="Bruno">
+          <GoodEvent desirability="0.5"/>
+        </DirectAct>
+        <DirectAct type="Boast" performer="Clementine">
+          <GoodEventForBadOther desirability="0.7" liking="-0.6" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Boast" performer="Bruno">
+          <GoodEventForBadOther desirability="0.8" liking="-0.3" agency="other"/>
+        </DirectAct>
+        <DirectAct type="CompareWithBetter" performer="Bruno">
+          <BadEventForGoodOther desirability="-0.3" liking="0.6" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Defend" performer="Clementine">
+          <BadActOther praiseworthiness="-0.6" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Defend" performer="Bruno">
+          <BadEvent desirability="-0.4"/>
+          <BadActOther praiseworthiness="-0.3" agency="other"/>
+        </DirectAct>
+        <DirectAct type="WishGood" performer="Bruno">
+          <GoodEvent desirability="0.5"/>
+        </DirectAct>
+        <DirectAct type="BringBadNews" performer="Bruno">
+          <EventDisconfirmed realization="false"/>
+        </DirectAct>
+        <DirectAct type="ProvideHelp" performer="Bruno">
+          <GoodActOther praiseworthiness="0.6" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Approve" performer="Bruno">
+          <EventConfirmed realization="true"/>
+        </DirectAct>
+        <DirectAct type="PosCommentObject" performer="Bruno">
+          <GoodActOther praiseworthiness="0.2" agency="other"/>
+        </DirectAct>
+        <DirectAct type="PosCommentSituation" performer="Bruno">
+          <GoodEvent desirability="0.5"/>
+        </DirectAct>
+      </Appraisal>
+    </CharacterAffect>
+    <CharacterAffect name="Bruno" monitored="false" docu="Testperson B">
+      <PersonalitySpecification derived="false" emotioninfluence="0.2" openness="0.4" conscientiousness="0.7" extraversion="0.0" agreeableness="0.2" neurotism="-0.3">
+        <TheoryDescription>Bruno exhibits a balanced yet reserved personality, shaped by his Big Five trait profile. With an openness score of 0.40, he shows moderate curiosity and a willingness to consider new ideas, though he tends to prefer familiar routines and practical approaches. His high conscientiousness at 0.70 reflects a strong sense of responsibility, organization, and discipline—Bruno is reliable, goal-oriented, and values structure in both work and personal life. His extraversion score of 0.00 indicates a neutral to introverted nature; he is not particularly outgoing or energetic in social settings, often preferring solitude or small, meaningful interactions. Bruno’s agreeableness at 0.20 suggests a somewhat detached or reserved demeanor in interpersonal relationships—he is not overtly cooperative or empathetic, and may appear indifferent or self-focused at times. However, his low neuroticism score of -0.30 reveals emotional stability and resilience; he remains calm under pressure, avoids anxiety, and handles stress with composure. Overall, Bruno is a dependable, introspective individual who values order and control, though he may struggle with emotional expressiveness and social engagement.</TheoryDescription>
+      </PersonalitySpecification>
+      <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+      <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="hyperbolic" baseline="0.5"/>
+      <Appraisal>
+        <Basic>
+          <GoodActOther praiseworthiness="0.5" agency="other"/>
+          <BadActSelf praiseworthiness="-0.8" agency="self"/>
+          <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+          <BadActOther praiseworthiness="-0.6" agency="other"/>
+          <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+          <BadEventForGoodOther desirability="-0.7" liking="0.7" agency="other"/>
+          <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+          <GoodActSelf praiseworthiness="0.8" agency="self"/>
+          <NastyThing appealingness="-0.5"/>
+          <BadUnlikelyFutureEvent desirability="-0.6" likelihood="-0.5"/>
+          <EventDisconfirmed realization="false"/>
+          <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+          <NiceThing appealingness="0.7"/>
+          <BadEvent desirability="-0.6"/>
+          <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+          <EventConfirmed realization="true"/>
+          <GoodEvent desirability="0.8"/>
+          <BadEventForBadOther desirability="-0.7" liking="-0.5" agency="other"/>
+        </Basic>
+        <SelfAct type="PraiseAction">
+          <GoodActOther praiseworthiness="0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="DenyOwnConfidence">
+          <BadActSelf praiseworthiness="-0.8" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Thank">
+          <GoodEvent desirability="0.7"/>
+          <GoodActOther praiseworthiness="0.7" agency="other"/>
+        </SelfAct>
+        <SelfAct type="BringGoodNews">
+          <GoodEventForGoodOther desirability="0.8" liking="0.6" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Console">
+          <BadEventForGoodOther desirability="-0.9" liking="0.9" agency="other"/>
+          <GoodActSelf praiseworthiness="0.3" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Attack">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="ReviseDoWrong">
+          <GoodEvent desirability="0.7"/>
+        </SelfAct>
+        <SelfAct type="ConfirmConcern">
+          <EventConfirmed realization="true"/>
+        </SelfAct>
+        <SelfAct type="GiveHope">
+          <GoodLikelyFutureEvent desirability="0.6" likelihood="0.5"/>
+          <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Excuse">
+          <BadActSelf praiseworthiness="-0.6" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Condemn">
+          <BadActOther praiseworthiness="-1.0" agency="other"/>
+        </SelfAct>
+        <SelfAct type="AnnounceConcern">
+          <BadUnlikelyFutureEvent desirability="-0.9" likelihood="-0.2"/>
+        </SelfAct>
+        <SelfAct type="Confirm">
+          <GoodEvent desirability="0.8"/>
+        </SelfAct>
+        <SelfAct type="Chide">
+          <BadEvent desirability="-0.5"/>
+          <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        </SelfAct>
+        <SelfAct type="Admire">
+          <GoodActOther praiseworthiness="0.8" agency="other"/>
+        </SelfAct>
+        <SelfAct type="PointToUgliness">
+          <GoodActSelf praiseworthiness="0.2" agency="self"/>
+          <NastyThing appealingness="-0.9"/>
+        </SelfAct>
+        <SelfAct type="Insult">
+          <BadEvent desirability="-0.5"/>
+          <GoodActSelf praiseworthiness="0.8" agency="self"/>
+        </SelfAct>
+        <SelfAct type="FaithIn">
+          <GoodEvent desirability="0.3"/>
+          <GoodActSelf praiseworthiness="0.2" agency="self"/>
+        </SelfAct>
+        <SelfAct type="ConcedeStupidity">
+          <BadActSelf praiseworthiness="-0.9" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Delight">
+          <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Boast">
+          <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        </SelfAct>
+        <SelfAct type="CompareWithBetter">
+          <GoodEventForBadOther desirability="0.6" liking="-0.6" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Defend">
+          <GoodActSelf praiseworthiness="0.7" agency="self"/>
+        </SelfAct>
+        <SelfAct type="WishGood">
+          <GoodEventForGoodOther desirability="0.5" liking="0.6" agency="other"/>
+        </SelfAct>
+        <SelfAct type="BringBadNews">
+          <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        </SelfAct>
+        <SelfAct type="ProvideHelp">
+          <GoodActSelf praiseworthiness="0.8" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Approve">
+          <GoodEvent desirability="0.2"/>
+        </SelfAct>
+        <SelfAct type="PosCommentObject">
+          <NiceThing appealingness="0.8"/>
+        </SelfAct>
+        <SelfAct type="PosCommentSituation">
+          <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        </SelfAct>
+        <DirectAct type="Regret" performer="Anne">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Accuse" performer="Anne">
+          <BadLikelyFutureEvent desirability="-0.8" likelihood="0.8"/>
+        </DirectAct>
+        <DirectAct type="PraiseAction" performer="Anne">
+          <GoodActSelf praiseworthiness="0.3" agency="self"/>
+        </DirectAct>
+        <DirectAct type="ChargeStupidity" performer="Anne">
+          <BadEvent desirability="-0.9"/>
+        </DirectAct>
+        <DirectAct type="LowerArtworkMichelangelo" performer="Anne">
+          <NiceThing appealingness="0.7"/>
+        </DirectAct>
+        <DirectAct type="Thank" performer="Anne">
+          <GoodActSelf praiseworthiness="0.7" agency="self"/>
+        </DirectAct>
+        <DirectAct type="BringGoodNews" performer="Anne">
+          <GoodEvent desirability="0.5"/>
+        </DirectAct>
+        <DirectAct type="CrazyAboutSwedenBeauty" performer="Anne">
+          <GoodEventForGoodOther desirability="0.7" liking="0.7" agency="other"/>
+        </DirectAct>
+        <DirectAct type="OfferGood" performer="Anne">
+          <GoodLikelyFutureEvent desirability="0.7" likelihood="0.5"/>
+          <GoodActOther praiseworthiness="0.3" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Console" performer="Anne">
+          <BadEvent desirability="-0.6"/>
+          <GoodActOther praiseworthiness="0.1" agency="other"/>
+        </DirectAct>
+        <DirectAct type="ConfirmFact" performer="Anne">
+          <EventConfirmed realization="true"/>
+        </DirectAct>
+        <DirectAct type="ConfirmConcern" performer="Anne">
+          <EventConfirmed realization="true"/>
+        </DirectAct>
+        <DirectAct type="Tease" performer="Anne">
+          <BadActOther praiseworthiness="-0.5" agency="other"/>
+        </DirectAct>
+        <DirectAct type="GiveHope" performer="Anne">
+          <GoodLikelyFutureEvent desirability="0.7" likelihood="0.5"/>
+          <GoodActOther praiseworthiness="0.2" agency="other"/>
+        </DirectAct>
+        <DirectAct type="NegCommentObject" performer="Anne">
+          <NiceThing appealingness="0.5"/>
+        </DirectAct>
+        <DirectAct type="AnnounceConcern" performer="Anne">
+          <BadLikelyFutureEvent desirability="-0.8" likelihood="0.6"/>
+        </DirectAct>
+        <DirectAct type="ThreatenBad" performer="Anne">
+          <BadEvent desirability="-0.8"/>
+        </DirectAct>
+        <DirectAct type="Chide" performer="Anne">
+          <BadActSelf praiseworthiness="-0.8" agency="self"/>
+        </DirectAct>
+        <DirectAct type="ConfirmBad" performer="Anne">
+          <EventConfirmed realization="true"/>
+          <BadActOther praiseworthiness="-0.7" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Admire" performer="Anne">
+          <GoodActSelf praiseworthiness="0.9" agency="self"/>
+        </DirectAct>
+        <DirectAct type="Insult" performer="Anne">
+          <BadEvent desirability="-0.5"/>
+        </DirectAct>
+        <DirectAct type="Blame" performer="Anne">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </DirectAct>
+        <DirectAct type="DiffuseConcern" performer="Anne">
+          <EventDisconfirmed realization="false"/>
+          <GoodActOther praiseworthiness="0.2" agency="other"/>
+        </DirectAct>
+        <DirectAct type="ConjureBad" performer="Anne">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </DirectAct>
+        <DirectAct type="RetractAccuse" performer="Anne">
+          <EventDisconfirmed realization="false"/>
+          <GoodActSelf praiseworthiness="0.3" agency="self"/>
+        </DirectAct>
+        <DirectAct type="Defend" performer="Anne">
+          <BadEvent desirability="-0.8"/>
+        </DirectAct>
+        <DirectAct type="WishGood" performer="Anne">
+          <GoodEvent desirability="0.6"/>
+        </DirectAct>
+        <DirectAct type="BringBadNews" performer="Anne">
+          <EventDisconfirmed realization="false"/>
+        </DirectAct>
+        <DirectAct type="ConfirmOffer" performer="Anne">
+          <EventConfirmed realization="true"/>
+        </DirectAct>
+        <DirectAct type="ConfirmConjuredBad" performer="Anne">
+          <EventConfirmed realization="true"/>
+          <BadActOther praiseworthiness="-0.9" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Calm" performer="Anne">
+          <GoodActOther praiseworthiness="0.3" agency="other"/>
+        </DirectAct>
+        <DirectAct type="ProvideHelp" performer="Anne">
+          <BadEvent desirability="-0.8"/>
+          <BadActSelf praiseworthiness="-0.6" agency="self"/>
+        </DirectAct>
+        <DirectAct type="RequestHelp" performer="Anne">
+          <GoodEvent desirability="0.4"/>
+        </DirectAct>
+        <DirectAct type="PosCommentObject" performer="Anne">
+          <GoodEventForGoodOther desirability="0.4" liking="0.7" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Encourage" performer="Anne">
+          <GoodLikelyFutureEvent desirability="0.8" likelihood="0.7"/>
+          <GoodActOther praiseworthiness="0.5" agency="other"/>
+        </DirectAct>
+        <DirectAct type="RevealGuild" performer="Anne">
+          <BadEvent desirability="-0.4"/>
+        </DirectAct>
+        <IndirectAct type="Insult" performer="Clementine">
+          <BadEvent desirability="-0.7"/>
+          <BadActOther praiseworthiness="-0.7" agency="other"/>
+        </IndirectAct>
+      </Appraisal>
+    </CharacterAffect>
+    <CharacterAffect name="Clementine" monitored="false" docu="">
+      <PersonalitySpecification derived="false" emotioninfluence="0.20" openness="0.3" conscientiousness="-0.2" extraversion="-0.1" agreeableness="0.3" neurotism="0.1"/>
+      <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+      <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="hyperbolic" baseline="0.5"/>
+      <Appraisal>
+        <Basic>
+          <GoodActOther praiseworthiness="0.5" agency="other"/>
+          <BadActSelf praiseworthiness="-0.5" agency="self"/>
+          <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+          <BadActOther praiseworthiness="-0.5" agency="other"/>
+          <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+          <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+          <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+          <GoodActSelf praiseworthiness="0.5" agency="self"/>
+          <NastyThing appealingness="-0.5"/>
+          <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+          <EventDisconfirmed realization="false"/>
+          <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+          <NiceThing appealingness="0.5"/>
+          <BadEvent desirability="-0.5"/>
+          <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+          <EventConfirmed realization="true"/>
+          <GoodEvent desirability="0.5"/>
+          <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+        </Basic>
+        <SelfAct type="ReviseDoWrong">
+          <GoodEvent desirability="0.7"/>
+        </SelfAct>
+        <SelfAct type="WishGood">
+          <GoodEventForGoodOther desirability="0.6" liking="0.6" agency="other"/>
+        </SelfAct>
+        <SelfAct type="Insult">
+          <GoodActSelf praiseworthiness="0.6" agency="self"/>
+        </SelfAct>
+        <SelfAct type="ConfirmConcern">
+          <BadEvent desirability="-0.6"/>
+          <BadActOther praiseworthiness="-0.7" agency="other"/>
+        </SelfAct>
+        <SelfAct type="DiffuseConcern">
+          <GoodEvent desirability="0.4"/>
+        </SelfAct>
+        <SelfAct type="Boast">
+          <GoodActSelf praiseworthiness="0.7" agency="self"/>
+        </SelfAct>
+        <SelfAct type="Chide">
+          <BadEvent desirability="-0.5"/>
+        </SelfAct>
+        <SelfAct type="Defend">
+          <GoodActSelf praiseworthiness="0.8" agency="self"/>
+        </SelfAct>
+        <DirectAct type="Attack" performer="Anne">
+          <BadActOther praiseworthiness="-0.6" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Insult" performer="Anne">
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </DirectAct>
+        <DirectAct type="LowerArtworkMichelangelo" performer="Anne">
+          <BadActOther praiseworthiness="-0.6" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Tease" performer="Anne">
+          <BadActOther praiseworthiness="-0.7" agency="other"/>
+        </DirectAct>
+        <DirectAct type="Condemn" performer="Anne">
+          <BadEvent desirability="-0.7"/>
+          <BadActOther praiseworthiness="-0.7" agency="other"/>
+        </DirectAct>
+        <IndirectAct type="Insult" performer="Bruno">
+          <BadEvent desirability="-0.9"/>
+          <BadActOther praiseworthiness="-0.8" agency="other"/>
+        </IndirectAct>
+      </Appraisal>
+    </CharacterAffect>
+    <GroupAffect name="A Group of Characters" characters="Anne,Bruno,Clementine" monitored="false" docu="">
+      <MoodSpecification decaytime="60000" decayperiod="500"/>
+      <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear"/>
+      <Appraisal>
+        <Basic>
+          <GoodActOther praiseworthiness="0.5" agency="other"/>
+          <BadActSelf praiseworthiness="-0.5" agency="self"/>
+          <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+          <BadActOther praiseworthiness="-0.5" agency="other"/>
+          <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+          <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+          <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+          <GoodActSelf praiseworthiness="0.5" agency="self"/>
+          <NastyThing appealingness="-0.5"/>
+          <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+          <EventDisconfirmed realization="false"/>
+          <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+          <NiceThing appealingness="0.5"/>
+          <BadEvent desirability="-0.5"/>
+          <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+          <EventConfirmed realization="true"/>
+          <GoodEvent desirability="0.5"/>
+          <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+        </Basic>
+      </Appraisal>
+    </GroupAffect>
+  </AffectDefinition>
+</aml:Project>

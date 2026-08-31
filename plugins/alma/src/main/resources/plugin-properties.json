@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "2.1",
-    "specHash": "b9493bcfa37f0336",
+    "specVersion": "2.2",
+    "specHash": "7843d1e11374e5a6",
     "plugin": {
         "id": "alma",
         "name": "ALMA",
@@ -19,6 +19,12 @@
             
         ]
     },
+    "templates": {
+        "resourcePath": "templates/",
+        "targetDirs": [
+            "alma"
+        ]
+    },
     "config": {
         "required": [
             {
@@ -29,7 +35,8 @@
             {
                 "name": "project",
                 "type": "string",
-                "description": "Path to the ALMA project XML (AffectComputation + AffectDefinition), relative to this VSM project"
+                "default": "alma/default-project.xml",
+                "description": "Path to the ALMA project XML (AffectComputation + AffectDefinition), relative to this VSM project. Defaults to the bundled default project, installed into the project's alma/ subfolder when this device is added"
             }
         ],
         "optional": [
