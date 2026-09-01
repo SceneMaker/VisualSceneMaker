@@ -7,7 +7,7 @@
       <Feature key="characterReady" val="avatar_ready"/>
       <Feature key="characterSpeaking" val="avatar_speaking"/>
       <Feature key="sceneflowTurnUtteranceVar" val="turn_utterance"/>
-      <Feature key="licenseKey" val="9Ooe7635d"/>
+      <Feature key="licenseKey" val=""/>
       <Feature key="appName" val="Xenia"/>
       <Feature key="engineUrl" val="https://engine.vuppetmaster.com/api/engine/vuppetmaster.iife.js"/>
       <Feature key="autostart_browser" val="false"/>
@@ -18,7 +18,7 @@
       <Feature key="characterReady" val="bob_ready"/>
       <Feature key="characterSpeaking" val="bob_speaking"/>
       <Feature key="sceneflowTurnUtteranceVar" val="bob_turn_utterance"/>
-      <Feature key="licenseKey" val="9Ooe7635d"/>
+      <Feature key="licenseKey" val=""/>
       <Feature key="appName" val="Bob"/>
       <Feature key="engineUrl" val="https://engine.vuppetmaster.com/api/engine/vuppetmaster.iife.js"/>
       <Feature key="autostart_browser" val="false"/>
