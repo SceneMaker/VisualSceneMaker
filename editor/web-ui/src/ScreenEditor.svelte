@@ -311,6 +311,7 @@
     if (type === "vsm-chart")       return "Ch";
     if (type === "vsm-feed")        return "📜";
     if (type === "vsm-animate")     return "Anim";
+    if (type === "vsm-track")       return "⏱";
     if (type === "vsm-chat-input")  return "✉";
     if (type.includes("textarea"))  return "A";
     if (type.includes("text"))      return "T";
@@ -341,6 +342,11 @@
     if (el.type === "vsm-animate") {
       const rateLabel = el.rateVar ? ` · rate: ${el.rateVar}` : "";
       return `${el.animation ?? "heartbeat"}${rateLabel}`;
+    }
+    if (el.type === "vsm-track") {
+      const n = (el.tracks ?? []).length;
+      const lanes = n ? `${n} track${n !== 1 ? "s" : ""}` : "auto tracks";
+      return el.dataVar ? `Track · ${el.dataVar} · ${lanes}` : "Track (no variable)";
     }
     if (el.type === "vsm-chat-input") {
       const sends = el.sendsVar ? `→ ${el.sendsVar}` : "";
@@ -402,6 +408,7 @@
       { icon: "Fd",  label: "Feed",       create: () => ({ type:"vsm-feed", dataVar:"", height:"400px", agentColor:"#e8f4fd", userColor:"#eafbe8", systemColor:"#f5f5f5", agentLabel:"Agent", userLabel:"You" }) },
       { icon: "Fx",  label: "Animate",    create: () => ({ type:"vsm-animate", animation:"heartbeat", color:"#e26d5a", width:"80px", height:"80px" }) },
       { icon: "✉",   label: "Chat Input", create: () => ({ type:"vsm-chat-input", sendsVar:"", bindVar:"", placeholder:"Type your message…", buttonLabel:"Send" }) },
+      { icon: "⏱",   label: "Track",      create: () => ({ type:"vsm-track", dataVar:"activity_track", tracks:[{id:"user",label:"User",color:"#4a90d9"},{id:"sia",label:"SIA",color:"#d9704a"}], windowSeconds:60, bufferSeconds:300, height:"220px" }) },
     ]},
   ];
 

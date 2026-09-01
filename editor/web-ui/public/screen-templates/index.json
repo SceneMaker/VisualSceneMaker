@@ -57,6 +57,15 @@
     ]
   },
   {
+    "id": "event-track",
+    "label": "Event Track",
+    "description": "Real-time multi-lane timeline of participant activity events (e.g. start/stop speak, wave, smile). Record events at runtime via trackEvent(); pause to scrub back through the buffered history.",
+    "requires": ["htmlgui-ws"],
+    "variables": [
+      { "name": "activity_track", "type": "String", "description": "JSON array of {track, event, ts} objects appended by trackEvent(); ts stamped server-side" }
+    ]
+  },
+  {
     "id": "question-buttons",
     "label": "Question Buttons",
     "description": "Three-option choice screen. Each button sends a value to gui_choice. Fully pre-authored — replace labels and sendsValue fields to match your scenario.",

@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "screens": {
+    "event-track": {
+      "background": "#f8f9fa",
+      "layout": "flex-column",
+      "alignItems": "stretch",
+      "elements": [
+        {
+          "type": "sl-text",
+          "content": "Activity Timeline",
+          "style": {
+            "font-size": "1rem",
+            "font-weight": "600",
+            "padding": "12px 16px 8px",
+            "color": "#333333",
+            "border-bottom": "1px solid #e3ddd4"
+          }
+        },
+        {
+          "type": "vsm-track",
+          "dataVar": "activity_track",
+          "tracks": [
+            { "id": "user", "label": "User", "color": "#4a90d9" },
+            { "id": "sia",  "label": "SIA",  "color": "#d9704a" }
+          ],
+          "windowSeconds": 60,
+          "bufferSeconds": 300,
+          "height": "220px",
+          "style": { "margin": "8px" }
+        }
+      ]
+    }
+  }
+}

@@ -506,6 +506,18 @@ class VsmScreenRenderer extends LitElement {
                     style=${animStyle}></vsm-animate-element>`;
             }
 
+            case 'vsm-track': {
+                const trackStyle = [
+                    el.width ? `width:${el.width}` : '',
+                    el.height ? `height:${el.height}` : 'height:220px',
+                    style,
+                ].filter(Boolean).join(';');
+                return html`<vsm-track-element
+                    .config=${el}
+                    .datavalue=${this._varValues[el.dataVar] ?? ''}
+                    style=${trackStyle}></vsm-track-element>`;
+            }
+
             case 'vsm-bubble': {
                 const bg        = el.background ?? '#e8f4fd';
                 const content   = el.bindVar ? (this._varValues[el.bindVar] ?? '') : (el.content ?? '');
@@ -1188,6 +1200,259 @@ class VsmAnimateElement extends LitElement {
 }
 
 customElements.define('vsm-animate-element', VsmAnimateElement);
+
+// ---------------------------------------------------------------------------
+// vsm-track-element — Real-time multi-lane event timeline
+//
+// Visualises a JSON array of {track, event, ts} objects (ts = epoch millis,
+// stamped server-side by the trackEvent action) as horizontal lanes. Within a
+// lane, 'start-<name>'/'stop-<name>' events pair into a duration bar; any other
+// event name renders as an instantaneous tick. Pairing runs over the full
+// dataset (not just the visible window) so a still-open interval is drawn out
+// to the real current time even while the viewport is scrolled/paused
+// elsewhere.
+//
+// Schema element fields:
+//   dataVar        — SceneFlow variable holding the event JSON array
+//   tracks         — optional [{id,label,color}]; auto-discovered from the
+//                     data (first-seen order) when omitted
+//   windowSeconds  — visible viewport width (default 60)
+//   bufferSeconds  — how far back the pause scrubber can reach (default 300;
+//                     actual retention is enforced server-side by trackEvent)
+//   height/width   — element size
+//
+// Pause/scrub is purely a client-side viewing concern — no variable round
+// trip. Live mode re-renders every 250ms via its own timer (nothing else in
+// this renderer needs a JS-driven render loop; vsm-animate's motion is
+// CSS-only). Clock handling assumes the browser's Date.now() is close enough
+// to the server's wall clock (same host/LAN deployment) — no skew correction.
+// ---------------------------------------------------------------------------
+
+class VsmTrackElement extends LitElement {
+
+    static DEFAULT_COLORS = ['#4a90d9', '#d9704a', '#4ad991', '#c94ad9', '#d9c94a', '#4ad9d0'];
+
+    static properties = {
+        config:        { type: Object },
+        datavalue:     {},
+        _paused:       { state: true },
+        _scrubSeconds: { state: true },
+    };
+
+    static styles = css`
+        :host { display: block; font-family: inherit; }
+
+        .vsm-track {
+            display: flex; flex-direction: column; height: 100%;
+            box-sizing: border-box; border: 1px solid rgba(0,0,0,0.12);
+            border-radius: 0.5rem; overflow: hidden; background: #fff;
+        }
+
+        .vsm-track-toolbar {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.3rem 0.6rem; border-bottom: 1px solid rgba(0,0,0,0.08);
+            font-size: 0.75rem; opacity: 0.75; flex: none;
+        }
+        .vsm-track-pause {
+            border: none; background: transparent; cursor: pointer;
+            font-size: 0.9rem; line-height: 1; padding: 0.1rem 0.3rem;
+        }
+
+        .vsm-track-lanes {
+            display: flex; flex-direction: column; flex: 1; min-height: 0;
+            overflow-y: auto;
+        }
+        .vsm-track-lane {
+            display: flex; align-items: stretch; min-height: 2.4rem;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .vsm-track-lane-label {
+            flex: 0 0 6rem; display: flex; align-items: center;
+            font-size: 0.75rem; font-weight: 600; padding: 0 0.5rem;
+        }
+        .vsm-track-lane-body {
+            position: relative; flex: 1; min-width: 0;
+        }
+
+        .vsm-track-bar {
+            position: absolute; top: 0.4rem; bottom: 0.4rem;
+            border-radius: 0.25rem; color: #fff; font-size: 0.65rem;
+            padding: 0 0.35rem; display: flex; align-items: center;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            opacity: 0.9;
+        }
+        .vsm-track-bar.ongoing { border-right: 2px dashed rgba(255,255,255,0.8); }
+
+        .vsm-track-tick {
+            position: absolute; top: 0.15rem; bottom: 0.15rem;
+            width: 0; border-left: 2px solid; opacity: 0.85;
+        }
+        .vsm-track-tick-label {
+            position: absolute; top: -1.1rem; left: 0; transform: translateX(-50%);
+            font-size: 0.6rem; white-space: nowrap; opacity: 0.7;
+        }
+
+        .vsm-track-grid {
+            position: relative; height: 1.1rem; flex: none;
+            border-top: 1px solid rgba(0,0,0,0.06);
+        }
+        .vsm-track-gridline {
+            position: absolute; top: 0; font-size: 0.6rem; opacity: 0.5;
+            transform: translateX(-50%);
+        }
+
+        .vsm-track-scrub { flex: none; width: 100%; margin: 0.3rem 0 0.1rem; }
+    `;
+
+    constructor() {
+        super();
+        this.config        = {};
+        this.datavalue     = '';
+        this._paused       = false;
+        this._scrubSeconds = 0;
+        this._timer        = null;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._timer = setInterval(() => {
+            if (!this._paused) this.requestUpdate();
+        }, 250);
+    }
+
+    disconnectedCallback() {
+        clearInterval(this._timer);
+        super.disconnectedCallback();
+    }
+
+    _parseEvents() {
+        try {
+            const parsed = this.datavalue ? JSON.parse(this.datavalue) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch { return []; }
+    }
+
+    _resolveLanes(events) {
+        const cfg = this.config ?? {};
+        if (Array.isArray(cfg.tracks) && cfg.tracks.length) {
+            return cfg.tracks.map((t, i) => ({
+                id: t.id, label: t.label ?? t.id,
+                color: t.color ?? VsmTrackElement.DEFAULT_COLORS[i % VsmTrackElement.DEFAULT_COLORS.length],
+            }));
+        }
+        const ids = [];
+        for (const e of events) if (e.track && !ids.includes(e.track)) ids.push(e.track);
+        return ids.map((id, i) => ({
+            id, label: id,
+            color: VsmTrackElement.DEFAULT_COLORS[i % VsmTrackElement.DEFAULT_COLORS.length],
+        }));
+    }
+
+    // Pairs 'start-<name>'/'stop-<name>' events (in timestamp order) into duration bars; any
+    // other event name becomes an instantaneous tick. Runs over the lane's full event history,
+    // not just the visible window, so an interval still open at the real current time is drawn
+    // correctly even while the viewport is scrolled back.
+    _pairEvents(laneEvents) {
+        const bars = [];
+        const ticks = [];
+        const open = new Map();
+        for (const e of laneEvents) {
+            const name = typeof e.event === 'string' ? e.event : '';
+            if (name.startsWith('start-')) {
+                open.set(name.slice(6), e.ts);
+            } else if (name.startsWith('stop-')) {
+                const base = name.slice(5);
+                if (open.has(base)) {
+                    bars.push({ name: base, from: open.get(base), to: e.ts });
+                    open.delete(base);
+                }
+            } else if (name) {
+                ticks.push({ name, ts: e.ts });
+            }
+        }
+        const now = Date.now();
+        for (const [name, from] of open) bars.push({ name, from, to: now, ongoing: true });
+        return { bars, ticks };
+    }
+
+    _togglePause() {
+        this._paused = !this._paused;
+        if (!this._paused) this._scrubSeconds = 0;
+    }
+
+    _onScrub(ev) {
+        this._scrubSeconds = Number(ev.target.value) || 0;
+    }
+
+    _renderLane(lane, events, viewStart, viewEnd) {
+        const laneEvents = events.filter(e => e.track === lane.id).sort((a, b) => a.ts - b.ts);
+        const { bars, ticks } = this._pairEvents(laneEvents);
+        const span = viewEnd - viewStart;
+        const pct = ts => Math.max(0, Math.min(100, ((ts - viewStart) / span) * 100));
+        return html`
+            <div class="vsm-track-lane">
+                <div class="vsm-track-lane-label" style=${'color:' + lane.color}>${lane.label}</div>
+                <div class="vsm-track-lane-body">
+                    ${bars.filter(b => b.to >= viewStart && b.from <= viewEnd).map(b => {
+                        const left  = pct(Math.max(b.from, viewStart));
+                        const right = pct(Math.min(b.to, viewEnd));
+                        return html`<div class=${'vsm-track-bar' + (b.ongoing ? ' ongoing' : '')}
+                            style=${`left:${left}%;width:${Math.max(right - left, 0.6)}%;background:${lane.color}`}
+                            title=${b.name}>${b.name}</div>`;
+                    })}
+                    ${ticks.filter(t => t.ts >= viewStart && t.ts <= viewEnd).map(t => html`
+                        <div class="vsm-track-tick" style=${`left:${pct(t.ts)}%;border-color:${lane.color}`} title=${t.name}>
+                            <span class="vsm-track-tick-label">${t.name}</span>
+                        </div>`)}
+                </div>
+            </div>`;
+    }
+
+    _renderGrid(viewStart, windowSeconds) {
+        const step = windowSeconds <= 60 ? 10 : 30;
+        const liveNow = Date.now();
+        const marks = [];
+        for (let s = 0; s <= windowSeconds; s += step) {
+            const ts = viewStart + s * 1000;
+            const secondsAgo = Math.round((liveNow - ts) / 1000);
+            marks.push(html`<div class="vsm-track-gridline" style=${`left:${(s / windowSeconds) * 100}%`}>
+                ${secondsAgo <= 0 ? 'now' : `-${secondsAgo}s`}
+            </div>`);
+        }
+        return html`<div class="vsm-track-grid">${marks}</div>`;
+    }
+
+    render() {
+        const cfg = this.config ?? {};
+        const windowSeconds = cfg.windowSeconds ?? 60;
+        const bufferSeconds = cfg.bufferSeconds ?? 300;
+        const maxScrub = Math.max(0, bufferSeconds - windowSeconds);
+        const events = this._parseEvents();
+        const lanes = this._resolveLanes(events);
+        const liveNow = Date.now();
+        const viewEnd = this._paused ? liveNow - this._scrubSeconds * 1000 : liveNow;
+        const viewStart = viewEnd - windowSeconds * 1000;
+
+        return html`
+            <div class="vsm-track">
+                <div class="vsm-track-toolbar">
+                    <button class="vsm-track-pause" @click=${() => this._togglePause()}
+                        title=${this._paused ? 'Resume' : 'Pause'}>${this._paused ? '▶' : '⏸'}</button>
+                    <span>${this._paused ? `paused −${this._scrubSeconds}s` : 'live'}</span>
+                </div>
+                <div class="vsm-track-lanes">
+                    ${lanes.map(lane => this._renderLane(lane, events, viewStart, viewEnd))}
+                </div>
+                ${this._renderGrid(viewStart, windowSeconds)}
+                ${this._paused && maxScrub > 0 ? html`
+                    <input class="vsm-track-scrub" type="range" min="0" max=${maxScrub} step="1"
+                        .value=${String(this._scrubSeconds)} @input=${ev => this._onScrub(ev)} />
+                ` : html``}
+            </div>`;
+    }
+}
+
+customElements.define('vsm-track-element', VsmTrackElement);
 
 // ---------------------------------------------------------------------------
 // vsm-chat-input-element — Chat message input (text field + Send button)

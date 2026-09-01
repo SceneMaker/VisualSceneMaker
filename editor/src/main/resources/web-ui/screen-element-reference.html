@@ -208,6 +208,7 @@
   <a href="#vsm-chart"><code>vsm-chart</code></a>
   <a href="#vsm-feed"><code>vsm-feed</code></a>
   <a href="#vsm-animate"><code>vsm-animate</code></a>
+  <a href="#vsm-track"><code>vsm-track</code></a>
 </nav>
 
 <!-- ── Content ── -->
@@ -237,6 +238,7 @@
     <a href="#vsm-chart"><code>vsm-chart</code><div class="tg-cat">Chart.js chart</div></a>
     <a href="#vsm-feed"><code>vsm-feed</code><div class="tg-cat">Conversation feed</div></a>
     <a href="#vsm-animate"><code>vsm-animate</code><div class="tg-cat">Animated overlay</div></a>
+    <a href="#vsm-track"><code>vsm-track</code><div class="tg-cat">Real-time event timeline</div></a>
   </div>
 
   <!-- ═══════════════════════════════════════════════════ -->
@@ -298,7 +300,7 @@
     <tr>
       <td><code>updateVar</code></td>
       <td><code>var</code>, <code>value</code></td>
-      <td>Push a new value to every element whose <code>bindVar</code> or variable field matches <code>var</code>. Works for <code>sl-text</code>, <code>vsm-bubble</code>, <code>vsm-animate</code>, <code>vsm-chart</code>, <code>vsm-feed</code>, etc.</td>
+      <td>Push a new value to every element whose <code>bindVar</code> or variable field matches <code>var</code>. Works for <code>sl-text</code>, <code>vsm-bubble</code>, <code>vsm-animate</code>, <code>vsm-chart</code>, <code>vsm-feed</code>, <code>vsm-track</code>, etc.</td>
     </tr>
     <tr>
       <td><code>screensToFront</code></td>
@@ -329,6 +331,16 @@
       <td><code>clearFeed</code></td>
       <td><code>var</code></td>
       <td>Reset a <code>vsm-feed</code> variable to an empty array.</td>
+    </tr>
+    <tr>
+      <td><code>trackEvent</code></td>
+      <td><code>var</code>, <code>track</code>, <code>event</code></td>
+      <td>Append a timestamped <code>{track, event, ts}</code> object to a <code>vsm-track</code> variable (<code>ts</code> stamped server-side). The log is pruned to the last 5 minutes on every call.</td>
+    </tr>
+    <tr>
+      <td><code>clearTrack</code></td>
+      <td><code>var</code></td>
+      <td>Reset a <code>vsm-track</code> variable to an empty array.</td>
     </tr>
   </table>
 
@@ -668,6 +680,42 @@
   <p>Update from SceneScript at runtime:</p>
   <pre>&lt;playaction ref="htmlgui-ws:updateVar" var="hf_bpm"   value="$hf_bpm"/&gt;
 &lt;playaction ref="htmlgui-ws:updateVar" var="heart_color" value="#cc0000"/&gt;</pre>
+
+  <!-- vsm-track -->
+  <h3 id="vsm-track"><code>vsm-track</code></h3>
+  <p>Real-time multi-lane event timeline. Events are appended at runtime via <code>trackEvent</code>; within a lane, <code>start-&lt;name&gt;</code>/<code>stop-&lt;name&gt;</code> events pair into a duration bar, and any other event name renders as an instantaneous tick. The viewport scrolls live and can be paused to scrub back through the retained history.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>dataVar</code></td><td class="req">req</td><td>—</td><td><span class="badge badge-reads">reads</span> SceneFlow String variable holding a JSON array of <code>{track, event, ts}</code> objects.</td></tr>
+    <tr><td><code>tracks</code></td><td class="opt">opt</td><td>auto-discovered</td><td>Array of <code>{id, label, color}</code> defining lane order/labels/colors. When omitted, lanes are discovered from the data in first-seen order with a default color cycle.</td></tr>
+    <tr><td><code>windowSeconds</code></td><td class="opt">opt</td><td><code>60</code></td><td>Width of the visible, live-scrolling viewport, in seconds.</td></tr>
+    <tr><td><code>bufferSeconds</code></td><td class="opt">opt</td><td><code>300</code></td><td>How far back the pause scrubber can reach. Actual retention is enforced server-side by <code>trackEvent</code> at a fixed 5 minutes, independent of this field.</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td>—</td><td>CSS width.</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td><code>"220px"</code></td><td>CSS height.</td></tr>
+  </table>
+
+  <p><strong>Event object format</strong> (array stored in the variable):</p>
+  <table>
+    <tr><th>Field</th><th>Description</th></tr>
+    <tr><td><code>track</code></td><td>Lane id this event belongs to, e.g. <code>"user"</code> or <code>"sia"</code>.</td></tr>
+    <tr><td><code>event</code></td><td>Event name. <code>"start-&lt;name&gt;"</code> / <code>"stop-&lt;name&gt;"</code> pairs on the same track draw a duration bar labeled <code>&lt;name&gt;</code>; a <code>start-</code> with no matching <code>stop-</code> yet is drawn open-ended out to the current time. Any other name draws an instantaneous tick.</td></tr>
+    <tr><td><code>ts</code></td><td>Epoch milliseconds, stamped server-side by <code>trackEvent</code> when the action executes (not supplied by the caller).</td></tr>
+  </table>
+
+  <div class="note"><strong>Pause/scrub:</strong> a play/pause control in the element's corner freezes the live viewport and reveals a scrubber spanning the retained buffer; resuming snaps back to the live edge. This is purely a client-side viewing concern — no SceneFlow variable is involved, so scrubbing never affects the underlying log.</div>
+
+  <pre>{ "type": "vsm-track", "dataVar": "activity_track",
+  "tracks": [
+    { "id": "user", "label": "User", "color": "#4a90d9" },
+    { "id": "sia",  "label": "SIA",  "color": "#d9704a" }
+  ],
+  "windowSeconds": 60, "bufferSeconds": 300, "height": "220px" }</pre>
+
+  <p>Record events from SceneScript:</p>
+  <pre>&lt;playaction ref="htmlgui-ws:trackEvent" var="activity_track" track="sia"  event="start-speak"/&gt;
+&lt;playaction ref="htmlgui-ws:trackEvent" var="activity_track" track="sia"  event="stop-speak"/&gt;
+&lt;playaction ref="htmlgui-ws:trackEvent" var="activity_track" track="user" event="start-smile"/&gt;
+&lt;playaction ref="htmlgui-ws:trackEvent" var="activity_track" track="user" event="stop-smile"/&gt;</pre>
 
   <hr>
   <p style="color:var(--muted);font-size:0.78rem;text-align:center">

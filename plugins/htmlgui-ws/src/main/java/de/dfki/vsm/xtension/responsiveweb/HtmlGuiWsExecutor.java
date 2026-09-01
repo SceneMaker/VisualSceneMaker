@@ -40,6 +40,11 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
     // Per-variable conversation logs for vsm-feed (appendMessage / clearFeed)
     private final Map<String, List<String>> mConvLogs = new HashMap<>();
+    // Per-variable event-track logs for vsm-track (trackEvent / clearTrack)
+    private final Map<String, List<String>> mTrackLogs = new HashMap<>();
+    // Fixed server-side retention ceiling for track logs, independent of any screen's own
+    // bufferSeconds (several screens could bind the same variable with different settings).
+    private static final long TRACK_LOG_RETENTION_MS = 5 * 60 * 1000L;
     // The singleton logger instance
     protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
@@ -762,6 +767,55 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         }
     }
 
+    /**
+     * Appends one {track, event, ts} object to a named event-track log and broadcasts the
+     * update. ts is stamped here (server wall-clock, epoch millis) rather than supplied by the
+     * caller, since it needs to reflect when the action actually executed, not when the
+     * SceneFlow author wrote the call.
+     */
+    private void appendTrackEvent(String varName, String track, String event) {
+        long now = System.currentTimeMillis();
+        StringBuilder obj = new StringBuilder("{");
+        obj.append("\"track\":\"").append(escapeJson(track)).append("\"");
+        obj.append(",\"event\":\"").append(escapeJson(event)).append("\"");
+        obj.append(",\"ts\":").append(now);
+        obj.append("}");
+        synchronized (mTrackLogs) {
+            List<String> log = mTrackLogs.computeIfAbsent(varName, k -> new ArrayList<>());
+            log.add(obj.toString());
+            pruneTrackLog(log, now);
+            String jsonArray = buildJsonArray(log);
+            if (mProject.hasVariable(varName)) mProject.setVariable(varName, jsonArray);
+            broadcast("updateVar$" + varName + "$" + jsonArray);
+        }
+    }
+
+    /** Drops entries older than {@link #TRACK_LOG_RETENTION_MS} so long-running sessions don't grow the log unbounded. */
+    private static void pruneTrackLog(List<String> log, long now) {
+        long cutoff = now - TRACK_LOG_RETENTION_MS;
+        log.removeIf(entry -> {
+            int i = entry.indexOf("\"ts\":");
+            if (i < 0) return false;
+            int start = i + 5;
+            int end = start;
+            while (end < entry.length() && Character.isDigit(entry.charAt(end))) end++;
+            try {
+                return Long.parseLong(entry.substring(start, end)) < cutoff;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        });
+    }
+
+    /** Resets a named event-track log to empty and broadcasts the update. */
+    private void clearTrackLog(String varName) {
+        synchronized (mTrackLogs) {
+            mTrackLogs.put(varName, new ArrayList<>());
+            if (mProject.hasVariable(varName)) mProject.setVariable(varName, "[]");
+            broadcast("updateVar$" + varName + "$[]");
+        }
+    }
+
     /** Builds a JSON array string from a list of already-serialised JSON objects. */
     private static String buildJsonArray(List<String> items) {
         if (items == null || items.isEmpty()) return "[]";
@@ -805,6 +859,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         mUnloaded = true;
         websockets.clear();
         synchronized (mConvLogs) { mConvLogs.clear(); }
+        synchronized (mTrackLogs) { mTrackLogs.clear(); }
         // app is null if this instance was never actually launched (e.g. a project opened but
         // never Run/previewed) or if unload() is somehow called more than once — confirmed via a
         // real NPE 2026-07-29: the editor page's own "close" button sends the WS "Project.Close"
@@ -1022,6 +1077,23 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                         if (mProject.hasVariable(varName)) mProject.setVariable(varName, "[]");
                         broadcast("updateVar$" + varName + "$[]");
                     }
+                }
+
+            } else if (name.equalsIgnoreCase("trackEvent")) {
+                // trackEvent(var='…', track='…', event='…') — appends one timestamped event to
+                // an event-track log for a vsm-track element (e.g. track='sia', event='start-speak').
+                String varName = activity.get("var")   != null ? activity.get("var").replace("'", "")   : "";
+                String track   = activity.get("track") != null ? activity.get("track").replace("'", "") : "";
+                String event   = activity.get("event") != null ? activity.get("event").replace("'", "") : "";
+                if (!varName.isEmpty() && !track.isEmpty() && !event.isEmpty()) {
+                    appendTrackEvent(varName, track, event);
+                }
+
+            } else if (name.equalsIgnoreCase("clearTrack")) {
+                // clearTrack(var='…') — empties the event-track log for a track variable
+                String varName = activity.get("var") != null ? activity.get("var").replace("'", "") : "";
+                if (!varName.isEmpty()) {
+                    clearTrackLog(varName);
                 }
 
             } else if (name.equalsIgnoreCase("screensToFront")) {

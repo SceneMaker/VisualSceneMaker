@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.7",
-    "specHash": "259daed068d4cf6b",
+    "specVersion": "1.8",
+    "specHash": "33ce8dd5504fb454",
     "plugin": {
         "id": "htmlgui-ws",
         "name": "Web Browser User Interface",
@@ -472,6 +472,46 @@
                     "description": "Name of the SceneFlow String variable to clear"
                 }
             ]
+        },
+        {
+            "name": "trackEvent",
+            "type": "action",
+            "summary": "Append a timestamped event to a vsm-track variable",
+            "description": "Appends a {track, event, ts} object (ts stamped server-side, epoch millis) to the JSON array held in the named SceneFlow variable and broadcasts the update to connected clients. A vsm-track element bound to this variable pairs 'start-<name>'/'stop-<name>' events on the same track into a duration bar; any other event name renders as an instantaneous tick. The log is pruned to the last 5 minutes on every call.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Name of the SceneFlow String variable holding the event-track JSON array"
+                },
+                {
+                    "name": "track",
+                    "type": "string",
+                    "required": true,
+                    "description": "Lane this event belongs to, e.g. 'user' or 'sia'"
+                },
+                {
+                    "name": "event",
+                    "type": "string",
+                    "required": true,
+                    "description": "Event name, e.g. 'start-speak', 'stop-speak', 'start-wave', 'stop-wave'"
+                }
+            ]
+        },
+        {
+            "name": "clearTrack",
+            "type": "action",
+            "summary": "Clear a vsm-track variable",
+            "description": "Resets the named SceneFlow variable to an empty JSON array and broadcasts the update so all tracks empty on screen.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Name of the SceneFlow String variable to clear"
+                }
+            ]
         }
     ],
     "variables": {
@@ -495,6 +535,11 @@
                 "var": "conversation_log",
                 "type": "String",
                 "description": "Written by appendMessage / clearFeed; holds the vsm-feed conversation as a JSON array"
+            },
+            {
+                "var": "activity_track",
+                "type": "String",
+                "description": "Written by trackEvent / clearTrack; holds a vsm-track event log as a JSON array of {track, event, ts} objects, pruned to the last 5 minutes"
             }
         ],
         "reads": [
@@ -527,6 +572,11 @@
                 "var": "breath_color",
                 "type": "String",
                 "description": "CSS colour string controlling vsm-animate breathing colour (breathing-overlay template)"
+            },
+            {
+                "var": "activity_track",
+                "type": "String",
+                "description": "JSON array of {track, event, ts} objects rendered by vsm-track elements as real-time event tracks; ts is epoch millis stamped by trackEvent"
             }
         ],
         "note": "Variables listed here are the canonical names used by the pre-authored screen templates. Rename bindings in the Visual editor to match your project's variable naming. Schema-driven screens also write to any variable named in a component's bindVar or sendsVar field \u2014 declare those in the SceneFlow as needed."

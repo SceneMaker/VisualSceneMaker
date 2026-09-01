@@ -248,6 +248,55 @@ Variables are mapped to those properties via the element schema:
 
 ---
 
+## Phase 4 — `vsm-track`: Real-Time Event Timeline
+
+### Purpose
+
+Visualise timestamped activity events (e.g. `start-speak`/`stop-speak`,
+`start-wave`/`stop-wave`, `start-smile`/`stop-smile`) on parallel per-participant
+lanes as they happen during a live run — an operator/monitoring view, not a
+scripted flow output. Follows the same principle as Phases 1–2: the SceneFlow
+author records events explicitly (`trackEvent`), the renderer only displays what
+the variable holds.
+
+### Data model
+
+A `vsm-track` element reads a JSON array of `{track, event, ts}` objects from its
+`dataVar` (`ts` = epoch ms, stamped server-side by `trackEvent`). Server-side
+retention is a fixed 5-minute ceiling, enforced on every `trackEvent`/`clearTrack`
+call in `HtmlGuiWsExecutor` — independent of the element's own `bufferSeconds`,
+since more than one screen could bind the same variable with different settings.
+
+### Rendering behaviour
+
+- Lanes come from `tracks` in the schema, or are auto-discovered from the data
+  (first-seen order) when omitted
+- Within a lane, events are paired generically by name: `start-<name>` opens an
+  interval, the next `stop-<name>` closes it into a duration bar; an interval
+  still open is drawn out to the real current time. Any other event name renders
+  as an instantaneous tick. No per-event-name configuration needed.
+- The viewport (`windowSeconds`, default 60) scrolls live via the element's own
+  250ms timer — the first element in this renderer needing a JS-driven render
+  loop, since `vsm-animate`'s motion is CSS-only
+- A pause control freezes the live edge and reveals a scrubber spanning the
+  retained buffer (`bufferSeconds`, default 300); resuming snaps back to live.
+  This is purely client-side — no `pausedVar`, no wire message, since it's a
+  viewing concern, not a change to the underlying log
+- Clock handling assumes the browser and server wall clocks are close enough
+  (same host/LAN deployment) — no NTP-style skew correction
+
+### Editor support
+
+- New palette entry (`+Track` / similar) with a default two-lane (`user`/`sia`)
+  schema stub
+- `typeLabel`/`elementSummary` cases
+- No dedicated property-panel form was added — consistent with the editor's
+  actual current state for every other dynamic element type (only a raw JSON
+  tree editor exists; the per-type property-panel forms described for Phases
+  1–2 above were never actually built)
+
+---
+
 ## Implementation Checklist
 
 ### Phase 1 — `vsm-feed`
@@ -279,6 +328,19 @@ Variables are mapped to those properties via the element schema:
 - [x] Add `loadFeed` action to `UserCueService`
 - [ ] Define LLM annotation workflow (store with `producer="system"`, reload via `loadFeed`)
 - [ ] Implement read-only replay mode in `vsm-feed` (if needed)
+
+### Phase 4 — `vsm-track`
+
+- [x] `VsmTrackElement` LitElement in `vsm-renderer.js`
+  - [x] Parses JSON event array from bound variable
+  - [x] Lane resolution from `tracks` config or auto-discovery
+  - [x] Generic `start-<name>`/`stop-<name>` pairing into duration bars; other names as ticks
+  - [x] Live-scrolling viewport with pause + scrub-through-buffer
+- [x] `trackEvent` PlayAction in `HtmlGuiWsExecutor.java` (server-side 5-minute retention)
+- [x] `clearTrack` PlayAction in `HtmlGuiWsExecutor.java`
+- [x] ScreenEditor: palette entry, `typeLabel`/`elementSummary`
+- [x] Sync to `editor/web-ui/public/vsm-renderer.js`
+- [ ] Build and commit
 
 ### Pre-authored Templates
 
