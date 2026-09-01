@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "2.2",
-    "specHash": "7843d1e11374e5a6",
+    "specVersion": "2.6",
+    "specHash": "8ce6f7319e53f164",
     "plugin": {
         "id": "alma",
         "name": "ALMA",
@@ -15,9 +15,7 @@
     },
     "categories": {
         "primary": "processing",
-        "secondary": [
-            
-        ]
+        "secondary": []
     },
     "templates": {
         "resourcePath": "templates/",
@@ -72,8 +70,1836 @@
             "name": "reset",
             "type": "action",
             "summary": "Reset ALMA state (re-uploads the project, clearing character state)",
+            "params": []
+        },
+        {
+            "name": "GoodEvent",
+            "type": "action",
+            "summary": "Basic appraisal tag: A good event occurred",
             "params": [
-                
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BadEvent",
+            "type": "action",
+            "summary": "Basic appraisal tag: A bad event occurred",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "GoodEventForGoodOther",
+            "type": "action",
+            "summary": "Basic appraisal tag: A good event happened to someone this character values",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "GoodEventForBadOther",
+            "type": "action",
+            "summary": "Basic appraisal tag: A good event happened to someone this character does not value",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BadEventForBadOther",
+            "type": "action",
+            "summary": "Basic appraisal tag: A bad event happened to someone this character does not value",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BadEventForGoodOther",
+            "type": "action",
+            "summary": "Basic appraisal tag: A bad event happened to someone this character values",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "GoodLikelyFutureEvent",
+            "type": "action",
+            "summary": "Basic appraisal tag: A good future event is likely",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BadLikelyFutureEvent",
+            "type": "action",
+            "summary": "Basic appraisal tag: A bad future event is likely",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "GoodUnlikelyFutureEvent",
+            "type": "action",
+            "summary": "Basic appraisal tag: A good future event is unlikely",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BadUnlikelyFutureEvent",
+            "type": "action",
+            "summary": "Basic appraisal tag: A bad future event is unlikely",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "EventConfirmed",
+            "type": "action",
+            "summary": "Basic appraisal tag: A previously anticipated event occurred",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "EventDisconfirmed",
+            "type": "action",
+            "summary": "Basic appraisal tag: A previously anticipated event did not occur",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "GoodActSelf",
+            "type": "action",
+            "summary": "Basic appraisal tag: This character's own action was good",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BadActSelf",
+            "type": "action",
+            "summary": "Basic appraisal tag: This character's own action was bad",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "GoodActOther",
+            "type": "action",
+            "summary": "Basic appraisal tag: Another character's action was good",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BadActOther",
+            "type": "action",
+            "summary": "Basic appraisal tag: Another character's action was bad",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "NiceThing",
+            "type": "action",
+            "summary": "Basic appraisal tag: Something was found beautiful/appealing",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "NastyThing",
+            "type": "action",
+            "summary": "Basic appraisal tag: Something was found ugly/unappealing",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Accuse",
+            "type": "action",
+            "summary": "Dialogue act: Speaker rightly accuses the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Admire",
+            "type": "action",
+            "summary": "Dialogue act: Speaker expresses admiration for an action, event, or object associated with the receiver(s).",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "AnnounceConcern",
+            "type": "action",
+            "summary": "Dialogue act: Speaker expresses concern to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Attack",
+            "type": "action",
+            "summary": "Dialogue act: Speaker verbally attacks the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Blame",
+            "type": "action",
+            "summary": "Dialogue act: Speaker accuses the receiver of being guilty.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Boast",
+            "type": "action",
+            "summary": "Dialogue act: Speaker boasts about themselves in front of the receiver as an audience.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BringBadNews",
+            "type": "action",
+            "summary": "Dialogue act: Speaker has bad news for the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "BringGoodNews",
+            "type": "action",
+            "summary": "Dialogue act: Speaker has good news for the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Calm",
+            "type": "action",
+            "summary": "Dialogue act: Speaker calms down the agitated receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ChargeStupidity",
+            "type": "action",
+            "summary": "Dialogue act: Speaker accuses the receiver of having done something stupid (stronger than Blame).",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Chide",
+            "type": "action",
+            "summary": "Dialogue act: Speaker loudly complains about the receiver's current behavior (stronger than Correct).",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "CompareWithBetter",
+            "type": "action",
+            "summary": "Dialogue act: Speaker compares themselves with a more successful person in the receiver's presence.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ConcedeStupidity",
+            "type": "action",
+            "summary": "Dialogue act: Speaker admits their own stupidity to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Condemn",
+            "type": "action",
+            "summary": "Dialogue act: Speaker verbally expresses contempt toward the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ConfirmBad",
+            "type": "action",
+            "summary": "Dialogue act: Speaker sympathetically confirms a bad event to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ConfirmConcern",
+            "type": "action",
+            "summary": "Dialogue act: Speaker confirms the concern previously expressed to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ConfirmConjuredBad",
+            "type": "action",
+            "summary": "Dialogue act: Speaker rather aggressively confirms a conjured misfortune to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ConfirmFact",
+            "type": "action",
+            "summary": "Dialogue act: Speaker confirms an event (neutrally).",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ConfirmOffer",
+            "type": "action",
+            "summary": "Dialogue act: Speaker confirms a previously made offer.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Congratulate",
+            "type": "action",
+            "summary": "Dialogue act: Speaker congratulates the receiver, who is associated with a good event, action, or object.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ConjureBad",
+            "type": "action",
+            "summary": "Dialogue act: Speaker conjures up misfortune against the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Console",
+            "type": "action",
+            "summary": "Dialogue act: Speaker consoles the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "CrazyAboutSwedenBeauty",
+            "type": "action",
+            "summary": "Dialogue act: Speaker raves to the receiver about Sweden's beauty.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Defend",
+            "type": "action",
+            "summary": "Dialogue act: Speaker verbally defends themselves against the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "DenyOwnConfidence",
+            "type": "action",
+            "summary": "Dialogue act: Speaker denies their own confidence to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "DiffuseConcern",
+            "type": "action",
+            "summary": "Dialogue act: Speaker dispels the receiver's concerns.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Encourage",
+            "type": "action",
+            "summary": "Dialogue act: Speaker encourages the receiver (stronger than GiveHope).",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Excuse",
+            "type": "action",
+            "summary": "Dialogue act: Speaker apologizes to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "GiveHope",
+            "type": "action",
+            "summary": "Dialogue act: Speaker supports the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Insult",
+            "type": "action",
+            "summary": "Dialogue act: Speaker verbally insults the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "LowerArtworkMichelangelo",
+            "type": "action",
+            "summary": "Dialogue act: Speaker disparages Michelangelo's artworks to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "NegCommentObject",
+            "type": "action",
+            "summary": "Dialogue act: Speaker gives a negative comment about an object.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "OfferGood",
+            "type": "action",
+            "summary": "Dialogue act: Speaker offers the receiver something good.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "PointToUgliness",
+            "type": "action",
+            "summary": "Dialogue act: Speaker points out something obviously ugly to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "PosCommentObject",
+            "type": "action",
+            "summary": "Dialogue act: Speaker gives a positive comment about an object.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "PraiseAction",
+            "type": "action",
+            "summary": "Dialogue act: Speaker sincerely praises the receiver's action.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ProvideHelp",
+            "type": "action",
+            "summary": "Dialogue act: Speaker announces help to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Provoke",
+            "type": "action",
+            "summary": "Dialogue act: Speaker strongly provokes the receiver through a verbal statement or action (stronger than Tease).",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Regret",
+            "type": "action",
+            "summary": "Dialogue act: Speaker admits their own mistakes to the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Reproach",
+            "type": "action",
+            "summary": "Dialogue act: Speaker reproaches the receiver for previously made statements or actions.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "RequestHelp",
+            "type": "action",
+            "summary": "Dialogue act: Speaker asks the receiver for help.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "RetractAccuse",
+            "type": "action",
+            "summary": "Dialogue act: Speaker retracts an accusation against the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "RevealGuild",
+            "type": "action",
+            "summary": "Dialogue act: Speaker admits to the receiver that they are guilty.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ReviseDoWrong",
+            "type": "action",
+            "summary": "Dialogue act: Speaker retracts a statement in which they wronged the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Tease",
+            "type": "action",
+            "summary": "Dialogue act: Speaker teases the receiver through a verbal statement or action.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "Thank",
+            "type": "action",
+            "summary": "Dialogue act: Speaker thanks the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "ThreatenBad",
+            "type": "action",
+            "summary": "Dialogue act: Speaker threatens the receiver with serious consequences.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
+            ]
+        },
+        {
+            "name": "WishGood",
+            "type": "action",
+            "summary": "Dialogue act: Speaker feels joy about a positive event associated with the receiver.",
+            "params": [
+                {
+                    "name": "performer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who performed this act toward the character (omit for the character's own act; resolves a DirectAct/IndirectAct rule instead of a SelfAct)"
+                },
+                {
+                    "name": "hearer",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who this act is addressed to/heard by (sent to the ALMA server alongside elicitor; omit if not relevant)"
+                },
+                {
+                    "name": "intensity",
+                    "type": "int",
+                    "required": false,
+                    "description": "Appraisal intensity as an integer (defaults to '1')"
+                },
+                {
+                    "name": "elicitor",
+                    "type": "string",
+                    "required": false,
+                    "description": "Who/what triggered this appraisal (defaults to 'Scene')"
+                }
             ]
         }
     ],
@@ -84,40 +1910,36 @@
                 "type": "Bool",
                 "scope": "global",
                 "description": "true once connected to (and authenticated/initialized with) the ALMA server; false on disconnect or connect failure"
-            },
-            {
-                "var": "useremotions",
-                "type": "string",
-                "scope": "global",
-                "description": "Active emotion type names (intensity > 0.25) for the last character update"
-            },
-            {
-                "var": "almadominantemotion",
-                "type": "string",
-                "scope": "global",
-                "description": "Dominant emotion type name for the last character update"
-            },
-            {
-                "var": "almadominantemotionintensity",
-                "type": "string",
-                "scope": "global",
-                "description": "Dominant emotion intensity for the last character update"
-            },
-            {
-                "var": "almamood",
-                "type": "string",
-                "scope": "global",
-                "description": "Current mood word for the last character update"
-            },
-            {
-                "var": "almamoodtendency",
-                "type": "string",
-                "scope": "global",
-                "description": "Mood-tendency word for the last character update"
             }
         ],
-        "reads": [
-            
+        "reads": [],
+        "perAgentWrites": [
+            {
+                "suffix": "dominantemotion",
+                "type": "String",
+                "description": "Dominant emotion type name for this character"
+            },
+            {
+                "suffix": "dominantemotionintensity",
+                "type": "String",
+                "description": "Dominant emotion intensity for this character"
+            },
+            {
+                "suffix": "mood",
+                "type": "String",
+                "description": "Current mood word for this character"
+            },
+            {
+                "suffix": "moodtendency",
+                "type": "String",
+                "description": "Mood-tendency word for this character"
+            },
+            {
+                "suffix": "emotions",
+                "type": "String",
+                "description": "Active emotion type names (intensity > 0.25) for this character"
+            }
         ]
-    }
+    },
+    "notes": "One VSM agent per ALMA character is auto-registered as '<Character>_alma' when this device is configured (AlmaAgentSyncService in core-webserver), together with five per-character SceneFlow variables: '<Character>_alma_dominantemotion', '_dominantemotionintensity', '_mood', '_moodtendency', '_emotions'. These replace the old fixed global vars (almadominantemotion etc.), which only ever held the last-updated character's values regardless of which character actually changed."
 }

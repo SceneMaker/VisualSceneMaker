@@ -178,6 +178,14 @@ public class AlmaWsClient {
     }
 
     public void sendAppraisal(String character, String tag, String intensity, String elicitor) {
+        sendAppraisal(character, tag, intensity, elicitor, null);
+    }
+
+    /**
+     * @param hearer who this act is addressed to/heard by (dialogue-act invocations only; blank/null
+     *               omits the attribute entirely rather than sending an empty one).
+     */
+    public void sendAppraisal(String character, String tag, String intensity, String elicitor, String hearer) {
         String category = EVENT_TAGS.contains(tag) ? "Event"
                 : ACTION_TAGS.contains(tag) ? "Action"
                 : OBJECT_TAGS.contains(tag) ? "Object" : null;
@@ -185,10 +193,11 @@ public class AlmaWsClient {
             mLogger.warning("[alma] unknown appraisal tag: " + tag);
             return;
         }
+        String hearerAttr = (hearer != null && !hearer.isBlank()) ? " hearer=\"" + esc(hearer) + "\"" : "";
         String xml = "<aml:Item xmlns:aml=\"xml.affect.de\"><aml:AffectInput>"
                 + "<aml:Character name=\"" + esc(character) + "\"/>"
                 + "<aml:" + category + " type=\"" + esc(tag) + "\" intensity=\"" + esc(intensity)
-                + "\" elicitor=\"" + esc(elicitor) + "\"/>"
+                + "\" elicitor=\"" + esc(elicitor) + "\"" + hearerAttr + "/>"
                 + "</aml:AffectInput></aml:Item>";
         send(envelope("affectItem", new JSONObject().put("xml", xml)));
     }

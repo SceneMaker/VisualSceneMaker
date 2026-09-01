@@ -325,9 +325,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             if (variables != null) {
                 out.put("writes", variables.optJSONArray("writes") != null ? variables.optJSONArray("writes") : new JSONArray());
                 out.put("reads", variables.optJSONArray("reads") != null ? variables.optJSONArray("reads") : new JSONArray());
+                // Per-agent variable name suffixes (e.g. ALMA's "<Character>_alma_mood"): the
+                // badge builder combines each with every agent bound to this device, since the
+                // literal variable name only exists per-agent, not as a single fixed name.
+                out.put("perAgentWrites", variables.optJSONArray("perAgentWrites") != null
+                        ? variables.optJSONArray("perAgentWrites") : new JSONArray());
             } else {
                 out.put("writes", new JSONArray());
                 out.put("reads", new JSONArray());
+                out.put("perAgentWrites", new JSONArray());
             }
 
             // Agent spec
@@ -5353,6 +5359,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                         // Same reason as in applyProjectConfigFromJson: a device with no runtime
                         // object behind it opens no port when the project is started.
                         ref.runtimeProject.loadRunTimePlugin(plugin);
+                        java.nio.file.Path projectDirForAlmaSync =
+                                ref.path == null || ref.path.isBlank() ? null : java.nio.file.Paths.get(ref.path);
+                        AlmaAgentSyncService.sync(config, projectDirForAlmaSync);
+                        if (AlmaAgentSyncService.syncVariables(config, ref.runtimeProject.getSceneFlow(), projectDirForAlmaSync)) {
+                            broadcastAlmaVariableSync(ref);
+                        }
                         added.put(new JSONObject().put("kind", "device").put("name", step.deviceName()));
                     }
                     case "agent" -> {
@@ -6284,6 +6296,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         cfg.getAgentConfigList().clear();
         cfg.getAgentConfigList().addAll(nextAgents);
 
+        java.nio.file.Path projectDirForAlmaSync =
+                ref.path == null || ref.path.isBlank() ? null : java.nio.file.Paths.get(ref.path);
+        AlmaAgentSyncService.sync(cfg, projectDirForAlmaSync);
+        if (ref.runtimeProject != null
+                && AlmaAgentSyncService.syncVariables(cfg, ref.runtimeProject.getSceneFlow(), projectDirForAlmaSync)) {
+            broadcastAlmaVariableSync(ref);
+        }
+
         JSONArray llmsJson = configJson.optJSONArray("llms");
         List<LLMConfig> nextLLMs = new ArrayList<>();
         Set<String> seenLLMs = new HashSet<>();
@@ -6443,6 +6463,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         sLogger.message("[PROJECT-CONFIG] Applied plugins=" + cfg.getPluginConfigList().size()
                 + " agents=" + cfg.getAgentConfigList().size()
                 + " llms=" + cfg.getLLMConfigList().size());
+    }
+
+    /** Broadcasts the SceneFlow snapshot after AlmaAgentSyncService.syncVariables declared new global variables. */
+    private void broadcastAlmaVariableSync(ProjectRef ref) {
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, ref.id, sceneFlow, sceneFlow);
+        broadcastSceneFlowSnapshot(msg -> broadcastToProjectOrAll(ref.id, msg), ref.id, snapshot);
     }
 
     private JSONArray configFeaturesToJson(List<de.dfki.vsm.model.config.ConfigFeature> features) {

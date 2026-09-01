@@ -14373,6 +14373,7 @@ Sentence:
         const writes = Array.isArray(iface.writes) ? iface.writes : [];
         const reads  = Array.isArray(iface.reads)  ? iface.reads  : [];
         const config = Array.isArray(iface.config) ? iface.config : [];
+        const perAgentWrites = Array.isArray(iface.perAgentWrites) ? iface.perAgentWrites : [];
 
         function resolveVarName(configKey) {
           return (plugin.features || []).find((f) => f.key === configKey)?.value
@@ -14380,10 +14381,24 @@ Sentence:
               || configKey;
         }
 
+        // Agents bound to THIS device instance (device is a device:agent 1:N relationship — one
+        // ALMA device backs one agent per character, e.g. Anne_alma/Bruno_alma/Clementine_alma).
+        const boundAgents = (configView.agents || []).filter((a) => a?.device === plugin.name);
+
+        // Variable names that only exist per-agent (e.g. "Anne_alma_mood"), not as a single fixed
+        // name — one entry per (bound agent × declared suffix). The literal name doubles as the
+        // row's own label, so no separate per-agent grouping/header is needed.
+        const perAgentVariables = boundAgents.flatMap((agent) =>
+          perAgentWrites
+            .filter((w) => w?.suffix)
+            .map((w) => ({ ...w, name: `${agent.name}_${w.suffix}`, source: 'perAgent' }))
+        );
+
         const seen = new Set();
         const variables = [
           ...writes.map((v) => ({ ...v, name: resolveVarName(v.var), source: 'writes' })),
-          ...reads.map((v)  => ({ ...v, name: resolveVarName(v.var), source: 'reads'  }))
+          ...reads.map((v)  => ({ ...v, name: resolveVarName(v.var), source: 'reads'  })),
+          ...perAgentVariables
         ].filter((v) => v.name && !seen.has(v.name) && seen.add(v.name));
 
         // A project can load the same plugin class more than once (e.g. two charamel-embed
@@ -14395,9 +14410,14 @@ Sentence:
         // or badges silently merge onto one shared position/expanded state (reported 2026-07-17:
         // dragging or collapsing one badge visibly "disappeared" the other — they'd snapped to
         // the exact same saved coordinates).
-        const boundAgent = (configView.agents || []).find((a) => a?.device === plugin.name);
+        //
+        // The " — <agentName>" suffix only makes sense when exactly one agent is bound: a device
+        // backing several agents (ALMA: one device, one agent per character) has no single agent
+        // to name it after, so the title stays just the generic plugin name (reported 2026-08-31:
+        // picking the first of several bound agents via .find() produced a misleading title like
+        // "ALMA — Bruno_alma" even though the badge's one connectedVar isn't Bruno-specific).
         const genericName = iface.plugin?.name || plugin.className;
-        const instanceLabel = boundAgent?.name || plugin.name;
+        const instanceLabel = boundAgents.length === 1 ? boundAgents[0].name : "";
         return {
           key: `plugin_${plugin.name}`,
           className: plugin.className,
@@ -14528,9 +14548,18 @@ Sentence:
     return value;
   }
 
-  function formatCmdHelperArgValue(key, rawValue) {
+  // Numeric/boolean param types go out unquoted — a quoted "'1.0'" reaching a plugin that parses
+  // it as a number (e.g. ALMA's appraisal intensity) fails there with a raw NumberFormatException-
+  // style error, since the value the interpreter hands the plugin still carries the quote
+  // characters (reported 2026-09-01, ALMA's server: `For input string: "'1.0'"`).
+  const CMD_ARG_UNQUOTED_TYPES = new Set(["int", "integer", "float", "double", "number", "bool", "boolean"]);
+
+  function formatCmdHelperArgValue(rawValue, paramType) {
     const normalized = normalizeCmdArgRawValue(rawValue);
     if (!normalized) return "";
+    if (CMD_ARG_UNQUOTED_TYPES.has(String(paramType || "").trim().toLowerCase())) {
+      return normalized;
+    }
     const escaped = normalized.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
     return `'${escaped}'`;
   }
@@ -15037,10 +15066,12 @@ Sentence:
       const agent = (cmdHelperAgent || "").trim();
       const action = (cmdHelperAction || "").trim();
       if (!agent || !action) return "";
+      const actionParams = cmdHelperAgentCommands.find((c) => c?.name === action)?.params;
       const args = cmdHelperArgs
         .map((entry) => {
           const key = (entry?.key || "").trim();
-          const value = formatCmdHelperArgValue(key, entry?.value || "");
+          const paramType = Array.isArray(actionParams) ? actionParams.find((p) => p?.name === key)?.type : undefined;
+          const value = formatCmdHelperArgValue(entry?.value || "", paramType);
           if (!key || !value) return "";
           return `${key}=${value}`;
         })
