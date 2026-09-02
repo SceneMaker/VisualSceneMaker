@@ -22,11 +22,13 @@ import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.tpl.Tuple;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -66,6 +68,16 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
     // mActivityWorkerMap so a stray late reply can't unblock the wrong activity.
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
     private JSONObject mPendingRequest; // null when nothing outstanding
+
+    // The recording most recently pushed to the wizard via show_asrinput, served back to the
+    // browser at the fixed routes below (only ever one at a time — a single wizard reviewing a
+    // single recording). mShownInfoPath is null when the mp3 has no <basename>.json sidecar
+    // (e.g. it predates this feature) — the player still works, just without the VAD/transcript
+    // timeline. Both live on the machine running this plugin, which only works because the
+    // fast-asr server that wrote them is assumed to run on that same machine (see asr plugin's
+    // recording_dir docs) — there is no cross-host file transfer here.
+    private Path mShownMp3Path;
+    private Path mShownInfoPath;
 
     // One entry per top-level flow, keyed by its name, holding a running history of the nodes it
     // has visited so far (and, per node, the last scene played there and every turn spoken during
@@ -139,6 +151,8 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
             ws.onClose(this::onClose);
             ws.onError(ctx -> mLogger.failure("StudyMaster WS error: " + ctx.error()));
         });
+        mHttpServer.get("/audio/current.mp3", ctx -> serveShownFile(ctx, currentMp3Path(), "audio/mpeg"));
+        mHttpServer.get("/audio/current.json", ctx -> serveShownFile(ctx, currentInfoPath(), "application/json"));
         mLogger.message("StudyMaster listening on port " + port
                 + " (" + mControls.size() + " wizard-controllable variable(s))");
     }
@@ -166,6 +180,8 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
                 mWizardSocket.session.close();
             }
             mWizardSocket = null;
+            mShownMp3Path = null;
+            mShownInfoPath = null;
         }
         if (mHttpServer != null) {
             mHttpServer.stop();
@@ -177,11 +193,18 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
     @Override
     public void execute(AbstractActivity activity) {
         final String actionName = activity.getName();
-        if (!"request".equals(actionName)) {
-            mLogger.warning("StudyMaster: unknown action '" + actionName + "'");
+        if ("request".equals(actionName)) {
+            handleRequest(activity);
             return;
         }
+        if ("show_asrinput".equals(actionName)) {
+            handleShowAsrInput(activity);
+            return;
+        }
+        mLogger.warning("StudyMaster: unknown action '" + actionName + "'");
+    }
 
+    private void handleRequest(AbstractActivity activity) {
         final LinkedList<ActionFeature> features = activity.getFeatures();
         final String var = getFeatureValueNoQuotes("var", features);
         final String promptOverride = getFeatureValueNoQuotes("prompt", features);
@@ -229,6 +252,81 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
                 }
             }
             mLogger.message("StudyMaster: unblocked on request " + requestId);
+        }
+    }
+
+    // ---- SceneFlow-facing: show_asrinput(var) — push a recorded audio file to the wizard --------
+
+    /**
+     * 'var' is NOT a variable name to look up (unlike request()'s 'var') — the author passes the
+     * already-resolved recording path directly, e.g.
+     * {@code PlayAction("[sm show_asrinput var='" + asr_last_recording_file + "']")}, so by the
+     * time this parses, 'var' already holds the literal path. Looks for a same-named .json
+     * sidecar (as saved by the asr plugin's fast-asr server alongside the mp3, with the VAD and
+     * transcript events captured during that recording) next to the mp3; if missing, the wizard
+     * still gets the audio player, just without the timeline.
+     */
+    private void handleShowAsrInput(AbstractActivity activity) {
+        final String mp3PathRaw = getFeatureValueNoQuotes("var", activity.getFeatures());
+        if (mp3PathRaw.isEmpty()) {
+            mLogger.failure("StudyMaster: show_asrinput() needs a 'var' feature holding the recording's "
+                    + "full file path, e.g. show_asrinput([var='" + "<asr_last_recording_file value>" + "'])");
+            return;
+        }
+
+        final Path mp3Path = Path.of(mp3PathRaw);
+        if (!Files.exists(mp3Path)) {
+            mLogger.warning("StudyMaster: show_asrinput: audio file not found: " + mp3Path);
+            return;
+        }
+        final String fileName = mp3Path.getFileName().toString();
+        final int dot = fileName.lastIndexOf('.');
+        final Path jsonPath = mp3Path.resolveSibling((dot > 0 ? fileName.substring(0, dot) : fileName) + ".json");
+        final boolean hasInfo = Files.exists(jsonPath);
+        if (!hasInfo) {
+            mLogger.warning("StudyMaster: show_asrinput: no VAD/transcript info at " + jsonPath
+                    + " — showing audio only");
+        }
+
+        final JSONObject msg;
+        synchronized (this) {
+            mShownMp3Path = mp3Path;
+            mShownInfoPath = hasInfo ? jsonPath : null;
+            msg = asrInputPayload();
+        }
+        msg.put("type", "asrInput");
+        sendToWizard(msg);
+    }
+
+    /** Caller must hold {@code this}'s monitor — reads mShownMp3Path/mShownInfoPath. */
+    private JSONObject asrInputPayload() {
+        final JSONObject o = new JSONObject();
+        o.put("mp3Url", mShownMp3Path != null ? "audio/current.mp3" : JSONObject.NULL);
+        o.put("jsonUrl", mShownInfoPath != null ? "audio/current.json" : JSONObject.NULL);
+        return o;
+    }
+
+    private synchronized Path currentMp3Path() {
+        return mShownMp3Path;
+    }
+
+    private synchronized Path currentInfoPath() {
+        return mShownInfoPath;
+    }
+
+    /** Streams the given file with no-store caching (there's only ever one "current" recording,
+     * served from a fixed URL, so a stale browser/proxy cache must never win). 404s if unset. */
+    private void serveShownFile(Context ctx, Path path, String contentType) {
+        if (path == null || !Files.exists(path)) {
+            ctx.status(404).result("No recording available");
+            return;
+        }
+        try {
+            ctx.header("Cache-Control", "no-store");
+            ctx.contentType(contentType);
+            ctx.result(Files.newInputStream(path));
+        } catch (IOException e) {
+            ctx.status(500).result("Failed to read file: " + e.getMessage());
         }
     }
 
@@ -703,6 +801,7 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
 
         synchronized (this) {
             snapshot.put("pendingRequest", mPendingRequest != null ? mPendingRequest : JSONObject.NULL);
+            snapshot.put("asrInput", mShownMp3Path != null ? asrInputPayload() : JSONObject.NULL);
         }
         return snapshot;
     }

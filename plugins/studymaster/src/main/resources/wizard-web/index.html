@@ -179,6 +179,34 @@
   }
   .log div { padding: 4px 0; border-top: 1px solid var(--stroke); }
   .log div:first-child { border-top: none; }
+
+  .asr-audio { width: 100%; }
+  .asr-track {
+    position: relative;
+    height: 28px;
+    margin-top: 12px;
+    background: var(--panel-soft);
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .asr-vad-bar { position: absolute; top: 0; bottom: 0; background: var(--accent); opacity: .55; }
+  .asr-playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); }
+  .asr-transcript {
+    margin-top: 12px;
+    max-height: 220px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .asr-transcript-line { font-size: 13px; cursor: pointer; padding: 5px 8px; border-radius: 6px; }
+  .asr-transcript-line:hover { background: var(--panel-soft); }
+  .asr-transcript-time {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    color: var(--muted);
+    margin-right: 8px;
+  }
 </style>
 </head>
 <body>
@@ -239,6 +267,14 @@
       <div id="requestControl"></div>
     </div>
 
+    <div id="asrInputCard" class="card" style="display:none;">
+      <h2>Recorded audio</h2>
+      <audio id="asrAudio" class="asr-audio" controls></audio>
+      <div id="asrTimeline"></div>
+      <div id="asrTranscript" class="asr-transcript"></div>
+      <div id="asrInputEmpty" class="empty-state" style="display:none;">No VAD/transcript info found for this recording.</div>
+    </div>
+
     <div class="card">
       <h2>Controls</h2>
       <div id="controlsList" class="controls-list"></div>
@@ -267,6 +303,11 @@
   var requestControl = document.getElementById('requestControl');
   var controlsList = document.getElementById('controlsList');
   var logArea = document.getElementById('logArea');
+  var asrInputCard = document.getElementById('asrInputCard');
+  var asrAudio = document.getElementById('asrAudio');
+  var asrTimeline = document.getElementById('asrTimeline');
+  var asrTranscript = document.getElementById('asrTranscript');
+  var asrInputEmpty = document.getElementById('asrInputEmpty');
 
   function setStatus(cls, text) {
     statusPill.className = 'status-pill ' + cls;
@@ -349,6 +390,9 @@
         pendingRequest = msg;
         renderRequest();
         break;
+      case 'asrInput':
+        loadAsrInput(msg);
+        break;
       case 'requestCancelled':
         if (pendingRequest && pendingRequest.requestId === msg.requestId) {
           pendingRequest = null;
@@ -371,6 +415,142 @@
     renderFlows(snap.flows || []);
     pendingRequest = (snap.pendingRequest && snap.pendingRequest !== null) ? snap.pendingRequest : null;
     renderRequest();
+    loadAsrInput((snap.asrInput && snap.asrInput !== null) ? snap.asrInput : null);
+  }
+
+  // ---- Recorded-audio review (show_asrinput) --------------------------------------------------
+  // Pushed by the studymaster plugin whenever the flow calls show_asrinput(var=<mp3 path>); the
+  // mp3 and its <basename>.json sidecar (VAD + transcript events captured by the fast-asr server
+  // during that recording) are served back at fixed URLs, always freshly (no-store + a cache-bust
+  // query param) since there's only ever one "current" recording under those URLs.
+
+  function assetUrl(relPath) {
+    var base = location.pathname.endsWith('/') ? location.pathname : location.pathname + '/';
+    var sep = relPath.indexOf('?') === -1 ? '?' : '&';
+    return base + relPath + sep + 't=' + Date.now();
+  }
+
+  function loadAsrInput(payload) {
+    if (!payload || !payload.mp3Url) {
+      asrInputCard.style.display = 'none';
+      return;
+    }
+    asrInputCard.style.display = '';
+    asrTimeline.innerHTML = '';
+    asrTranscript.innerHTML = '';
+    asrInputEmpty.style.display = 'none';
+    asrAudio.src = assetUrl(payload.mp3Url);
+    asrAudio.load();
+
+    if (!payload.jsonUrl) {
+      asrInputEmpty.style.display = '';
+      return;
+    }
+    fetch(assetUrl(payload.jsonUrl)).then(function (r) {
+      if (!r.ok) throw new Error('status ' + r.status);
+      return r.json();
+    }).then(function (info) {
+      renderAsrTimeline(info);
+      renderAsrTranscript(info);
+      seekToFirstSpeech(info);
+    }).catch(function (e) {
+      asrInputEmpty.style.display = '';
+      log('Recording info unavailable: ' + e.message);
+    });
+  }
+
+  // Auto-seeks the player to 250ms before the first detected speech onset, so the wizard doesn't
+  // have to scrub past leading silence to hear what was actually said. Anchored on raw_active, not
+  // the hysteresis-smoothed active flag: active is deliberately debounced to avoid flapping, so it
+  // flips true a bit after speech actually starts (e.g. {active:false, raw_active:true,
+  // speech_ratio:1.0} is already mid-onset) — raw_active catches the true onset, which is what a
+  // "just before speech starts" seek target needs. Falls back to active for older sidecars that
+  // predate raw_active.
+  function seekToFirstSpeech(info) {
+    var startS = (info.start_ms || 0) / 1000;
+    var vad = info.vad || [];
+    var firstSpeech = null;
+    for (var i = 0; i < vad.length; i++) {
+      var speaking = vad[i].raw_active !== undefined ? vad[i].raw_active : vad[i].active;
+      if (speaking) { firstSpeech = vad[i]; break; }
+    }
+    if (!firstSpeech) return;
+    var target = Math.max(0, (firstSpeech.ts - startS) - 0.25);
+    var setCurrent = function () { try { asrAudio.currentTime = target; } catch (e) {} };
+    if (asrAudio.readyState >= 1) setCurrent();
+    else asrAudio.addEventListener('loadedmetadata', setCurrent, { once: true });
+  }
+
+  // VAD events arrive roughly every 30ms with an active/inactive flag; consecutive active=true
+  // runs are grouped into bars (same idea as vsm-track's paired start/stop duration bars). All
+  // timing is anchored on each event's absolute 'ts' (epoch seconds) rather than any per-utterance
+  // start/end fields, since 'ts' is the one field every vad/asr event carries consistently.
+  function renderAsrTimeline(info) {
+    var startS = (info.start_ms || 0) / 1000;
+    var duration = info.duration_s || 0;
+    if (duration <= 0) return;
+    var vad = info.vad || [];
+    var bars = [];
+    var runStart = null;
+    vad.forEach(function (e) {
+      var t = e.ts - startS;
+      if (e.active && runStart === null) runStart = t;
+      if (!e.active && runStart !== null) { bars.push([runStart, t]); runStart = null; }
+    });
+    if (runStart !== null) bars.push([runStart, duration]);
+
+    var track = document.createElement('div');
+    track.className = 'asr-track';
+    bars.forEach(function (b) {
+      var bar = document.createElement('div');
+      bar.className = 'asr-vad-bar';
+      bar.style.left = (100 * Math.max(0, b[0]) / duration) + '%';
+      bar.style.width = (100 * Math.max(0, b[1] - b[0]) / duration) + '%';
+      track.appendChild(bar);
+    });
+    var playhead = document.createElement('div');
+    playhead.className = 'asr-playhead';
+    track.appendChild(playhead);
+    asrTimeline.appendChild(track);
+
+    asrAudio.ontimeupdate = function () {
+      var pct = Math.min(100, Math.max(0, 100 * asrAudio.currentTime / duration));
+      playhead.style.left = pct + '%';
+    };
+  }
+
+  // Only committed (is_final) transcript entries are listed — partials are transient re-tries of
+  // the same utterance and would otherwise show as noisy duplicate lines.
+  function renderAsrTranscript(info) {
+    var startS = (info.start_ms || 0) / 1000;
+    var finals = (info.transcript || []).filter(function (e) { return e.is_final; });
+    if (finals.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.textContent = 'No committed transcript in this recording.';
+      asrTranscript.appendChild(empty);
+      return;
+    }
+    finals.forEach(function (e) {
+      var t = Math.max(0, e.ts - startS);
+      var line = document.createElement('div');
+      line.className = 'asr-transcript-line';
+      var time = document.createElement('span');
+      time.className = 'asr-transcript-time';
+      time.textContent = formatAsrTime(t);
+      var text = document.createElement('span');
+      text.textContent = e.accumulated || '';
+      line.appendChild(time);
+      line.appendChild(text);
+      line.addEventListener('click', function () { asrAudio.currentTime = t; });
+      asrTranscript.appendChild(line);
+    });
+  }
+
+  function formatAsrTime(s) {
+    var m = Math.floor(s / 60);
+    var sec = (s - m * 60).toFixed(1);
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
   }
 
   // One card per top-level flow — styled to match the SceneFlow editor's own "active node"

@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "0.1",
-    "specHash": "ff4d1b86208a3a9c",
+    "specVersion": "0.2",
+    "specHash": "02a5101915e033a6",
     "plugin": {
         "id": "studymaster",
         "name": "StudyMaster",
@@ -69,10 +69,28 @@
                     "description": "Question text shown to the wizard, overriding the manifest's label for this call."
                 }
             ]
+        },
+        {
+            "name": "show_asrinput",
+            "type": "action",
+            "summary": "Push a recorded audio file to the wizard for playback and review",
+            "description": "Sends the connected wizard an audio player for the given MP3, with a VAD-activity timeline and transcript read from the <basename>.json sidecar the fast-asr server saves alongside each recording (from the asr plugin's start_recording/stop_recording). The player auto-seeks to 250ms before the first detected speech onset. Assumes the fast-asr server's recordings are readable at that same path on the machine running this plugin (typically the same host, per the asr plugin's recording_dir). If no sidecar JSON is found next to the mp3, the wizard still gets the audio player, just without the timeline.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Full path to the recorded MP3 file \u2014 NOT a variable name to look up (unlike request()'s 'var'). Pass the already-resolved value, typically the asr plugin's asr_last_recording_file, e.g. PlayAction(\"[sm show_asrinput var='\" + asr_last_recording_file + \"']\")."
+                }
+            ]
         }
     ],
     "variables": {
-        "writes": [],
-        "reads": []
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
     }
 }
