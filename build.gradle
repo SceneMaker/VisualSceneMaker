@@ -231,6 +231,7 @@ dependencies {
     implementation project(":plugins:AndroidGui")
     implementation project(":plugins:email")
     implementation project(":plugins:studymaster-web")
+    implementation project(":plugins:studymaster")
     implementation project(":plugins:fortunecookie")
     implementation project(":plugins:user-cue-service")
     implementation project(":plugins:decad")

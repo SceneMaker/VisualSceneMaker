@@ -1,0 +1,78 @@
+{
+    "schemaVersion": "1.0",
+    "specVersion": "0.1",
+    "specHash": "ff4d1b86208a3a9c",
+    "plugin": {
+        "id": "studymaster",
+        "name": "StudyMaster",
+        "className": "de.dfki.vsm.xtension.studymaster.StudyMasterExecutor",
+        "androidCompatible": false,
+        "description": "Wizard-of-Oz remote control: a single authenticated wizard connects over WebSocket to observe the running flow and set author-wired variables.",
+        "tags": [
+            "control",
+            "wizard of oz",
+            "web"
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            "output"
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "ws_port",
+                "type": "int",
+                "default": 9091,
+                "readonly": true,
+                "description": "WebSocket port the wizard client connects to. Auto-allocated by PortPoolManager in hosted deployments; used directly in local/LAN runs."
+            },
+            {
+                "name": "wizard_key",
+                "type": "string",
+                "description": "Shared secret the wizard must submit as the first WebSocket message before any other message is accepted. No default: the author must set one."
+            }
+        ],
+        "optional": [
+            {
+                "name": "wizard_slug",
+                "type": "string",
+                "description": "Author-chosen slug for the friendly hosted URL https://<host>/studymaster/<slug>. Empty = no friendly alias registered; the wizard connects with the raw pooled URL/port."
+            },
+            {
+                "name": "controls_file",
+                "type": "filepath",
+                "default": "wizard-controls.json",
+                "description": "Project-relative path to the manifest declaring which SceneFlow variables the wizard can see and set."
+            }
+        ]
+    },
+    "commands": [
+        {
+            "name": "request",
+            "type": "action",
+            "summary": "Block the flow until the wizard answers a wizard-controllable variable",
+            "description": "Sends a 'request' message to the connected wizard for the named variable (which must appear in the controls manifest) and blocks the executing activity until the wizard replies or the project is stopped. There is no timeout.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Variable name; must be declared in the controls manifest (controls_file)."
+                },
+                {
+                    "name": "prompt",
+                    "type": "string",
+                    "required": false,
+                    "description": "Question text shown to the wizard, overriding the manifest's label for this call."
+                }
+            ]
+        }
+    ],
+    "variables": {
+        "writes": [],
+        "reads": []
+    }
+}

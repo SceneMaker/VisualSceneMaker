@@ -1,6 +1,7 @@
 <script>
   import IconBlocks from "./icons/IconBlocks.svelte";
   import ScreenEditor from "./ScreenEditor.svelte";
+  import WizardControls from "./WizardControls.svelte";
 
   export let open = false;
   export let projectId = null;
@@ -19,6 +20,12 @@
 
   function openScreenEditor(plugin) { screenEditorPlugin = plugin; }
   function closeScreenEditor()      { screenEditorPlugin = null; }
+
+  // ── wizard controls editor state ───────────────────────────────────────────
+  let wizardControlsPlugin = null;
+
+  function openWizardControls(plugin) { wizardControlsPlugin = plugin; }
+  function closeWizardControls()      { wizardControlsPlugin = null; }
 
   // ── state ──────────────────────────────────────────────────────────────────
   let plugins = [];
@@ -1092,6 +1099,16 @@
                           Edit screens
                         </button>
                       {/if}
+                      {#if plugin.meta?.plugin?.id === "studymaster"}
+                        <button
+                          type="button"
+                          class="pd-action-btn"
+                          disabled={!wsConnected}
+                          on:click={() => openWizardControls(plugin)}
+                        >
+                          Edit wizard controls
+                        </button>
+                      {/if}
                     </div>
                   {/if}
                   {#if plugin.meta?.previewCapable}
@@ -1124,6 +1141,16 @@
     {apiGet}
     {apiPut}
     onClose={closeScreenEditor}
+  />
+{/if}
+
+{#if wizardControlsPlugin !== null}
+  <WizardControls
+    {projectId}
+    plugin={wizardControlsPlugin}
+    {apiGet}
+    {apiPut}
+    onClose={closeWizardControls}
   />
 {/if}
 

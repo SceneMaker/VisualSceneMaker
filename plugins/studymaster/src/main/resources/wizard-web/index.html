@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StudyMaster Wizard</title>
+<style>
+  :root {
+    --bg: #f6f3ee;
+    --panel: #ffffff;
+    --panel-soft: #f5f7fb;
+    --ink: #1f2328;
+    --muted: #6b7280;
+    --accent: #5b8edc;
+    --accent-soft: #d6e2f6;
+    --stroke: #e3ddd4;
+    --button: #5b8edc;
+    --button-pressed: #416aa6;
+    --danger: #e26d5a;
+    --danger-ink: #b4432b;
+    --shadow: 0 16px 40px rgba(0,0,0,0.08);
+    --shadow-soft: 0 8px 18px rgba(0,0,0,0.08);
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 16px;
+    --radius-pill: 999px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app { width: 100%; max-width: 760px; }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  header .logo { width: 40px; height: 40px; flex: none; }
+  header h1 { font-size: 20px; margin: 0; }
+  header .subtitle { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  header .titles { flex: 1; }
+
+  .status-pill {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--panel-soft);
+    color: var(--muted);
+    border: 1px solid var(--stroke);
+    white-space: nowrap;
+  }
+  .status-pill.connecting { color: var(--muted); }
+  .status-pill.connected { background: var(--accent-soft); color: var(--button-pressed); border-color: var(--accent); }
+  .status-pill.error { background: #fbe9e6; color: var(--danger-ink); border-color: var(--danger); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  input[type="text"], input[type="password"], input[type="number"], select {
+    width: 100%;
+    font: inherit;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--stroke);
+    background: var(--panel);
+    color: var(--ink);
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+
+  button {
+    font: inherit;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 16px;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--button); color: #fff; }
+  .btn-primary:hover { background: var(--button-pressed); }
+  .btn-primary:disabled { background: var(--stroke); color: var(--muted); cursor: not-allowed; }
+  .btn-ghost { background: var(--panel); color: var(--ink); border: 1px solid var(--stroke); }
+  .btn-ghost:hover { background: var(--panel-soft); }
+
+  .auth-row { display: flex; gap: 10px; align-items: flex-end; }
+  .auth-row > div:first-child { flex: 1; }
+
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 12px; }
+
+  /* Active-node accent matches the SceneFlow editor's own "this node is active" styling
+     (editor/web-ui/src/app.css .node-activity / .node-activity-border) so a wizard familiar
+     with the editor recognizes it at a glance. */
+  .flows-list { display: flex; flex-direction: column; gap: 14px; }
+  .flow-card {
+    border: 1px solid var(--stroke);
+    border-left: 5px solid #e84a4f;
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    background: var(--panel-soft);
+    position: relative;
+    overflow: hidden;
+  }
+  .flow-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(232, 74, 79, 0.06);
+    pointer-events: none;
+    animation: flow-card-pulse 1.6s ease-in-out infinite alternate;
+  }
+  @keyframes flow-card-pulse { from { opacity: 0.4; } to { opacity: 1; } }
+  .flow-card .flow-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #e84a4f;
+    margin-bottom: 6px;
+  }
+  /* node-trail: a running history of the nodes this flow has visited, most recent last — a
+     comma-joined line, with the current (most recent) node bolded, and any scene turns spoken
+     at a node breaking onto their own line right after that node's name. */
+  .flow-card .node-trail { font-size: 15px; line-height: 1.7; }
+  .flow-card .trail-node { color: var(--muted); font-weight: 500; cursor: default; }
+  .flow-card .trail-node.current { color: var(--ink); font-weight: 700; }
+  .flow-card .turn {
+    margin: 4px 0 4px 0;
+    background: #fff;
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  .flow-card .turn .speaker { font-weight: 600; margin-right: 6px; }
+  .now-playing .empty { color: var(--muted); font-size: 13px; }
+
+  .request-banner {
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    border-left: 5px solid var(--accent);
+  }
+  .request-banner .prompt { font-weight: 600; margin-bottom: 12px; }
+  .request-banner .options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .request-banner .options button { background: #fff; border: 1px solid var(--accent); color: var(--button-pressed); }
+  .request-banner .options button:hover { background: var(--accent); color: #fff; }
+  .request-banner .free-input { display: flex; gap: 10px; }
+  .request-banner .free-input > div:first-child { flex: 1; }
+
+  .controls-list { display: flex; flex-direction: column; gap: 14px; }
+  .control-row { display: flex; align-items: center; gap: 12px; }
+  .control-row .control-label { flex: none; width: 160px; font-weight: 600; font-size: 13px; }
+  .control-row .control-input { flex: 1; display: flex; gap: 8px; align-items: center; }
+  .control-row .control-input input, .control-row .control-input select { flex: 1; }
+  .toggle-btn { padding: 8px 14px; border-radius: var(--radius-pill); border: 1px solid var(--stroke); background: var(--panel); }
+  .toggle-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .empty-state { color: var(--muted); font-size: 13px; }
+
+  .log {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    color: var(--danger-ink);
+  }
+  .log div { padding: 4px 0; border-top: 1px solid var(--stroke); }
+  .log div:first-child { border-top: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <svg class="logo" viewBox="0 0 1332.46 1332.46" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="clippath"><path fill="none" d="M1076.29,364.46c-30.11-22.01-67.89-35.13-108.93-35.13-98.31,0-178,75.17-178,167.89s79.69,167.89,178,167.89c41.04,0,78.83-13.11,108.93-35.13v-265.52Z"/></clipPath>
+        <clipPath id="clippath-1"><rect fill="none" x="542.22" y="789.75" width="506.45" height="285.6"/></clipPath>
+        <radialGradient id="radial-gradient" cx="501.53" cy="387.02" fx="501.53" fy="387.02" r="133.7" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#5bae7a"/><stop offset=".86" stop-color="#5bae7a"/><stop offset="1" stop-color="#5bae7a"/>
+        </radialGradient>
+      </defs>
+      <rect fill="none" width="1332.46" height="1332.46"/>
+      <rect fill="#b1c0c9" x="155.99" y="155.35" width="1019.51" height="1019.51" rx="298.05" ry="298.05"/>
+      <path fill="#a06a4b" stroke="#5f6265" stroke-width="17.29" stroke-linecap="round" stroke-linejoin="bevel" d="M1076.19,386.12c0-.15-.01-.3-.02-.45-.07-1.67-.16-3.33-.29-4.98,0-.11,0-.23-.01-.34-5.5-70.32-64.29-125.67-136.02-125.67h-28.2c-.03.49-.05.99-.05,1.49v111.29c0,7.05-3,13.76-8.24,18.47-27.44,24.72-44.7,60.52-44.7,100.36s17.26,75.65,44.7,100.36c5.24,4.72,8.24,11.42,8.24,18.47v231.56c0,7.08,3.03,13.82,8.31,18.54,27.68,24.73,45.11,60.69,45.11,100.73s-17.43,76-45.11,100.73c-5.28,4.72-8.31,11.46-8.31,18.54h0c0,.5.02,1,.05,1.49h28.2c71.51,0,130.16-55.01,135.97-125.01v-358.19c.16-.12.32-.24.48-.36v-202.02c0-1.68-.04-3.34-.1-5Z"/>
+      <path fill="#a06a4b" stroke="#7a7d81" stroke-width="17.29" stroke-miterlimit="10" d="M920.31,855.58c-5.24-4.72-8.24-11.42-8.24-18.47v-232.13c0-7.09-3.03-13.83-8.32-18.55-27.71-24.73-45.16-60.71-45.16-100.77s17.45-76.04,45.16-100.77c5.29-4.72,8.32-11.46,8.32-18.55v-110.18c0-.5-.02-1-.05-1.49h-164.12c-.03.49-.05.99-.05,1.49v291.23c0,7.05,3,13.76,8.24,18.47,27.44,24.72,44.7,60.52,44.7,100.36s-17.26,75.65-44.7,100.36c-5.24,4.72-8.24,11.42-8.24,18.47v52.05c0,7.05-3,13.76-8.24,18.47-27.44,24.72-44.7,60.52-44.7,100.36s17.26,75.65,44.7,100.36c5.24,4.72,8.24,11.42,8.24,18.47v.43c0,.5.02,1,.05,1.49h164.12c.03-.49.05-.99.05-1.49v-.43c0-7.05,3-13.76,8.24-18.47,27.44-24.72,44.7-60.52,44.7-100.36s-17.26-75.65-44.7-100.36Z"/>
+      <path fill="#5bae7a" stroke="#7a7d81" stroke-width="17.29" stroke-miterlimit="10" stroke-linecap="square" d="M419.42,256.16v10.02c0,7.05-3,13.76-8.24,18.47-27.44,24.72-44.7,60.52-44.7,100.36s17.26,75.65,44.7,100.36c5.24,4.72,8.24,11.42,8.24,18.47v205.58c0,7.05,3,13.76,8.24,18.47,27.44,24.72,44.7,60.52,44.7,100.36s-17.26,75.65-44.7,100.36c-5.24,4.72-8.24,11.42-8.24,18.47v128.12c0,.5.02,1,.05,1.49h164.12c.03-.49.05-.99.05-1.49v-290.69c0-7.05-3-13.76-8.24-18.47-27.44-24.72-44.7-60.52-44.7-100.36s17.26-75.65,44.7-100.36c5.24-4.72,8.24-11.42,8.24-18.47v-43c0-7.05,3-13.76,8.24-18.47,27.44-24.72,44.7-60.52,44.7-100.36s-17.26-75.65-44.7-100.36c-5.24-4.72-8.24-11.42-8.24-18.47v-10.02c0-.5-.02-1-.05-1.49h-164.12c-.03.49-.05.99-.05,1.49Z"/>
+      <path fill="#0b8edc" stroke="#5f6265" stroke-width="17.29" stroke-linecap="round" stroke-linejoin="bevel" d="M391.66,1076.71h27.72c.03-.49.05-.99.05-1.49v-128.44c0-7.05,3-13.76,8.24-18.47,27.44-24.72,44.7-60.52,44.7-100.36s-17.26-75.65-44.7-100.36c-5.24-4.72-8.24-11.42-8.24-18.47v-206.26c0-7.05-3-13.76-8.24-18.47-27.44-24.72-44.7-60.52-44.7-100.36s19.69-73.85,45.8-99.97c5.72-5.72,26.69-23.34,50.7-29.37h2.68c0-.5-46.27.49-46.29,0h-27.72c-75.36,0-136.45,61.09-136.45,136.45v549.14c0,75.36,61.09,136.45,136.45,136.45Z"/>
+      <path fill="#ffc857" stroke="#5f6265" stroke-width="17.29" stroke-linecap="round" stroke-linejoin="bevel" d="M557.57,255.06l-17.85-.39c28.6,7.86,46.67,25.06,51.93,29.77,27.58,24.72,44.93,60.62,44.93,100.57s-17.35,75.85-44.93,100.57c-5.26,4.72-8.28,11.44-8.28,18.51v43c0,7.03-2.98,13.72-8.2,18.43-27.31,24.71-44.47,60.43-44.47,100.16s17.16,75.45,44.47,100.16c5.21,4.72,8.2,11.41,8.2,18.43v290.94c0,.5.02,1,.05,1.49h164.12c.03-.49.05-.99.05-1.49v-.68c0-7.03-2.98-13.72-8.2-18.43-27.31-24.71-44.47-60.43-44.47-100.16s17.16-75.45,44.47-100.16c5.21-4.72,8.2-11.41,8.2-18.43v-52.59c0-7.07,3.02-13.79,8.28-18.51,27.58-24.72,44.93-60.62,44.93-100.57s-17.35-75.84-44.93-100.57c-5.26-4.72-8.28-11.44-8.28-18.51v-290.45c0-.5-.02-1-.05-1.49h-164.12c-8.11,0-18.9.25-20.57.37l-5.28.02Z"/>
+      <circle fill="#ffc857" cx="665.99" cy="665.21" r="135.05"/>
+      <path fill="#0b8edc" d="M337.8,692.63c-30.87,0-59.32,10.37-82.06,27.8v214.48c22.75,17.43,51.19,27.8,82.06,27.8,74.58,0,135.05-60.46,135.05-135.05s-60.46-135.05-135.05-135.05Z"/>
+      <g clip-path="url(#clippath)"><path fill="#e26d5a" stroke="#7a7d81" stroke-width="17.29" stroke-miterlimit="10" d="M1076.29,378.87c-22.84-17.71-51.51-28.26-82.65-28.26-74.58,0-135.05,60.46-135.05,135.05s60.46,135.05,135.05,135.05c31.14,0,59.81-10.55,82.65-28.26v-213.58Z"/></g>
+      <g clip-path="url(#clippath-1)"><path fill="#a06a4b" stroke="#7a7d81" stroke-width="17.29" stroke-miterlimit="10" d="M770.09,1076.71h119.75c44.54-22.07,75.17-67.99,75.17-121.07,0-74.58-60.46-135.05-135.05-135.05s-135.05,60.46-135.05,135.05c0,53.08,30.63,99,75.17,121.07Z"/></g>
+      <path fill="url(#radial-gradient)" d="M539.44,254.67h-75.82c-56.13,16.39-97.14,68.22-97.14,129.64,0,74.58,60.46,135.05,135.05,135.05s135.05-60.46,135.05-135.05c0-61.42-41.01-113.26-97.14-129.64Z"/>
+      <rect fill="none" stroke="#5f6265" stroke-width="17.99" stroke-miterlimit="10" x="254.22" y="254.58" width="822.13" height="822.13" rx="135.83" ry="135.83"/>
+    </svg>
+    <div class="titles">
+      <h1>StudyMaster</h1>
+      <div class="subtitle">Wizard console</div>
+    </div>
+    <div id="statusPill" class="status-pill connecting">connecting&hellip;</div>
+  </header>
+
+  <div id="authCard" class="card">
+    <h2>Connect</h2>
+    <div class="auth-row">
+      <div>
+        <label for="keyInput">Wizard key</label>
+        <input id="keyInput" type="password" autocomplete="off" placeholder="Enter the key from the project's StudyMaster config" />
+      </div>
+      <button id="connectBtn" class="btn-primary">Connect</button>
+    </div>
+    <div id="authError" class="log" style="margin-top:10px;"></div>
+  </div>
+
+  <div id="mainArea" style="display:none;">
+    <div class="card now-playing">
+      <h2>Active flows</h2>
+      <div id="flowsList" class="flows-list">
+        <div class="empty">No flow active yet.</div>
+      </div>
+    </div>
+
+    <div id="requestCard" class="card request-banner" style="display:none;">
+      <h2>Wizard input needed</h2>
+      <div id="requestPrompt" class="prompt"></div>
+      <div id="requestControl"></div>
+    </div>
+
+    <div class="card">
+      <h2>Controls</h2>
+      <div id="controlsList" class="controls-list"></div>
+    </div>
+  </div>
+
+  <div id="logArea" class="log"></div>
+</div>
+
+<script>
+(function () {
+  var ws = null;
+  var controls = {};   // var -> {var,label,kind,options,min,max,value}
+  var pendingRequest = null;
+  var reconnecting = false;
+
+  var statusPill = document.getElementById('statusPill');
+  var authCard = document.getElementById('authCard');
+  var authError = document.getElementById('authError');
+  var keyInput = document.getElementById('keyInput');
+  var connectBtn = document.getElementById('connectBtn');
+  var mainArea = document.getElementById('mainArea');
+  var flowsList = document.getElementById('flowsList');
+  var requestCard = document.getElementById('requestCard');
+  var requestPrompt = document.getElementById('requestPrompt');
+  var requestControl = document.getElementById('requestControl');
+  var controlsList = document.getElementById('controlsList');
+  var logArea = document.getElementById('logArea');
+
+  function setStatus(cls, text) {
+    statusPill.className = 'status-pill ' + cls;
+    statusPill.textContent = text;
+  }
+
+  function log(msg) {
+    var div = document.createElement('div');
+    div.textContent = new Date().toLocaleTimeString() + ' — ' + msg;
+    logArea.insertBefore(div, logArea.firstChild);
+    while (logArea.children.length > 20) logArea.removeChild(logArea.lastChild);
+  }
+
+  function wsUrl() {
+    var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var base = location.pathname.endsWith('/') ? location.pathname : location.pathname + '/';
+    return proto + '//' + location.host + base + 'ws';
+  }
+
+  function connect() {
+    setStatus('connecting', 'connecting…');
+    ws = new WebSocket(wsUrl());
+    ws.onopen = function () {
+      ws.send(JSON.stringify({ type: 'auth', key: keyInput.value }));
+    };
+    ws.onclose = function () {
+      setStatus('error', 'disconnected');
+      authCard.style.display = '';
+      connectBtn.disabled = false;
+      connectBtn.textContent = 'Connect';
+      if (!reconnecting) log('Connection closed.');
+    };
+    ws.onerror = function () {
+      setStatus('error', 'connection error');
+    };
+    ws.onmessage = function (evt) {
+      var msg;
+      try { msg = JSON.parse(evt.data); } catch (e) { return; }
+      handleMessage(msg);
+    };
+  }
+
+  connectBtn.addEventListener('click', function () {
+    connectBtn.disabled = true;
+    connectBtn.textContent = 'Connecting…';
+    connect();
+  });
+  keyInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') connectBtn.click();
+  });
+
+  function handleMessage(msg) {
+    switch (msg.type) {
+      case 'authResult':
+        if (msg.ok) {
+          setStatus('connected', 'connected');
+          authCard.style.display = 'none';
+          mainArea.style.display = '';
+          authError.textContent = '';
+        } else {
+          setStatus('error', 'auth failed');
+          authError.textContent = 'Invalid key (' + (msg.reason || 'error') + ').';
+          connectBtn.disabled = false;
+          connectBtn.textContent = 'Connect';
+        }
+        break;
+      case 'snapshot':
+        applySnapshot(msg);
+        break;
+      case 'activeFlows':
+        renderFlows(msg.flows || []);
+        break;
+      case 'variableChanged':
+        if (controls[msg.var]) {
+          controls[msg.var].value = msg.value;
+          renderControls();
+        }
+        break;
+      case 'request':
+        pendingRequest = msg;
+        renderRequest();
+        break;
+      case 'requestCancelled':
+        if (pendingRequest && pendingRequest.requestId === msg.requestId) {
+          pendingRequest = null;
+          renderRequest();
+        }
+        break;
+      case 'runtimeStatus':
+        log('Runtime status: ' + msg.status);
+        break;
+      case 'error':
+        log('Error [' + msg.code + ']: ' + msg.message);
+        break;
+    }
+  }
+
+  function applySnapshot(snap) {
+    controls = {};
+    (snap.controls || []).forEach(function (c) { controls[c.var] = c; });
+    renderControls();
+    renderFlows(snap.flows || []);
+    pendingRequest = (snap.pendingRequest && snap.pendingRequest !== null) ? snap.pendingRequest : null;
+    renderRequest();
+  }
+
+  // One card per top-level flow — styled to match the SceneFlow editor's own "active node"
+  // accent (see .flow-card in the stylesheet above) so a wizard familiar with the editor
+  // recognizes what a highlighted node there means here too. Within a card, every node the
+  // flow has visited so far is clustered into one comma-joined trail (most recent bolded);
+  // a node that played a scene gets its spoken line(s) broken onto their own line right after
+  // its name in the trail, and that stays visible even once the flow has moved on.
+  function renderFlows(flows) {
+    if (!flows || flows.length === 0) {
+      flowsList.innerHTML = '<div class="empty">No flow active yet.</div>';
+      return;
+    }
+    flowsList.innerHTML = '';
+    flows.forEach(function (f) {
+      var card = document.createElement('div');
+      card.className = 'flow-card';
+
+      var label = document.createElement('div');
+      label.className = 'flow-label';
+      label.textContent = f.flow || '';
+      card.appendChild(label);
+
+      var trail = document.createElement('div');
+      trail.className = 'node-trail';
+      var nodes = f.nodes || [];
+      nodes.forEach(function (n, i) {
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'trail-node' + (i === nodes.length - 1 ? ' current' : '');
+        nameSpan.textContent = n.name || n.id;
+        if (n.comment) nameSpan.title = n.comment;
+        trail.appendChild(nameSpan);
+        if (i < nodes.length - 1) {
+          trail.appendChild(document.createTextNode(', '));
+        }
+        (n.turns || []).forEach(function (t) {
+          var turn = document.createElement('div');
+          turn.className = 'turn';
+          var speaker = document.createElement('span');
+          speaker.className = 'speaker';
+          speaker.textContent = (t.speaker || '') + ':';
+          var text = document.createElement('span');
+          text.textContent = t.text;
+          turn.appendChild(speaker);
+          turn.appendChild(text);
+          trail.appendChild(turn);
+        });
+      });
+      card.appendChild(trail);
+
+      flowsList.appendChild(card);
+    });
+  }
+
+  function sendSet(varName, value) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'set', var: varName, value: value }));
+    }
+  }
+
+  function sendReply(requestId, value) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'reply', requestId: requestId, value: value }));
+    }
+    pendingRequest = null;
+    renderRequest();
+  }
+
+  function renderRequest() {
+    if (!pendingRequest) { requestCard.style.display = 'none'; return; }
+    requestCard.style.display = '';
+    requestPrompt.textContent = pendingRequest.prompt || ('Set ' + pendingRequest.var);
+    requestControl.innerHTML = '';
+    if (pendingRequest.kind === 'choice' && pendingRequest.options) {
+      var wrap = document.createElement('div');
+      wrap.className = 'options';
+      pendingRequest.options.forEach(function (opt) {
+        var btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.addEventListener('click', function () { sendReply(pendingRequest.requestId, opt); });
+        wrap.appendChild(btn);
+      });
+      requestControl.appendChild(wrap);
+    } else if (pendingRequest.kind === 'boolean') {
+      var wrap2 = document.createElement('div');
+      wrap2.className = 'options';
+      ['true', 'false'].forEach(function (v) {
+        var btn = document.createElement('button');
+        btn.textContent = v;
+        btn.addEventListener('click', function () { sendReply(pendingRequest.requestId, v === 'true'); });
+        wrap2.appendChild(btn);
+      });
+      requestControl.appendChild(wrap2);
+    } else {
+      var row = document.createElement('div');
+      row.className = 'free-input';
+      var inputWrap = document.createElement('div');
+      var input = document.createElement('input');
+      input.type = pendingRequest.kind === 'number' ? 'number' : 'text';
+      inputWrap.appendChild(input);
+      var btn = document.createElement('button');
+      btn.className = 'btn-primary';
+      btn.textContent = 'Submit';
+      btn.addEventListener('click', function () {
+        var v = pendingRequest.kind === 'number' ? Number(input.value) : input.value;
+        sendReply(pendingRequest.requestId, v);
+      });
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') btn.click(); });
+      row.appendChild(inputWrap);
+      row.appendChild(btn);
+      requestControl.appendChild(row);
+    }
+  }
+
+  function renderControls() {
+    var keys = Object.keys(controls);
+    if (keys.length === 0) {
+      controlsList.innerHTML = '<div class="empty-state">No wizard-controllable variables declared (wizard-controls.json).</div>';
+      return;
+    }
+    controlsList.innerHTML = '';
+    keys.forEach(function (key) {
+      var c = controls[key];
+      var row = document.createElement('div');
+      row.className = 'control-row';
+      var label = document.createElement('div');
+      label.className = 'control-label';
+      label.textContent = c.label || c.var;
+      row.appendChild(label);
+
+      var inputWrap = document.createElement('div');
+      inputWrap.className = 'control-input';
+
+      if (c.kind === 'boolean') {
+        var toggle = document.createElement('button');
+        toggle.type = 'button';
+        var isOn = c.value === true || c.value === 'true';
+        toggle.className = 'toggle-btn' + (isOn ? ' on' : '');
+        toggle.textContent = isOn ? 'On' : 'Off';
+        toggle.addEventListener('click', function () {
+          var next = !(c.value === true || c.value === 'true');
+          c.value = next;
+          sendSet(c.var, next);
+          renderControls();
+        });
+        inputWrap.appendChild(toggle);
+      } else if (c.kind === 'choice' && c.options) {
+        var select = document.createElement('select');
+        c.options.forEach(function (opt) {
+          var o = document.createElement('option');
+          o.value = opt; o.textContent = opt;
+          if (c.value === opt) o.selected = true;
+          select.appendChild(o);
+        });
+        select.addEventListener('change', function () {
+          c.value = select.value;
+          sendSet(c.var, select.value);
+        });
+        inputWrap.appendChild(select);
+      } else if (c.kind === 'number') {
+        var num = document.createElement('input');
+        num.type = 'number';
+        if (c.min !== undefined) num.min = c.min;
+        if (c.max !== undefined) num.max = c.max;
+        num.value = c.value !== null && c.value !== undefined ? c.value : '';
+        num.addEventListener('change', function () {
+          c.value = Number(num.value);
+          sendSet(c.var, c.value);
+        });
+        inputWrap.appendChild(num);
+      } else {
+        var text = document.createElement('input');
+        text.type = 'text';
+        text.value = c.value !== null && c.value !== undefined ? c.value : '';
+        text.addEventListener('change', function () {
+          c.value = text.value;
+          sendSet(c.var, text.value);
+        });
+        inputWrap.appendChild(text);
+      }
+      row.appendChild(inputWrap);
+      controlsList.appendChild(row);
+    });
+  }
+
+  connect();
+})();
+</script>
+</body>
+</html>

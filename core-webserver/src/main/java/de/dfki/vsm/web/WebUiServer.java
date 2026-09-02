@@ -8,6 +8,7 @@ import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
 import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.model.project.LLMConfig;
@@ -3215,6 +3216,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/ca", this::handleCaCertificate);
         mApp.get(API_PREFIX + "/me", this::handleMe);
         mApp.get("/setup", this::handleSetupPage);
+        // Author-chosen friendly link for a wizard, e.g. /studymaster/study-sept-wizard — see
+        // doc/vsm-workspace-platform-plan.md Component 5 for the /plugin/{proj}/{plugin}/{portKey}/
+        // routing this redirects into. Generic by *port-property naming, same convention as
+        // PortPoolManager, but NOT multi-port-aware: a plugin config with more than one "*port"
+        // property is ambiguous and reported as an error rather than guessed at.
+        mApp.get("/studymaster/{slug}", this::handleStudyMasterWizardLink);
         mApp.get(API_PREFIX + "/projects", this::handleProjects);
         mApp.get(API_PREFIX + "/projects/recent", this::handleRecentProjects);
         mApp.get(API_PREFIX + "/projects/samples", ctx -> handleStaticProjectList(ctx, "res/prj"));
@@ -3244,6 +3251,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/variables", this::handleVariables);
         mApp.get(API_PREFIX + "/projects/{pid}/screens", this::handleScreensGet);
         mApp.put(API_PREFIX + "/projects/{pid}/screens", this::handleScreensPut);
+        mApp.get(API_PREFIX + "/projects/{pid}/plugins/{name}/wizard-controls", this::handleWizardControlsGet);
+        mApp.put(API_PREFIX + "/projects/{pid}/plugins/{name}/wizard-controls", this::handleWizardControlsPut);
         mApp.get(API_PREFIX + "/projects/{pid}/character-config", this::handleCharacterConfigGet);
         mApp.put(API_PREFIX + "/projects/{pid}/character-config", this::handleCharacterConfigPut);
         mApp.get(API_PREFIX + "/projects/{pid}/assets/{filename}", this::handleAssetsGet);
@@ -3396,6 +3405,62 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 }
             });
         });
+    }
+
+    /**
+     * Resolves an author-chosen StudyMaster wizard slug (any plugin config's {@code wizard_slug}
+     * property, across every open project) to the plugin's actual connect URL and redirects there.
+     * Path-prefix mode (hosted/multi-tenant): redirects to the pooled {@code /plugin/{proj}/{plugin}/{portKey}/}
+     * URL nginx already proxies. Local/LAN mode (no {@code _pathPrefix} set): redirects straight to
+     * {@code http://<request host>:<port>/}, since there the plugin's own port is directly reachable.
+     */
+    private void handleStudyMasterWizardLink(Context ctx) {
+        final String slug = ctx.pathParam("slug");
+        for (ProjectRef ref : projectStore.values()) {
+            if (ref.runtimeProject == null || ref.runtimeProject.getProjectConfig() == null) {
+                continue;
+            }
+            for (PluginConfig pc : ref.runtimeProject.getProjectConfig().getPluginConfigList()) {
+                if (!slug.equals(pc.getProperty("wizard_slug"))) {
+                    continue;
+                }
+
+                // Same "*port"-suffixed-property convention PortPoolManager uses, but this
+                // redirect only knows how to pick a single one; a plugin declaring several (like
+                // htmlgui-ws's html_port/ws_port/wss_port) needs a plugin-specific slug scheme,
+                // not this generic one.
+                String portKey = null;
+                for (ConfigFeature f : pc.getEntryList()) {
+                    if (f.getKey().toLowerCase().endsWith("port")) {
+                        if (portKey != null) {
+                            portKey = null;
+                            break;
+                        }
+                        portKey = f.getKey();
+                    }
+                }
+                if (portKey == null) {
+                    ctx.status(409);
+                    writeJson(ctx, errorResponse("AMBIGUOUS_PORT",
+                            "Plugin for slug '" + slug + "' has zero or more than one '*port' property; "
+                                    + "cannot resolve a single wizard link"));
+                    return;
+                }
+
+                final String prefix = pc.getProperty("_pathPrefix", "");
+                if (!prefix.isBlank()) {
+                    ctx.redirect(prefix + portKey + "/");
+                } else {
+                    final String port = pc.getProperty(portKey);
+                    final String hostHeader = ctx.host();
+                    final String host = hostHeader != null ? hostHeader.split(":")[0] : "localhost";
+                    ctx.redirect("http://" + host + ":" + port + "/");
+                }
+                return;
+            }
+        }
+        ctx.status(404);
+        writeJson(ctx, errorResponse("NOT_FOUND", "No wizard link registered for slug '" + slug + "'"));
     }
 
     /**
@@ -7350,6 +7415,91 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         } catch (Exception e) {
             ctx.status(400);
             writeJson(ctx, errorResponse("SCREENS_SAVE_FAILED", e.getMessage()));
+        }
+    }
+
+    // ── Wizard controls (StudyMaster's wizard-controls.json) ──────────────────
+
+    private Path wizardControlsPath(ProjectRef ref, PluginConfig pc) {
+        if (ref == null || ref.path == null || ref.path.isBlank()) return null;
+        String fileName = pc.getProperty("controls_file", "wizard-controls.json");
+        if (fileName == null || fileName.isBlank()) fileName = "wizard-controls.json";
+        return Paths.get(ref.path, fileName);
+    }
+
+    private void handleWizardControlsGet(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        String instanceName = ctx.pathParam("name");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null || ref.runtimeProject.getProjectConfig() == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        PluginConfig pc = ref.runtimeProject.getProjectConfig().getPluginConfig(instanceName);
+        if (pc == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PLUGIN_NOT_FOUND", "Plugin instance '" + instanceName + "' not found"));
+            return;
+        }
+        Path path = wizardControlsPath(ref, pc);
+        JSONObject response = new JSONObject();
+        if (path == null || !Files.exists(path)) {
+            response.put("controls", new JSONArray());
+            writeJson(ctx, response);
+            return;
+        }
+        try {
+            String raw = Files.readString(path, StandardCharsets.UTF_8);
+            response.put("controls", new JSONArray(raw));
+            writeJson(ctx, response);
+        } catch (Exception e) {
+            ctx.status(500);
+            writeJson(ctx, errorResponse("WIZARD_CONTROLS_READ_FAILED", e.getMessage()));
+        }
+    }
+
+    private void handleWizardControlsPut(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        String instanceName = ctx.pathParam("name");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null || ref.runtimeProject.getProjectConfig() == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        PluginConfig pc = ref.runtimeProject.getProjectConfig().getPluginConfig(instanceName);
+        if (pc == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PLUGIN_NOT_FOUND", "Plugin instance '" + instanceName + "' not found"));
+            return;
+        }
+        Path path = wizardControlsPath(ref, pc);
+        if (path == null) {
+            ctx.status(409);
+            writeJson(ctx, errorResponse("WIZARD_CONTROLS_SAVE_FAILED",
+                    "Project has not been saved to disk yet. Use File → Save As to choose a location, then try again."));
+            return;
+        }
+        try {
+            JSONObject body = new JSONObject(ctx.body());
+            JSONArray controls = body.optJSONArray("controls");
+            if (controls == null) {
+                ctx.status(400);
+                writeJson(ctx, errorResponse("BAD_REQUEST", "Missing 'controls' array"));
+                return;
+            }
+            Files.createDirectories(path.getParent());
+            // File on disk is the bare array — StudyMasterExecutor.loadControls() parses it
+            // directly as a JSONArray, not wrapped in {"controls": ...}.
+            Files.writeString(path, controls.toString(2), StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            JSONObject response = new JSONObject();
+            response.put("controls", controls);
+            writeJson(ctx, response);
+        } catch (Exception e) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("WIZARD_CONTROLS_SAVE_FAILED", e.getMessage()));
         }
     }
 
