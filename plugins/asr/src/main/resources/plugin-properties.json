@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.2",
-    "specHash": "b5fe94db0375500d",
+    "specVersion": "1.3",
+    "specHash": "b70afc2c8517e5e1",
     "plugin": {
         "id": "asr",
         "name": "Speech Recognition",
@@ -30,6 +30,12 @@
                 "type": "string",
                 "default": "ws://localhost:8765/stream",
                 "description": "WebSocket URL of fast-asr server"
+            },
+            {
+                "name": "recording_dir",
+                "type": "string",
+                "default": "./audio-recording",
+                "description": "Directory recordings are saved into on the fast-asr server, relative to the VSM project directory (an absolute path is also accepted). Sent to the server via POST /set_recording_dir once the connection is ready, and again on every reconnect."
             }
         ],
         "optional": [
@@ -155,6 +161,20 @@
                 "sceneflowtype": "String",
                 "default": "asr_diarization",
                 "description": "Raw JSON of latest diarization result"
+            },
+            {
+                "name": "recordingActiveVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "asr_recording_active",
+                "description": "true while the fast-asr server is recording the microphone stream"
+            },
+            {
+                "name": "lastRecordingFileVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "asr_last_recording_file",
+                "description": "Full path of the most recently saved recording (updated on stop_recording and get_last_recorded_audio)"
             }
         ]
     },
@@ -214,6 +234,33 @@
             "type": "action",
             "summary": "Resume microphone processing \u2014 use after TTS finishes speaking",
             "description": "Instructs the fast-asr server to resume normal audio processing. The server first flushes any audio that accumulated in the capture queue during the muted period, ensuring that TTS bleed does not reach the ASR pipeline. Use this immediately after a TTS utterance completes.",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "start_recording",
+            "type": "action",
+            "summary": "Start recording the live microphone stream",
+            "description": "Calls POST /start_recording on the fast-asr server. The recording directory is configured once via the recording_dir plugin config (sent automatically on connect), so no directory needs to be given here. Fails silently (logged only) if a recording is already in progress; recordingActiveVar is set true on success.",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "stop_recording",
+            "type": "action",
+            "summary": "Stop the active recording and save it as an MP3",
+            "description": "Calls POST /stop_recording on the fast-asr server. On success, recordingActiveVar is set false and lastRecordingFileVar is updated with the full path of the saved file. Fails silently (logged only) if no recording was in progress or no audio was captured.",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "get_last_recorded_audio",
+            "type": "action",
+            "summary": "Look up the most recently saved recording",
+            "description": "Calls GET /get_last_recorded_audio on the fast-asr server and writes the full path into lastRecordingFileVar. Useful to re-read the last recording without waiting for a stop_recording response. Logged (not written) if no recording has been saved yet.",
             "params": [
                 
             ]
@@ -295,6 +342,16 @@
                 "var": "diarizationVar",
                 "type": "String",
                 "description": "Diarization JSON"
+            },
+            {
+                "var": "recordingActiveVar",
+                "type": "Bool",
+                "description": "Recording in progress"
+            },
+            {
+                "var": "lastRecordingFileVar",
+                "type": "String",
+                "description": "Full path of the last saved recording"
             }
         ],
         "reads": [

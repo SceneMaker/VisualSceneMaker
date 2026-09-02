@@ -6,8 +6,14 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,9 +28,12 @@ public class AsrExecutor extends ActivityExecutor {
 
     // --- Config ---
     private String wsUrl;
+    private String restBaseUrl;
     private int reconnectDelayMs;
     private String defaultGroups;
     private int defaultGroupsTimeout;
+    private String recordingDir;
+    private String resolvedRecordingDir;
 
     // --- Variable name bindings ---
     private String connectedVar;
@@ -42,6 +51,8 @@ public class AsrExecutor extends ActivityExecutor {
     private String asrConfigLanguageVar;
     private String turnEndProbVar;
     private String diarizationVar;
+    private String recordingActiveVar;
+    private String lastRecordingFileVar;
 
     // --- Lifecycle state ---
     private volatile boolean running = false;
@@ -73,9 +84,12 @@ public class AsrExecutor extends ActivityExecutor {
         running = true;
 
         wsUrl                = configOrDefault("ws_url",                "ws://localhost:8765/stream");
+        restBaseUrl          = restBaseUrlFrom(wsUrl);
         reconnectDelayMs     = parseIntOrDefault(configOrDefault("reconnect_delay_ms",   "2000"), 2000);
         defaultGroups        = configOrDefault("defaultGroups",        "");
         defaultGroupsTimeout = parseIntOrDefault(configOrDefault("defaultGroupsTimeout", "3600"), 3600);
+        recordingDir         = configOrDefault("recording_dir",        "./audio-recording");
+        resolvedRecordingDir = Paths.get(mProject.getProjectPath()).resolve(recordingDir).normalize().toString();
 
         connectedVar      = configOrDefault("connectedVar",      "asr_connected");
         vadActiveVar      = configOrDefault("vadActiveVar",      "asr_vad_active");
@@ -92,6 +106,8 @@ public class AsrExecutor extends ActivityExecutor {
         asrConfigLanguageVar  = configOrDefault("asrConfigLanguageVar",  "asr_config_language");
         turnEndProbVar        = configOrDefault("turnEndProbVar",        "asr_turn_end_prob");
         diarizationVar      = configOrDefault("diarizationVar",      "asr_diarization");
+        recordingActiveVar   = configOrDefault("recordingActiveVar",   "asr_recording_active");
+        lastRecordingFileVar = configOrDefault("lastRecordingFileVar", "asr_last_recording_file");
 
         // Safe defaults
         setBoolVar(connectedVar,       false);
@@ -111,6 +127,8 @@ public class AsrExecutor extends ActivityExecutor {
         // string event would cause spurious sceneflow edge triggers.
         setFloatVar(turnEndProbVar,    0.0f);
         setStringVar(diarizationVar,   "");
+        setBoolVar(recordingActiveVar,       false);
+        setStringVar(lastRecordingFileVar,   "");
 
         messageExecutor = Executors.newSingleThreadExecutor(r -> {
             Thread t = new Thread(r, "asr-message-handler");
@@ -203,6 +221,7 @@ public class AsrExecutor extends ActivityExecutor {
                     setBoolVar(connectedVar, true);
                     setStringVar(asrConfigLanguageVar, msg.optString("language", ""));
                     mLogger.message("[asr] server ready, models=" + msg.optString("models", ""));
+                    sendSetRecordingDir();
                     if (!defaultGroups.isBlank()) {
                         sendExpect(defaultGroups, String.valueOf(defaultGroupsTimeout));
                     }
@@ -226,6 +245,14 @@ public class AsrExecutor extends ActivityExecutor {
                     break;
                 case "diarization":
                     setStringVar(diarizationVar, raw);
+                    break;
+                case "recording":
+                    setBoolVar(recordingActiveVar, msg.optBoolean("active", false));
+                    final String recordedFile = msg.optString("file", "");
+                    if (!recordedFile.isBlank()) {
+                        setStringVar(lastRecordingFileVar,
+                                Paths.get(resolvedRecordingDir, recordedFile).toString());
+                    }
                     break;
                 default:
                     break;
@@ -316,6 +343,15 @@ public class AsrExecutor extends ActivityExecutor {
                 break;
             case "unmute":
                 sendUnmute();
+                break;
+            case "start_recording":
+                sendStartRecording();
+                break;
+            case "stop_recording":
+                sendStopRecording();
+                break;
+            case "get_last_recorded_audio":
+                sendGetLastRecordedAudio();
                 break;
             default:
                 mLogger.warning("[asr] unknown action: " + name);
@@ -446,6 +482,127 @@ public class AsrExecutor extends ActivityExecutor {
             sendText(msg.toString());
         } catch (Exception ex) {
             mLogger.warning("[asr] sendSetLanguage error: " + ex.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Recording (fast-asr REST endpoints, alongside the WebSocket stream)
+    // -------------------------------------------------------------------------
+
+    /** Derive the fast-asr server's HTTP base URL (scheme+authority) from its WebSocket URL. */
+    private static String restBaseUrlFrom(final String wsUrl) {
+        URI uri = URI.create(wsUrl);
+        String scheme = "wss".equalsIgnoreCase(uri.getScheme()) ? "https" : "http";
+        return scheme + "://" + uri.getAuthority();
+    }
+
+    /** Tell the fast-asr server where to save recordings. Sent on every connect/reconnect. */
+    private void sendSetRecordingDir() {
+        try {
+            String encodedDir = URLEncoder.encode(resolvedRecordingDir, StandardCharsets.UTF_8);
+            HttpRequest req = HttpRequest.newBuilder(
+                            URI.create(restBaseUrl + "/set_recording_dir?directory=" + encodedDir))
+                    .timeout(Duration.ofSeconds(5))
+                    .POST(HttpRequest.BodyPublishers.noBody())
+                    .build();
+            httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(resp -> {
+                        if (resp.statusCode() != 200) {
+                            mLogger.warning("[asr] set_recording_dir failed: status=" + resp.statusCode()
+                                    + " body=" + resp.body());
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        mLogger.warning("[asr] set_recording_dir error: " + ex.getMessage());
+                        return null;
+                    });
+        } catch (Exception ex) {
+            mLogger.warning("[asr] set_recording_dir error: " + ex.getMessage());
+        }
+    }
+
+    private void sendStartRecording() {
+        try {
+            HttpRequest req = HttpRequest.newBuilder(URI.create(restBaseUrl + "/start_recording"))
+                    .timeout(Duration.ofSeconds(5))
+                    .POST(HttpRequest.BodyPublishers.noBody())
+                    .build();
+            httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(resp -> {
+                        if (resp.statusCode() == 200) {
+                            setBoolVar(recordingActiveVar, true);
+                        } else {
+                            mLogger.warning("[asr] start_recording failed: status=" + resp.statusCode()
+                                    + " body=" + resp.body());
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        mLogger.warning("[asr] start_recording error: " + ex.getMessage());
+                        return null;
+                    });
+        } catch (Exception ex) {
+            mLogger.warning("[asr] start_recording error: " + ex.getMessage());
+        }
+    }
+
+    private void sendStopRecording() {
+        try {
+            HttpRequest req = HttpRequest.newBuilder(URI.create(restBaseUrl + "/stop_recording"))
+                    .timeout(Duration.ofSeconds(10))
+                    .POST(HttpRequest.BodyPublishers.noBody())
+                    .build();
+            httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(resp -> {
+                        setBoolVar(recordingActiveVar, false);
+                        if (resp.statusCode() == 200) {
+                            try {
+                                JSONObject obj = new JSONObject(resp.body());
+                                setStringVar(lastRecordingFileVar, obj.optString("file", ""));
+                            } catch (Exception ex) {
+                                mLogger.warning("[asr] stop_recording parse error: " + ex.getMessage());
+                            }
+                        } else {
+                            mLogger.warning("[asr] stop_recording failed: status=" + resp.statusCode()
+                                    + " body=" + resp.body());
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        mLogger.warning("[asr] stop_recording error: " + ex.getMessage());
+                        return null;
+                    });
+        } catch (Exception ex) {
+            mLogger.warning("[asr] stop_recording error: " + ex.getMessage());
+        }
+    }
+
+    private void sendGetLastRecordedAudio() {
+        try {
+            HttpRequest req = HttpRequest.newBuilder(URI.create(restBaseUrl + "/get_last_recorded_audio"))
+                    .timeout(Duration.ofSeconds(5))
+                    .GET()
+                    .build();
+            httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString())
+                    .thenAccept(resp -> {
+                        if (resp.statusCode() == 200) {
+                            try {
+                                JSONObject obj = new JSONObject(resp.body());
+                                setStringVar(lastRecordingFileVar, obj.optString("path", ""));
+                            } catch (Exception ex) {
+                                mLogger.warning("[asr] get_last_recorded_audio parse error: " + ex.getMessage());
+                            }
+                        } else if (resp.statusCode() == 404) {
+                            mLogger.message("[asr] get_last_recorded_audio: no recording saved yet");
+                        } else {
+                            mLogger.warning("[asr] get_last_recorded_audio failed: status=" + resp.statusCode()
+                                    + " body=" + resp.body());
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        mLogger.warning("[asr] get_last_recorded_audio error: " + ex.getMessage());
+                        return null;
+                    });
+        } catch (Exception ex) {
+            mLogger.warning("[asr] get_last_recorded_audio error: " + ex.getMessage());
         }
     }
 
