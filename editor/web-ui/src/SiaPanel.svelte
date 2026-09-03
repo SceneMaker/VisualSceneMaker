@@ -63,6 +63,8 @@
   export let onSpeaking = null;   // (instanceName, speaking) => void
   export let onResizeStart = null;    // (event) => void — drags the panel's own height
   export let onInsertAtCursor = null; // (instanceName, agentName, commandBody) => void
+  export let collapsedCategories = {}; // {[category]: boolean} — persisted by the parent (App.svelte)
+  export let onToggleCategory = null;  // (category) => void — parent flips + persists the entry
 
   // Avatar width follows a fixed 2:3 (width:height) ratio, computed from the panel height rather
   // than CSS aspect-ratio — plain arithmetic, one less moving CSS mechanism to reason about. This
@@ -183,9 +185,17 @@
     commandTexts = { ...commandTexts, [key]: cmd };
   }
 
-  function activeCommandName(instanceName, category, commands) {
-    const key = columnKey(instanceName, category);
-    const selected = selectedCommand[key];
+  // `selected` MUST be passed in rather than read from `selectedCommand` via closure — Svelte's
+  // {@const}/reactive dependency tracking is a static scan of identifiers literally present in the
+  // calling template expression, not an analysis of what a called function reads internally. With
+  // `selectedCommand` hidden inside this function's body, the {@const activeName = ...} call site
+  // below never depends on it, so picking a different command from a category's dropdown updated
+  // `selectedCommand` but never re-triggered `activeName`/`activeSchema` — only the native <select>
+  // element's own DOM value (set directly by the browser on user interaction, independent of
+  // Svelte) looked like it had changed. Confirmed 2026-09-03 by reproducing in isolation: the exact
+  // same helper reading `selectedCommand` from closure failed to update a plain {@const}-derived
+  // <div> too, with no ActionForm/child component involved at all.
+  function activeCommandName(selected, commands) {
     return (selected && commands.some((c) => c.name === selected)) ? selected : commands[0]?.name;
   }
 
@@ -379,11 +389,22 @@
           <div class="sia-columns" style:width="{columnsWidthByInstance[agent.instanceName]}px">
             {#each groupCommandsByCategory(agent.commands) as group (group.category)}
               {@const key = columnKey(agent.instanceName, group.category)}
-              {@const activeName = activeCommandName(agent.instanceName, group.category, group.commands)}
+              {@const activeName = activeCommandName(selectedCommand[columnKey(agent.instanceName, group.category)], group.commands)}
               {@const activeSchema = group.commands.find((c) => c.name === activeName) || group.commands[0]}
-              <div class="sia-column" bind:clientHeight={columnHeights[key]}>
+              {@const isCollapsed = !!collapsedCategories[group.category]}
+              <div class="sia-column" class:sia-column-collapsed={isCollapsed} bind:clientHeight={columnHeights[key]}>
                 <div class="sia-column-header">
-                  <span>{categoryLabel(group)}</span>
+                  <div class="sia-column-title">
+                    <button
+                      type="button"
+                      class="sia-column-collapse"
+                      on:click={() => onToggleCategory?.(group.category)}
+                      title={isCollapsed ? `Show ${categoryLabel(group)}` : `Hide ${categoryLabel(group)}`}
+                      aria-label={isCollapsed ? `Show ${categoryLabel(group)}` : `Hide ${categoryLabel(group)}`}
+                      aria-expanded={!isCollapsed}
+                    >{isCollapsed ? "+" : "−"}</button>
+                    <span>{categoryLabel(group)}</span>
+                  </div>
                   <button
                     type="button"
                     class="sia-column-play"
@@ -395,36 +416,47 @@
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 6l10 6-10 6V6z" /></svg>
                   </button>
                 </div>
-                {#if group.commands.length > 1}
-                  <select
-                    class="sia-column-command-select"
-                    value={activeName}
-                    on:change={(e) => selectCommand(agent.instanceName, group.category, e.target.value)}
+                {#if !isCollapsed}
+                  {#if group.commands.length > 1}
+                    <!-- Easy to miss next to ActionForm's own parameter dropdowns below (e.g.
+                         Emotion's "Type") — this one instead switches between the DIFFERENT
+                         commands this category groups together (reported 2026-09-03: a tester
+                         only ever saw whichever command this defaulted to and didn't realize
+                         there were more). The label makes that distinction explicit. -->
+                    <label class="sia-column-command-label" for="sia-cmd-{key}">
+                      {group.commands.length} commands in {categoryLabel(group)}
+                    </label>
+                    <select
+                      id="sia-cmd-{key}"
+                      class="sia-column-command-select"
+                      value={activeName}
+                      on:change={(e) => selectCommand(agent.instanceName, group.category, e.target.value)}
+                    >
+                      {#each group.commands as cmd}
+                        <option value={cmd.name}>{cmd.summary || cmd.name}</option>
+                      {/each}
+                    </select>
+                  {/if}
+                  {#if activeSchema}
+                    <ActionForm
+                      schema={activeSchema}
+                      disabled={isTestDisabled(agent.instanceName)}
+                      onTest={(cmd) => testActionFor(agent.instanceName, cmd)}
+                      onChange={(cmd) => setCommandText(agent.instanceName, group.category, cmd)}
+                    />
+                  {/if}
+                  {#if categoryTestErrors[key]}
+                    <span class="sia-column-error">{categoryTestErrors[key]}</span>
+                  {/if}
+                  <button
+                    type="button"
+                    class="sia-insert-btn"
+                    disabled={!commandTexts[key]}
+                    on:click={() => onInsertAtCursor?.(agent.instanceName, agent.agentName, commandTexts[key])}
                   >
-                    {#each group.commands as cmd}
-                      <option value={cmd.name}>{cmd.summary || cmd.name}</option>
-                    {/each}
-                  </select>
+                    Insert at cursor
+                  </button>
                 {/if}
-                {#if activeSchema}
-                  <ActionForm
-                    schema={activeSchema}
-                    disabled={isTestDisabled(agent.instanceName)}
-                    onTest={(cmd) => testActionFor(agent.instanceName, cmd)}
-                    onChange={(cmd) => setCommandText(agent.instanceName, group.category, cmd)}
-                  />
-                {/if}
-                {#if categoryTestErrors[key]}
-                  <span class="sia-column-error">{categoryTestErrors[key]}</span>
-                {/if}
-                <button
-                  type="button"
-                  class="sia-insert-btn"
-                  disabled={!commandTexts[key]}
-                  on:click={() => onInsertAtCursor?.(agent.instanceName, agent.agentName, commandTexts[key])}
-                >
-                  Insert at cursor
-                </button>
               </div>
             {/each}
           </div>
@@ -635,6 +667,41 @@
     letter-spacing: 0.05em;
   }
 
+  .sia-column-title {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  /* Collapses a category down to just this header — added once the animation convenience
+     commands made every column tall enough that a card of categories no longer fit on screen. */
+  .sia-column-collapse {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--stroke);
+    background: var(--panel);
+    color: var(--ink);
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+    text-transform: none;
+  }
+
+  .sia-column-collapse:hover {
+    background: var(--accent-soft);
+  }
+
+  .sia-column-collapsed {
+    gap: 0;
+  }
+
   /* Play button lives beside the column heading rather than at the bottom of the sub-editor —
      hides that component's own built-in test row (below) and drives testActionFor from here
      instead, scoped to .sia-column so InsertActionDialog's own use of these components (where the
@@ -670,8 +737,19 @@
     display: none;
   }
 
+  .sia-column-command-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: none;
+  }
+
   .sia-column-command-select {
     font-size: 0.8rem;
+    padding: 0.3rem 0.4rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--stroke);
+    background: var(--panel);
+    color: var(--ink);
   }
 
   .sia-column-error {

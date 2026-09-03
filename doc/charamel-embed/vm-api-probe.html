@@ -52,6 +52,21 @@
     <button onclick="doClearEmotion()">clearEmotion</button>
   </div>
   <div class="row">
+    <label>Animation</label>
+    <input class="txt" id="anim" value="VPM-22010_Wave-Hello">
+    <button onclick="doAnimation(document.getElementById('anim').value)">playAnimationByName</button>
+    <button onclick="doAnimation('VPM-22001_Acknowledge-Nod')">Acknowledge-Nod</button>
+    <button onclick="doAnimation('VPM-22002_Applause')">Applause</button>
+    <button onclick="doAnimation('VPM-22003_Hands-Together')">Hands-Together</button>
+    <button onclick="doAnimation('VPM-22004_Head-Tilt')">Head-Tilt</button>
+    <button onclick="doAnimation('VPM-22005_Listen-Node')">Listen-Node</button>
+    <button onclick="doAnimation('VPM-22006_Openarms-Offer')">Openarms-Offer</button>
+    <button onclick="doAnimation('VPM-22007_Point-Left')">Point-Left</button>
+    <button onclick="doAnimation('VPM-22008_Self-Reference')">Self-Reference</button>
+    <button onclick="doAnimation('VPM-22009_Thumbs-Up')">Thumbs-Up</button>
+    <button onclick="doAnimation('VPM-22010_Wave-Hello')">Wave-Hello</button>
+  </div>
+  <div class="row">
     <label>Background</label>
     <input class="txt" id="bg" value="midnightblue">
     <button onclick="doBg(document.getElementById('bg').value)">apply to body + #vuppetmaster</button>
@@ -131,6 +146,15 @@ function doEmotion(type){
   log('calling vm.setEmotion("'+type+'", {intensity:1, attack:300, hold:2500, decay:600}) …');
   try { var r = vm.setEmotion(type, {intensity:1, attack:300, hold:2500, decay:600}); log('setEmotion returned: '+r, 'cb'); }
   catch(e){ log('setEmotion threw: '+e, 'err'); }
+}
+function doAnimation(name){
+  if(!vm){ log('load engine first','warn'); return; }
+  if (typeof vm.playAnimationByName !== 'function'){ log('vm.playAnimationByName not on this engine build','err'); return; }
+  t0=performance.now();
+  log('calling vm.playAnimationByName("'+name+'") …');
+  vm.playAnimationByName(name).then(function(result){
+    log('playAnimationByName("'+name+'") -> '+JSON.stringify(result), result && result.ok ? 'ok' : 'err');
+  }).catch(function(e){ log('playAnimationByName threw: '+e, 'err'); });
 }
 function doClearEmotion(){
   if(!vm){ log('load engine first','warn'); return; }
