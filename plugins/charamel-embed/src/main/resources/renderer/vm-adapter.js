@@ -272,6 +272,31 @@
         break;
       }
 
+      // Named body-animation clip (vm.playAnimationByName), matched server-side against whatever
+      // clips are configured for this scene in the VuppetMaster dashboard — env.name is NOT VSM
+      // vocabulary. The promise only reports enqueue success/failure, never completion, so this is
+      // (and can only be) fire-and-forget from here — see CharamelEmbedExecutor's
+      // sleepForBlockingEnvelope for how (if at all) a blocking wait is estimated on the Java side.
+      case 'animation': {
+        if (!vm || typeof vm.playAnimationByName !== 'function') {
+          console.warn('VSM: playAnimationByName not available on this engine build');
+          break;
+        }
+        // Logged unconditionally (not just on failure): {ok:true} only means the engine matched
+        // env.name to SOME clip configured for this scene and enqueued it — it says nothing about
+        // WHICH clip that turned out to be, so a wrong-animation-plays report needs this to tell
+        // "VSM sent the wrong name" apart from "the dashboard's scene data maps this name to the
+        // wrong clip" (a Charamel-scene-config problem, not a VSM one).
+        console.log('VSM: playAnimationByName("' + env.name + '")');
+        vm.playAnimationByName(env.name).then(function (result) {
+          console.log('VSM: playAnimationByName("' + env.name + '") -> ' + JSON.stringify(result));
+          if (!result || !result.ok) {
+            console.warn('VSM: animation "' + env.name + '" failed to play', result && result.error);
+          }
+        });
+        break;
+      }
+
       default:
         console.warn('VSM: unknown cmd', env);
     }

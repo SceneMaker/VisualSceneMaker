@@ -72,6 +72,35 @@ public class CharamelEmbedExecutor extends ActivityExecutor
     private static final long NOD_DEFAULT_REPEATS = 2;
     private static final long NOD_DEFAULT_PERIOD_MS = 400;
 
+    // Convenience commands for vm.playAnimationByName(name) clips configured on the current
+    // VuppetMaster scene (dashboard-side, not VSM-side — see plugin-properties.json's "animation"
+    // command). Each maps to a distinct NEUROGES-classifiable behavior (see behavior-taxonomy.json),
+    // unlike the "emotion" convenience aliases, which are interchangeable vocabulary NEUROGES does
+    // not itself distinguish.
+    //
+    // The dashboard-configured clip ids carry a "VPM-<number>_<label>" prefix (e.g.
+    // "VPM-22001_Acknowledge-Nod") — confirmed 2026-09-03 by the scene owner after the initial
+    // implementation used the bare label and failed to match. The label after the prefix is kept
+    // identical to plugin-properties.json's author-facing description text; only this map's VALUES
+    // (never the VSM-side command keywords, which are plugin-properties.json's contract with
+    // authors) need to change if the dashboard's naming scheme changes again.
+    //
+    // An originally-reported second "Wave Hello" clip was dropped by the scene owner in favor of
+    // this single "Wave-Hello" — see plugin-properties.json's "wavehello" command.
+    private static final Map<String, String> ANIMATION_ALIASES = new HashMap<>();
+    static {
+        ANIMATION_ALIASES.put("acknowledgenod", "VPM-22001_Acknowledge-Nod");
+        ANIMATION_ALIASES.put("applause", "VPM-22002_Applause");
+        ANIMATION_ALIASES.put("handstogether", "VPM-22003_Hands-Together");
+        ANIMATION_ALIASES.put("headtilt", "VPM-22004_Head-Tilt");
+        ANIMATION_ALIASES.put("listennode", "VPM-22005_Listen-Node");
+        ANIMATION_ALIASES.put("openarmsoffer", "VPM-22006_Openarms-Offer");
+        ANIMATION_ALIASES.put("pointleft", "VPM-22007_Point-Left");
+        ANIMATION_ALIASES.put("selfreference", "VPM-22008_Self-Reference");
+        ANIMATION_ALIASES.put("thumbsup", "VPM-22009_Thumbs-Up");
+        ANIMATION_ALIASES.put("wavehello", "VPM-22010_Wave-Hello");
+    }
+
     // Upper bound on how long broadcastSpeakAndAwaitStop() will wait for a "<vmuid>:stop" feedback
     // marker before giving up. Without this, a page reload/relaunch (or transport hiccup) that
     // orphans a pending id leaves the calling thread parked in mPendingSpeechIds.wait() forever.
@@ -443,6 +472,18 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             case "smile": case "excited": case "fear": case "bored": case "relaxed":
                 broadcastEmotion(name.toLowerCase(), f);
                 break;
+            // Body-animation clips (vm.playAnimationByName). Generic form:
+            // [Xenia animation name='Wave-Hello']. See ANIMATION_ALIASES for the convenience
+            // commands built on top of this.
+            case "animation":
+                broadcastAnimation(getActionFeatureValue("name", f));
+                break;
+            // Convenience clip aliases — [Xenia thumbsup]
+            case "acknowledgenod": case "applause": case "handstogether": case "headtilt":
+            case "listennode": case "openarmsoffer": case "pointleft": case "selfreference":
+            case "thumbsup": case "wavehello":
+                broadcastAnimation(ANIMATION_ALIASES.get(name.toLowerCase()));
+                break;
             default:
                 mLogger.warning("charamel-embed: unknown action '" + name + "'");
         }
@@ -491,6 +532,20 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             long hold = parseMsOrDefault(getActionFeatureValue("hold", f), BLOCKING_DEFAULT_HOLD_MS);
             long decay = parseMsOrDefault(getActionFeatureValue("decay", f), BLOCKING_DEFAULT_DECAY_MS);
             durationMs = attack + hold + decay + BLOCKING_TRANSPORT_BUFFER_MS;
+        } else if ("animation".equals(lower) || ANIMATION_ALIASES.containsKey(lower)) {
+            // vm.playAnimationByName's promise resolves once the clip is ENQUEUED, not once it
+            // finishes — unlike bone/emotion there is no envelope (attack/hold/decay) to derive a
+            // duration from at all, so there is nothing to estimate from on our side. An author who
+            // knows the clip's length (e.g. from previewing it in the dashboard) can supply it
+            // explicitly; without one, blocking='true' has nothing to wait for and is ignored rather
+            // than sleeping for a made-up constant that would be wrong for every clip but one.
+            String durationVal = getActionFeatureValue("duration", f);
+            if (durationVal.isBlank()) {
+                mLogger.warning("charamel-embed: blocking '" + lower + "' without a 'duration' estimate "
+                        + "(VuppetMaster gives no completion signal for playAnimationByName) — not waiting.");
+                return;
+            }
+            durationMs = parseMsOrDefault(durationVal, 0) + BLOCKING_TRANSPORT_BUFFER_MS;
         } else {
             return;
         }
@@ -591,6 +646,20 @@ public class CharamelEmbedExecutor extends ActivityExecutor
         appendNumber(sb, "period",    getActionFeatureValue("period", f));
         sb.append("}");
         broadcast(sb.toString());
+    }
+
+    /**
+     * Plays a named body-animation clip (vm.playAnimationByName). Unlike emotion/bone, {@code name}
+     * is not VSM vocabulary at all — it is matched server-side against whatever clips are configured
+     * for the current scene in the VuppetMaster dashboard, so an unknown or misspelled name fails
+     * only at the engine, not here.
+     */
+    private void broadcastAnimation(String name) {
+        if (name == null || name.isBlank()) {
+            mLogger.warning("charamel-embed: animation without a name");
+            return;
+        }
+        broadcast("{\"cmd\":\"animation\",\"name\":\"" + escapeJson(name) + "\"}");
     }
 
     private static void appendNumber(StringBuilder sb, String key, String val) {

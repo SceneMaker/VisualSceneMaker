@@ -77,8 +77,16 @@ and matching the dashboard's *API — Basic* docs:
     `false` replaces the bone's pose and restores the base pose when the envelope ends.
   - Envelope phases are attack → hold → decay; re-issuing for the same bone replaces its envelope,
     which is what makes repeated calls usable as procedural motion.
-- **Other:** `setAnimationSpeed`, `setBlinkInterval`, `playAnimation`, camera methods. Realtime *gaze*
-  still has no public primitive (internal only).
+- **Body animation:** `vm.playAnimationByName(name)` — confirmed 2026-09-03 against the public
+  `api-basic` docs (the engine's `dumpApi()` enumeration only told us the method existed, not its
+  signature). `name` is matched **server-side** against the animation clips configured for the
+  current scene in the VuppetMaster dashboard — it is not VSM vocabulary, and a name valid in one
+  scene may not exist in another. Returns a `Promise` resolving to `{ok: true}` once the clip is
+  **enqueued**, or `{ok: false, error}` if the avatar isn't ready or no such clip exists for this
+  scene — like `setEmotion`/`animateBone`, there is **no completion signal**, and unlike those two
+  there isn't even an attack/hold/decay envelope to estimate a duration from.
+- **Other:** `setAnimationSpeed`, `setBlinkInterval`, camera methods (`saveStartCamera`, the in-embed
+  cheat-code reframe flow). Realtime *gaze* still has no public primitive (internal only).
 - **Audio:** the engine uses **Howler**, whose AudioContext only resumes on a **user gesture in the
   character page's own document**. `allow="autoplay"` does *not* resume a covered cross-origin iframe
   (verified: state stays `suspended`). Hence the character page's click-to-start overlay, and — when
@@ -89,8 +97,19 @@ and matching the dashboard's *API — Basic* docs:
 
 - The character page served by the plugin (`renderer/character.html` + `renderer/vm-adapter.js`) is the
   production counterpart of this probe: the adapter maps JSON command envelopes
-  (`{cmd:"speak"|"emotion"|"background"|"clearEmotion"|"bone"|"nod", …}`) to these same engine calls,
-  and maps `onMarker`/`onEnd` back to VSM feedback strings.
+  (`{cmd:"speak"|"emotion"|"background"|"clearEmotion"|"bone"|"nod"|"animation", …}`) to these same
+  engine calls, and maps `onMarker`/`onEnd` back to VSM feedback strings.
+- **Authoring named animation clips**: `[Xenia animation name='VPM-22010_Wave-Hello']` (generic form,
+  any clip configured for the scene) or a convenience command for the ten NEUROGES-classified clips
+  shipped as of 2026-09-03: `acknowledgenod`, `applause`, `handstogether`, `headtilt`, `listennode`,
+  `openarmsoffer`, `pointleft`, `selfreference`, `thumbsup`, `wavehello`. The dashboard clip ids carry
+  a `VPM-<number>_<label>` prefix (e.g. `VPM-22001_Acknowledge-Nod`) that `vm.playAnimationByName`
+  matches against verbatim — `ANIMATION_ALIASES` in `CharamelEmbedExecutor.java` maps each VSM
+  command keyword to its full clip id; only that map needs editing if the dashboard's ids change,
+  not the author-facing command keywords. An originally-reported second "Wave Hello" clip was dropped
+  by the scene owner in favor of the single `VPM-22010_Wave-Hello`, so there is no ambiguity to
+  resolve there. `blocking='true'` needs an explicit `duration='<ms>'` estimate from the author —
+  there is no engine-side signal to derive one from (see Findings above).
 - **Authoring the bone API** (SceneFlow `PlayAction` or an inline scene marker):
 
   | Command | Example | Notes |
@@ -103,4 +122,5 @@ and matching the dashboard's *API — Basic* docs:
   Both accept `blocking='true'` to hold the scene for the movement's estimated duration (`nod` uses
   `repeats × period`); as with `emotion`, that duration is an estimate — the engine gives no
   completion callback for bone animation.
-- Full design & status: `~/.claude/plans/charamel-embed-vuppetmaster-jsapi.md` (plan doc).
+- Full design & status: this README plus `core/src/main/resources/behavior-taxonomy.json` and
+  `doc/behavior-taxonomy-neuroges.md` (the original plan doc this pointed to no longer exists).

@@ -701,12 +701,16 @@
   // persisted state; every agent should always start showing "Load" until explicitly clicked,
   // or after a reset, in the current session).
   function loadSiaPanelPrefs(projectId) {
-    if (!projectId) return { height: SIA_PANEL_DEFAULT_HEIGHT };
+    if (!projectId) return { height: SIA_PANEL_DEFAULT_HEIGHT, collapsedCategories: {} };
     try {
       const parsed = JSON.parse(localStorage.getItem(SIA_PANEL_STORAGE_KEY_PREFIX + projectId + VIEW_PREF_LS_SUFFIX) || '{}');
-      return { height: parsed.height || SIA_PANEL_DEFAULT_HEIGHT };
+      return {
+        height: parsed.height || SIA_PANEL_DEFAULT_HEIGHT,
+        collapsedCategories: (parsed.collapsedCategories && typeof parsed.collapsedCategories === 'object')
+          ? parsed.collapsedCategories : {}
+      };
     } catch {
-      return { height: SIA_PANEL_DEFAULT_HEIGHT };
+      return { height: SIA_PANEL_DEFAULT_HEIGHT, collapsedCategories: {} };
     }
   }
 
@@ -725,7 +729,16 @@
   }
 
   function persistSiaPanelState() {
-    persistSiaPanelPrefs(selectedProjectId, { height: siaPanelHeight });
+    persistSiaPanelPrefs(selectedProjectId, { height: siaPanelHeight, collapsedCategories: siaCollapsedCategories });
+  }
+
+  // Per-category collapse (M13k): the animation-heavy convenience commands added a lot of vertical
+  // space per column, so authors want to fold a category down to just its header. Keyed by category
+  // id (not per-agent-instance) — a category label like "CONVENTION" means the same thing across
+  // every character, and collapsing it once is meant to declutter the whole panel, not one card.
+  function toggleSiaCategory(category) {
+    siaCollapsedCategories = { ...siaCollapsedCategories, [category]: !siaCollapsedCategories[category] };
+    persistSiaPanelState();
   }
 
   // Script editor's own resizable height (M13j) — same load/persist shape as the SIA panel's.
@@ -1982,6 +1995,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                                 // should exist at all; unlike the old per-agent "open" flag, false
                                 // here actually tears the session down (M13i)
   let siaPanelHeight = SIA_PANEL_DEFAULT_HEIGHT; // single resizable dimension — width is full-row
+  let siaCollapsedCategories = {}; // {[categoryId]: boolean} — see toggleSiaCategory
   let siaPanelMinHeight = 300; // reported up from SiaPanel's measured tallest control column
   let scenescriptEl; // scrolled into view when the Preview panel opens
   let siaPanelResize = null;   // { lastClientY } | null — height-only, no per-instance keying needed
@@ -3623,10 +3637,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     siaLoaded = {};
     const initialSiaPrefs = loadSiaPanelPrefs(selectedProjectId);
     siaPanelHeight = initialSiaPrefs.height;
+    siaCollapsedCategories = initialSiaPrefs.collapsedCategories;
     const _siaPid = selectedProjectId;
     fetchSiaPanelPrefsFromServer(_siaPid).then((serverPrefs) => {
       if (serverPrefs && selectedProjectId === _siaPid) {
         siaPanelHeight = serverPrefs.height || SIA_PANEL_DEFAULT_HEIGHT;
+        siaCollapsedCategories = (serverPrefs.collapsedCategories && typeof serverPrefs.collapsedCategories === 'object')
+          ? serverPrefs.collapsedCategories : {};
         localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + _siaPid + VIEW_PREF_LS_SUFFIX, JSON.stringify(serverPrefs));
       }
     });
@@ -19463,12 +19480,14 @@ Sentence:
               suspended={previewSuspendedByRuntime}
               height={siaPanelHeight}
               bind:measuredMinHeight={siaPanelMinHeight}
+              collapsedCategories={siaCollapsedCategories}
               onLoad={loadSiaAgent}
               onUnload={unloadSiaAgent}
               onProgress={(instanceName, v) => { previewLoadProgress = { ...previewLoadProgress, [instanceName]: v }; }}
               onSpeaking={handlePreviewSpeakingChange}
               onResizeStart={startSiaPanelResize}
               onInsertAtCursor={handleSiaInsertAtCursor}
+              onToggleCategory={toggleSiaCategory}
             />
           {/if}
           <div class="script-toolbar">

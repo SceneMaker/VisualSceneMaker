@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.6",
-    "specHash": "2ba7a7d8e2d89a39",
+    "specVersion": "1.8",
+    "specHash": "8e01807354a35812",
     "plugin": {
         "id": "charamel-embed",
         "name": "Charamel Embed (VuppetMaster JS-API)",
@@ -311,6 +311,177 @@
                     "type": "string",
                     "required": false,
                     "description": "Bone to shake (default 'Head')"
+                }
+            ]
+        },
+        {
+            "name": "animation",
+            "type": "action",
+            "summary": "Play a named body-animation clip on the avatar (vm.playAnimationByName)",
+            "description": "Generic form: [Xenia animation name='VPM-22010_Wave-Hello']. Unlike emotion/bone, 'name' is NOT a fixed VSM vocabulary - it is matched server-side against whatever clips are configured for this VuppetMaster scene in the dashboard (each carrying a 'VPM-<number>_<label>' id), so which names work depends on the scene, not on this plugin. Convenience commands exist for all ten currently known clips (e.g. [Xenia thumbsup]) because each maps to a distinct communicative meaning worth its own NEUROGES classification, unlike the interchangeable 'emotion' vocabulary - use the convenience forms for those, and this generic form only for a clip that hasn't been given one yet. vm.playAnimationByName's promise reports only enqueue success/failure, never completion, so blocking='true' is silently ignored unless you also pass duration='<ms>' with your own estimate of the clip's length (e.g. from previewing it in the dashboard).",
+            "uiCategory": "unclassified",
+            "params": [
+                {
+                    "name": "name",
+                    "type": "string",
+                    "required": true,
+                    "description": "Exact clip name as configured in the VuppetMaster dashboard for this scene"
+                },
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true', since the engine gives no real completion signal"
+                }
+            ]
+        },
+        {
+            "name": "acknowledgenod",
+            "type": "action",
+            "summary": "Play the 'Acknowledge-Nod' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22001_Acknowledge-Nod']. A single acknowledging nod - distinct from the procedural, repeated 'nod' (vm.animateBone-based) command.",
+            "uiCategory": "convention",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "applause",
+            "type": "action",
+            "summary": "Play the 'Applause' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22002_Applause'].",
+            "uiCategory": "emotion",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "handstogether",
+            "type": "action",
+            "summary": "Play the 'Hands-Together' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22003_Hands-Together'].",
+            "uiCategory": "unclassified",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "headtilt",
+            "type": "action",
+            "summary": "Play the 'Head-Tilt' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22004_Head-Tilt']. Distinct from the procedural head-tilt achievable via [Xenia bone z='...'] - this is a fixed vendor clip.",
+            "uiCategory": "unclassified",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "listennode",
+            "type": "action",
+            "summary": "Play the 'Listen-Node' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22005_Listen-Node']. A listener backchannel cue, distinct from 'acknowledgenod' which is meant for the avatar's own speaking turn.",
+            "uiCategory": "convention",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "openarmsoffer",
+            "type": "action",
+            "summary": "Play the 'Openarms-Offer' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22006_Openarms-Offer'].",
+            "uiCategory": "convention",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "pointleft",
+            "type": "action",
+            "summary": "Play the 'Point-Left' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22007_Point-Left'].",
+            "uiCategory": "pointing",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "selfreference",
+            "type": "action",
+            "summary": "Play the 'Self-Reference' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22008_Self-Reference']. A gesture toward the avatar's own self (e.g. speaking about itself).",
+            "uiCategory": "pointing",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "thumbsup",
+            "type": "action",
+            "summary": "Play the 'Thumbs-Up' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22009_Thumbs-Up'].",
+            "uiCategory": "convention",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
+                }
+            ]
+        },
+        {
+            "name": "wavehello",
+            "type": "action",
+            "summary": "Play the 'Wave-Hello' animation clip",
+            "description": "Convenience form of [Xenia animation name='VPM-22010_Wave-Hello']. The scene originally configured a second, near-identically named 'Wave Hello' clip; the scene owner dropped it in favor of this single one, so there is no ambiguity to resolve here.",
+            "uiCategory": "convention",
+            "params": [
+                {
+                    "name": "duration",
+                    "type": "int",
+                    "required": false,
+                    "description": "Estimated clip length in ms - only used together with blocking='true'"
                 }
             ]
         }
