@@ -247,6 +247,22 @@ public final class XMLUtilities {
         }
     }
 
+    // Escape special characters for a raw-written XML attribute value.
+    // Model classes build their XML by string concatenation (see IOSIndentWriter)
+    // instead of a DOM/Transformer, so this must be called at every writeXML() site
+    // that interpolates a free-text field (name, comment, ...) into an attribute.
+    public final static String escapeXmlAttribute(final String value) {
+        if (value == null) {
+            return "";
+        }
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+
     public final static String xmlElementToString(final Element element) {
         try {
             final Transformer transformer

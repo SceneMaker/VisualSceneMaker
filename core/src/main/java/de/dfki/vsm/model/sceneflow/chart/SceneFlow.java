@@ -13,6 +13,7 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import static de.dfki.vsm.util.xml.XMLUtilities.escapeXmlAttribute;
 import org.w3c.dom.Element;
 
 import java.util.ArrayList;
@@ -149,8 +150,8 @@ public final class SceneFlow extends SuperNode {
         //out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         out.println("<SceneFlow " 
                 + "id=\"" + mNodeId + "\" " 
-                + "name=\"" + mNodeName + "\" " 
-                + "comment=\"" + mComment + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
+                + "name=\"" + escapeXmlAttribute(mNodeName) + "\" "
+                + "comment=\"" + escapeXmlAttribute(mComment) + "\" hideLocalVar=\"" + mHideLocalVarBadge + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" "
                 + "modifDate=\"" + Preferences.sDATE_FORMAT.format(new Date()) + "\" " + "start=\""
                 + start + "\" "
                 // + "context=\""+(context.equals("") ? "java.lang.Object" : context)+"\" "

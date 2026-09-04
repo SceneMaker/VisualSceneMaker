@@ -7,6 +7,7 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import static de.dfki.vsm.util.xml.XMLUtilities.escapeXmlAttribute;
 import org.w3c.dom.Element;
 
 import java.util.ArrayList;
@@ -124,8 +125,8 @@ public class AliasNode extends SuperNode {
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<AliasNode id=\"" + mNodeId + "\" name=\"" + mNodeName
-                + "\" comment=\"" + mComment + "\" refId=\"" + mRefId + "\">").push();
+        out.println("<AliasNode id=\"" + mNodeId + "\" name=\"" + escapeXmlAttribute(mNodeName)
+                + "\" comment=\"" + escapeXmlAttribute(mComment) + "\" refId=\"" + mRefId + "\">").push();
 
         for (int i = 0; i < mCEdgeList.size(); i++) mCEdgeList.get(i).writeXML(out);
         if (mDEdge != null) mDEdge.writeXML(out);

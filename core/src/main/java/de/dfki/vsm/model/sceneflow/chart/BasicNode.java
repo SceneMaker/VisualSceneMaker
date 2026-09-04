@@ -11,6 +11,7 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import static de.dfki.vsm.util.xml.XMLUtilities.escapeXmlAttribute;
 import org.w3c.dom.Element;
 
 import java.util.ArrayList;
@@ -538,7 +539,7 @@ public class BasicNode implements ModelObject {
     }
 
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<Node id=\"" + mNodeId + "\" name=\"" + mNodeName + "\" history=\"" + mIsHistoryNode + "\">").push();
+        out.println("<Node id=\"" + mNodeId + "\" name=\"" + escapeXmlAttribute(mNodeName) + "\" history=\"" + mIsHistoryNode + "\">").push();
 
         int i = 0;
 

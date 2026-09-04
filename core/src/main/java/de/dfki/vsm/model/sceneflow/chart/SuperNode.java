@@ -13,6 +13,7 @@ import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import static de.dfki.vsm.util.xml.XMLUtilities.escapeXmlAttribute;
 import org.w3c.dom.Element;
 
 import java.util.ArrayList;
@@ -295,7 +296,7 @@ public class SuperNode extends BasicNode {
             start.append(id).append(";");
         }
 
-        out.println("<SuperNode id=\"" + mNodeId + "\" name=\"" + mNodeName + "\" comment=\"" + mComment + "\" hideLocalVar=\"" + mHideLocalVarBadge
+        out.println("<SuperNode id=\"" + mNodeId + "\" name=\"" + escapeXmlAttribute(mNodeName) + "\" comment=\"" + escapeXmlAttribute(mComment) + "\" hideLocalVar=\"" + mHideLocalVarBadge
                 + "\" hideGlobalVar=\"" + mHideGlobalVarBadge + "\" start=\"" + start + "\">").push();
 
         int i = 0;
