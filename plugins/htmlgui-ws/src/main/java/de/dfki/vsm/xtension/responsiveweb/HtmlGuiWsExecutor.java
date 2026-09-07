@@ -200,8 +200,29 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         } catch (RuntimeException ignored) {
             // Not valid JSON — treat as absent.
         }
+
+        // Live wizard video (doc/plugin-connectivity.md's "Worked example: live wizard video"):
+        // resolve this project's studymaster instance, if any, so a vsm-webcam element's own
+        // signaling WebSocket can reach it without the author configuring a URL by hand. Matched
+        // by class rather than by device name — an author's studymaster device can be named
+        // anything, unlike this plugin's own well-known config keys. Absent entirely (not just
+        // empty) when no studymaster instance exists, so VsmWebcamElement renders its
+        // "no wizard link configured" placeholder instead of trying to connect anywhere.
+        String studymasterConfigJson = "null";
+        for (de.dfki.vsm.model.project.PluginConfig pc : mProject.getProjectConfig().getPluginConfigList()) {
+            if (pc.getClassName() != null && pc.getClassName().endsWith(".studymaster.StudyMasterExecutor")) {
+                studymasterConfigJson = new org.json.JSONObject()
+                        .put("pathPrefix", pc.getProperty("_pathPrefix", ""))
+                        .put("port", pc.getProperty("ws_port", ""))
+                        .put("producerKey", pc.getProperty("producer_key", ""))
+                        .toString();
+                break;
+            }
+        }
+
         final String guiConfigJs = "window.VSM_GUI_CONFIG={\"pathPrefix\":\"" + escapeJson(pathPrefix)
-                + "\",\"portRewrites\":" + portRewritesJson + "};";
+                + "\",\"portRewrites\":" + portRewritesJson
+                + ",\"studymaster\":" + studymasterConfigJson + "};";
         app.get("/vsm-gui-config.js", ctx -> ctx.contentType("application/javascript").result(guiConfigJs));
 
         app.ws("/ws", ws -> {

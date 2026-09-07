@@ -62,6 +62,7 @@
   .status-pill.connecting { color: var(--muted); }
   .status-pill.connected { background: var(--accent-soft); color: var(--button-pressed); border-color: var(--accent); }
   .status-pill.error { background: #fbe9e6; color: var(--danger-ink); border-color: var(--danger); }
+  .status-pill.idle { background: var(--panel-soft); color: var(--muted); border: 1px solid var(--stroke); }
 
   .card {
     background: var(--panel);
@@ -207,6 +208,11 @@
     color: var(--muted);
     margin-right: 8px;
   }
+
+  .video-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  #wizardVideo { width: 100%; max-height: 360px; border-radius: var(--radius-md); background: #14171b; display: block; object-fit: contain; }
+  .btn-recording { background: var(--danger); color: #fff; }
+  .btn-recording:hover { background: var(--danger-ink); }
 </style>
 </head>
 <body>
@@ -261,6 +267,15 @@
       </div>
     </div>
 
+    <div id="videoCard" class="card">
+      <h2>Live video</h2>
+      <div class="video-header">
+        <div id="videoStatusPill" class="status-pill idle">No live feed</div>
+        <button id="recordBtn" class="btn-ghost" type="button">Record</button>
+      </div>
+      <video id="wizardVideo" autoplay playsinline></video>
+    </div>
+
     <div id="requestCard" class="card request-banner" style="display:none;">
       <h2>Wizard input needed</h2>
       <div id="requestPrompt" class="prompt"></div>
@@ -290,6 +305,17 @@
   var controls = {};   // var -> {var,label,kind,options,min,max,value}
   var pendingRequest = null;
   var reconnecting = false;
+  var heartbeatTimer = null;
+
+  // ---- Live wizard video (participant webcam, direct P2P WebRTC) ------------------------------
+  // studymaster's WS is purely the signaling relay here (SDP/ICE) — see
+  // doc/plugin-connectivity.md's "Worked example: live wizard video" for why this connection
+  // never carries the video itself. iceServers comes from authResult, sourced from this project's
+  // ice_servers config (empty on a LAN, a public STUN + external TURN when hosted remotely).
+  var pc = null;
+  var iceServers = [];
+  var mediaRecorder = null;
+  var recordedChunks = [];
 
   var statusPill = document.getElementById('statusPill');
   var authCard = document.getElementById('authCard');
@@ -308,10 +334,18 @@
   var asrTimeline = document.getElementById('asrTimeline');
   var asrTranscript = document.getElementById('asrTranscript');
   var asrInputEmpty = document.getElementById('asrInputEmpty');
+  var wizardVideo = document.getElementById('wizardVideo');
+  var videoStatusPill = document.getElementById('videoStatusPill');
+  var recordBtn = document.getElementById('recordBtn');
 
   function setStatus(cls, text) {
     statusPill.className = 'status-pill ' + cls;
     statusPill.textContent = text;
+  }
+
+  function setVideoStatus(cls, text) {
+    videoStatusPill.className = 'status-pill ' + cls;
+    videoStatusPill.textContent = text;
   }
 
   function log(msg) {
@@ -332,8 +366,16 @@
     ws = new WebSocket(wsUrl());
     ws.onopen = function () {
       ws.send(JSON.stringify({ type: 'auth', key: keyInput.value }));
+      // Keeps a long-running wizard session alive past Jetty's WS idle timeout even when
+      // nothing else is happening (paused flow, quiet controls) — same fix as htmlgui-ws's
+      // wsclient.js heartbeat.
+      clearInterval(heartbeatTimer);
+      heartbeatTimer = setInterval(function () {
+        if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
+      }, 4 * 60 * 1000);
     };
     ws.onclose = function () {
+      clearInterval(heartbeatTimer);
       setStatus('error', 'disconnected');
       authCard.style.display = '';
       connectBtn.disabled = false;
@@ -367,6 +409,7 @@
           authCard.style.display = 'none';
           mainArea.style.display = '';
           authError.textContent = '';
+          iceServers = msg.iceServers || [];
         } else {
           setStatus('error', 'auth failed');
           authError.textContent = 'Invalid key (' + (msg.reason || 'error') + ').';
@@ -393,6 +436,25 @@
       case 'asrInput':
         loadAsrInput(msg);
         break;
+      case 'webrtc.offer':
+        handleOffer(msg);
+        break;
+      case 'webrtc.ice-candidate':
+        handleIceCandidate(msg);
+        break;
+      case 'producerJoined':
+        setVideoStatus('connecting', 'Participant connected — waiting for video…');
+        break;
+      case 'producerLeft':
+        closePeerConnection();
+        setVideoStatus('idle', 'No live feed');
+        break;
+      case 'controlRecording':
+        // Remote control from SceneFlow (studymaster's start_recording/stop_recording actions) —
+        // same effect as clicking the button by hand.
+        if (msg.action === 'start') startRecording();
+        else if (msg.action === 'stop') stopRecording(false);
+        break;
       case 'requestCancelled':
         if (pendingRequest && pendingRequest.requestId === msg.requestId) {
           pendingRequest = null;
@@ -416,6 +478,123 @@
     pendingRequest = (snap.pendingRequest && snap.pendingRequest !== null) ? snap.pendingRequest : null;
     renderRequest();
     loadAsrInput((snap.asrInput && snap.asrInput !== null) ? snap.asrInput : null);
+  }
+
+  // ---- Live video: WebRTC receive + local recording -------------------------------------------
+  // The producer (participant's htmlgui-ws vsm-webcam element) always initiates the offer; this
+  // page only ever answers. ws here is the SAME connection used for everything else — signaling
+  // rides on it as a handful of small messages, never the video itself.
+
+  function ensurePeerConnection() {
+    if (pc) return pc;
+    pc = new RTCPeerConnection({ iceServers: iceServers });
+    pc.onicecandidate = function (e) {
+      if (e.candidate && ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'webrtc.ice-candidate', candidate: e.candidate }));
+      }
+    };
+    pc.ontrack = function (e) {
+      wizardVideo.srcObject = e.streams[0];
+      setVideoStatus('connected', 'Live');
+      // Only NOW is there actually a MediaStream on wizardVideo for startRecording() to attach
+      // to — telling studymaster_connected to flip any earlier (e.g. right on wizard auth) lets
+      // a start_recording sent immediately after "connected" arrive before there's anything to
+      // record, silently doing nothing. See sendVideoReady's definition.
+      sendVideoReady(true);
+    };
+    pc.onconnectionstatechange = function () {
+      if (pc && (pc.connectionState === 'failed' || pc.connectionState === 'disconnected')) {
+        setVideoStatus('error', 'Video connection lost');
+        sendVideoReady(false);
+      }
+    };
+    return pc;
+  }
+
+  // Tells studymaster whether THIS browser's video pipeline (the thing start_recording actually
+  // needs) is really usable right now — see the videoReady handling in StudyMasterExecutor's
+  // handleAuth/onMessage, which only gates studymaster_connected on this when the project has a
+  // producer_key configured at all (a project with no video feature keeps the simpler
+  // "wizard is connected" meaning).
+  function sendVideoReady(ready) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: ready ? 'videoReady' : 'videoNotReady' }));
+    }
+  }
+
+  function closePeerConnection() {
+    if (pc) { pc.close(); pc = null; }
+    wizardVideo.srcObject = null;
+    stopRecording(true);
+    sendVideoReady(false);
+  }
+
+  function handleOffer(msg) {
+    var conn = ensurePeerConnection();
+    setVideoStatus('connecting', 'Connecting…');
+    conn.setRemoteDescription({ type: 'offer', sdp: msg.sdp })
+      .then(function () { return conn.createAnswer(); })
+      .then(function (answer) { return conn.setLocalDescription(answer); })
+      .then(function () {
+        ws.send(JSON.stringify({ type: 'webrtc.answer', sdp: conn.localDescription.sdp }));
+      })
+      .catch(function (e) { log('WebRTC offer handling failed: ' + e.message); });
+  }
+
+  function handleIceCandidate(msg) {
+    if (!pc || !msg.candidate) return;
+    pc.addIceCandidate(msg.candidate).catch(function (e) { log('ICE candidate error: ' + e.message); });
+  }
+
+  // Records exactly what this browser received — not a clean copy of what the participant sent.
+  // Good enough for early piloting; revisit with a server-side pipeline before this becomes real
+  // study data (see doc/plugin-connectivity.md's worked example for the caveats: quality tracks
+  // live network conditions, and the file lands on this machine, not central storage).
+  recordBtn.addEventListener('click', function () {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      stopRecording(false);
+    } else {
+      startRecording();
+    }
+  });
+
+  function startRecording() {
+    if (!wizardVideo.srcObject) { log('No live feed to record.'); return; }
+    recordedChunks = [];
+    try {
+      mediaRecorder = new MediaRecorder(wizardVideo.srcObject);
+    } catch (e) {
+      log('Recording not supported in this browser: ' + e.message);
+      return;
+    }
+    mediaRecorder.ondataavailable = function (e) {
+      if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+    };
+    mediaRecorder.onstop = function () {
+      if (recordedChunks.length === 0) return;
+      var blob = new Blob(recordedChunks, { type: 'video/webm' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'studymaster-recording-' + new Date().toISOString().replace(/[:.]/g, '-') + '.webm';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+    };
+    mediaRecorder.start();
+    recordBtn.textContent = 'Stop & Save';
+    recordBtn.classList.add('btn-recording');
+  }
+
+  function stopRecording(discard) {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      if (discard) recordedChunks = [];
+      mediaRecorder.stop();
+    }
+    mediaRecorder = null;
+    recordBtn.textContent = 'Record';
+    recordBtn.classList.remove('btn-recording');
   }
 
   // ---- Recorded-audio review (show_asrinput) --------------------------------------------------

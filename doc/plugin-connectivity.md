@@ -279,6 +279,48 @@ IDs** (easy: phoneme table → IDs) or **blend-shape animation JSON** (harder: ~
 channels — though fast-tts's `weights` dict and portrait-blendshape tooling give a starting
 point)? That single answer sets the adapter's difficulty. Everything else is settled.
 
+## Worked example: live wizard video (participant webcam → studymaster)
+
+A second worked example, because it clarifies a distinction that's easy to get wrong. Adding live
+video from a participant's `htmlgui-ws` screen to the `studymaster` wizard console (for real-time
+Wizard-of-Oz observation and control) has to work in two topologies: same-LAN (low latency is the
+priority) and DFKI-hosted (the wizard remote, VSM behind a single fixed ingress port — `8040`,
+proxied through `inner-nginx` — with no arbitrary UDP/firewall passthrough available). The natural
+question this raises: *is VSM basically running a STUN server here?* No — and the "why not" is
+worth spelling out, because WebRTC deliberately splits this into four roles that are easy to
+conflate into one.
+
+| Role | Who runs it | Protocol | Crosses the VSM/DFKI boundary? | Carries |
+|---|---|---|---|---|
+| **Signaling** | `studymaster` (a new producer role alongside its existing wizard connection) | JSON over the existing WS | **Yes** — the one thing that does | SDP offer/answer, ICE candidates |
+| **STUN** | A public service (e.g. Google's) | STUN, raw UDP | No | "What's my public address?" — nothing else |
+| **TURN** | An external relay, hosted independently of DFKI | TURN, UDP/TCP/TLS | No | The media, only if a direct path fails |
+| **Media path** | The two browsers, natively (`RTCPeerConnection`) | ICE + DTLS/SRTP | No | The live, encrypted video and audio |
+
+**Signaling is the only genuinely new thing to build**, because WebRTC deliberately leaves it
+unstandardized — every WebRTC app writes its own. `studymaster`'s WS server (today a single "one
+wizard" connection) gains a second connection role for the participant's browser, and simply
+relays `webrtc.offer` / `webrtc.answer` / `webrtc.ice-candidate` messages between whichever
+producer and wizard are currently connected. In this doc's terms, that's **Direction A**
+(studymaster already listens; the browser dials in) combined with **B-browser** on the capture
+side (`getUserMedia` reached via the page, no new infrastructure).
+
+**STUN and TURN are reused, not built.** VSM never implements either protocol — it configures
+`ice_servers` (a plain list of URLs) that both browsers' native `RTCPeerConnection` uses directly.
+STUN is free and generic (point at any public one); TURN needs to be hosted somewhere, but
+deliberately **not** on DFKI's network — DFKI's single fixed ingress port has no path for
+arbitrary inbound UDP, and getting one opened is a real infrastructure ask. Hosting the TURN relay
+independently sidesteps that entirely. See `doc/turn-relay-setup.md` for the self-hosted coturn
+setup actually used for this.
+
+**The payoff: media never touches the DFKI server, in either topology.** Once signaling has
+exchanged SDP/ICE over studymaster's WS, the two browsers' own WebRTC stacks negotiate a route
+(direct, or via the external TURN relay) and the actual video/audio flows outside VSM's
+infrastructure altogether. One design covers both the LAN case (no STUN/TURN needed at all —
+direct host candidates connect) and the DFKI-hosted case (STUN + an external TURN relay
+configured in `ice_servers`), without VSM's own server ever sitting in the media path or needing
+any firewall change to carry it.
+
 ## The other architectural pole: run the runtime on the client
 
 Tunnelling individual plugins is the *middle* of a spectrum. The other end already exists:

@@ -20,11 +20,18 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.runtime.tls.TlsRuntimeContext;
 import de.dfki.vsm.util.tpl.Tuple;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
 
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -54,14 +61,38 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
     private static final String WIZARD_KEY_PROP = "wizard_key";
     private static final String CONTROLS_FILE_PROP = "controls_file";
     private static final String CONTROLS_FILE_DEFAULT = "wizard-controls.json";
+    // Live wizard video (participant webcam -> wizard console, direct P2P WebRTC). studymaster's
+    // WS server acts purely as the signaling relay for SDP/ICE — see
+    // doc/plugin-connectivity.md's "Worked example: live wizard video" section for why this isn't
+    // a STUN/TURN server. producer_key gates the new producer role the same way wizard_key gates
+    // the wizard; empty means the feature is off (no project has opted in a vsm-webcam element).
+    private static final String PRODUCER_KEY_PROP = "producer_key";
+    private static final String ICE_SERVERS_PROP = "ice_servers";
+    private static final String ICE_SERVERS_DEFAULT = "[]";
+    private static final String CONNECTED_VAR_PROP = "connected_var";
+    private static final String CONNECTED_VAR_DEFAULT = "studymaster_connected";
+    private static final int VAR_RETRY_DELAY_MS = 250;
 
     private Javalin mHttpServer;
     private String mWizardKey;
+    private String mProducerKey;
+    private String mConnectedVar;
+    private JSONArray mIceServers = new JSONArray();
+    // Set once unload() runs, so the retry thread in applyVarUpdate() (spawned if the wizard
+    // connects before the SceneFlow variable exists yet — same race htmlgui-ws hits) doesn't
+    // keep polling forever in a hosted deployment where the JVM outlives this one project.
+    private volatile boolean mUnloaded = false;
     private Map<String, ControlSpec> mControls = new LinkedHashMap<>();
 
     // The single connected-and-authenticated wizard, if any. Replaced (old socket closed) on a
     // fresh successful auth, never rejected — see design decision: reconnect replaces.
     private WsContext mWizardSocket;
+
+    // The single connected-and-authenticated video producer (the participant's browser, running
+    // an htmlgui-ws vsm-webcam element), if any. Same "reconnect replaces" design as the wizard
+    // socket, and deliberately a second field rather than a generic role map — this plugin only
+    // ever supports one wizard and one producer at a time.
+    private WsContext mProducerSocket;
 
     // Outstanding blocking request(s). In practice at most one at a time given "author-wired
     // variables only, one wizard" scope, but keyed by requestId like studymaster-web's
@@ -138,14 +169,52 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
             return;
         }
 
+        mUnloaded = false;
+        mConnectedVar = mConfig.getProperty(CONNECTED_VAR_PROP, CONNECTED_VAR_DEFAULT);
+        mProducerKey = mConfig.getProperty(PRODUCER_KEY_PROP, "");
+        try {
+            mIceServers = new JSONArray(mConfig.getProperty(ICE_SERVERS_PROP, ICE_SERVERS_DEFAULT));
+        } catch (Exception e) {
+            mLogger.warning("StudyMaster: malformed ice_servers config, ignoring: " + e);
+            mIceServers = new JSONArray();
+        }
+        if (mProducerKey.isEmpty()) {
+            mLogger.message("StudyMaster: no producer_key configured — live wizard video is disabled");
+        }
+
         loadControls();
         collectAliasCanonicalIds(mProject.getSceneFlow(), mAliasCanonicalIds);
         mProject.getEventDispatcher().register(this);
 
         final int port = Integer.parseInt(mConfig.getProperty(WS_PORT_PROP, String.valueOf(WS_PORT_DEFAULT)));
-        mHttpServer = Javalin.create(config -> config.staticFiles.add(staticFiles -> {
-            staticFiles.directory = "/wizard-web";
-        })).start(port);
+        // Secure mode (host started with --secure): serve the wizard console and its WebSocket
+        // over TLS using the shared mkcert host certificate, the same connector-sharing pattern
+        // htmlgui-ws uses — required for getUserMedia's secure-context rule on the producer side,
+        // and for a remote wizard's browser to load this over https/wss at all.
+        if (TlsRuntimeContext.isEnabled()) {
+            mLogger.message("--secure: serving wizard console over wss on port " + port);
+            mHttpServer = Javalin.create(config -> {
+                config.staticFiles.add(staticFiles -> {
+                    staticFiles.directory = "/wizard-web";
+                });
+                // Same fix as HtmlGuiWsExecutor's identical setIdleTimeout call: Jetty's default
+                // WS idle timeout is far shorter than a wizard console (or a video producer that
+                // goes quiet right after its brief ICE-candidate exchange) sits connected for.
+                // Without this, both the wizard's and the producer's sockets get force-closed a
+                // short way into any real session — see the ping heartbeat below for sessions
+                // that outlast even this.
+                config.jetty.modifyWebSocketServletFactory(factory -> factory.setIdleTimeout(java.time.Duration.ofMinutes(10)));
+                config.jetty.modifyServer(server ->
+                        server.setConnectors(new Connector[]{sharedTlsConnector(server, port)}));
+            }).start();
+        } else {
+            mHttpServer = Javalin.create(config -> {
+                config.staticFiles.add(staticFiles -> {
+                    staticFiles.directory = "/wizard-web";
+                });
+                config.jetty.modifyWebSocketServletFactory(factory -> factory.setIdleTimeout(java.time.Duration.ofMinutes(10)));
+            }).start(port);
+        }
         mHttpServer.ws("/ws", ws -> {
             ws.onMessage(this::onMessage);
             ws.onClose(this::onClose);
@@ -159,7 +228,9 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
 
     @Override
     public void unload() {
+        mUnloaded = true;
         mProject.getEventDispatcher().remove(this);
+        applyVarUpdate(mConnectedVar, "false");
 
         synchronized (this) {
             if (mPendingRequest != null) {
@@ -180,6 +251,10 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
                 mWizardSocket.session.close();
             }
             mWizardSocket = null;
+            if (mProducerSocket != null && mProducerSocket.session.isOpen()) {
+                mProducerSocket.session.close();
+            }
+            mProducerSocket = null;
             mShownMp3Path = null;
             mShownInfoPath = null;
         }
@@ -199,6 +274,14 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
         }
         if ("show_asrinput".equals(actionName)) {
             handleShowAsrInput(activity);
+            return;
+        }
+        if ("start_recording".equals(actionName)) {
+            sendToWizard(new JSONObject().put("type", "controlRecording").put("action", "start"));
+            return;
+        }
+        if ("stop_recording".equals(actionName)) {
+            sendToWizard(new JSONObject().put("type", "controlRecording").put("action", "stop"));
             return;
         }
         mLogger.warning("StudyMaster: unknown action '" + actionName + "'");
@@ -330,6 +413,21 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
         }
     }
 
+    /** TLS connector on the given port using the shared mkcert host keystore (--secure mode).
+     * Copied from HtmlGuiWsExecutor's identical helper — see TlsRuntimeContext's javadoc for why
+     * every plugin embedding its own Jetty/Javalin server builds this the same way. */
+    private static ServerConnector sharedTlsConnector(Server server, int port) {
+        SslContextFactory.Server factory = new SslContextFactory.Server();
+        factory.setKeyStorePath(TlsRuntimeContext.getKeyStorePath());
+        factory.setKeyStorePassword(TlsRuntimeContext.getKeyStorePassword());
+        factory.setKeyStoreType("PKCS12");
+        ServerConnector connector = new ServerConnector(server,
+                new SslConnectionFactory(factory, "http/1.1"),
+                new HttpConnectionFactory());
+        connector.setPort(port);
+        return connector;
+    }
+
     // ---- WebSocket wire protocol ---------------------------------------------------------------
 
     private void onMessage(io.javalin.websocket.WsMessageContext ctx) {
@@ -346,22 +444,63 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
             handleAuth(ctx, msg);
             return;
         }
+        if ("producerHello".equals(type)) {
+            handleProducerHello(ctx, msg);
+            return;
+        }
 
+        final boolean isWizard;
+        final boolean isProducer;
         synchronized (this) {
             // TODO: verify Javalin 6.7's WsContext exposes a stable per-connection identity to
             // compare against (session object identity used here as the working assumption).
-            if (mWizardSocket == null || !mWizardSocket.session.equals(ctx.session)) {
-                sendError(ctx, "not_authenticated", "Send 'auth' first");
-                return;
-            }
+            isWizard = mWizardSocket != null && mWizardSocket.session.equals(ctx.session);
+            isProducer = mProducerSocket != null && mProducerSocket.session.equals(ctx.session);
+        }
+        if (!isWizard && !isProducer) {
+            sendError(ctx, "not_authenticated", "Send 'auth' or 'producerHello' first");
+            return;
         }
 
         switch (type) {
+            case "ping":
+                // Pure keep-alive (see the setIdleTimeout comment in launch()) — any traffic
+                // resets Jetty's idle timer, receiving it is the whole point.
+                break;
             case "set":
+                if (!isWizard) {
+                    sendError(ctx, "forbidden", "Only the wizard may set variables");
+                    break;
+                }
                 handleSet(msg);
                 break;
             case "reply":
+                if (!isWizard) {
+                    sendError(ctx, "forbidden", "Only the wizard may reply to requests");
+                    break;
+                }
                 handleReply(msg);
+                break;
+            case "webrtc.offer":
+            case "webrtc.answer":
+            case "webrtc.ice-candidate":
+                // Pure relay — VSM never parses SDP/ICE content, just forwards it verbatim to
+                // whichever side didn't send it. See doc/plugin-connectivity.md's worked example.
+                if (isWizard) {
+                    sendToProducer(msg);
+                } else {
+                    sendToWizard(msg);
+                }
+                break;
+            case "videoReady":
+            case "videoNotReady":
+                // The wizard's own report of whether ITS RTCPeerConnection actually has a live
+                // track right now — only meaningful from the wizard (a producer never sends
+                // this), and only when this project has video configured at all (see
+                // handleAuth, which already sets connected_var true unconditionally otherwise).
+                if (isWizard && !mProducerKey.isEmpty()) {
+                    applyVarUpdate(mConnectedVar, "videoReady".equals(type) ? "true" : "false");
+                }
                 break;
             default:
                 sendError(ctx, "unknown_type", "Unknown message type '" + type + "'");
@@ -376,26 +515,94 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
             return;
         }
 
+        final boolean producerPresent;
         synchronized (this) {
             if (mWizardSocket != null && mWizardSocket.session.isOpen() && !mWizardSocket.session.equals(ctx.session)) {
                 mLogger.message("StudyMaster: new wizard connection replaces the existing one");
                 mWizardSocket.session.close();
             }
             mWizardSocket = ctx;
+            producerPresent = mProducerSocket != null && mProducerSocket.session.isOpen();
         }
 
-        ctx.send(new JSONObject().put("type", "authResult").put("ok", true).toString());
+        ctx.send(new JSONObject().put("type", "authResult").put("ok", true).put("iceServers", mIceServers).toString());
         ctx.send(buildSnapshot().toString());
+        if (mProducerKey.isEmpty()) {
+            // No live video configured for this project at all — nothing further to wait for,
+            // keep the simple "a wizard is connected" meaning. When video IS configured,
+            // connected_var instead waits for the wizard's own videoReady message (see
+            // onMessage) — set it here unconditionally, a start_recording sent the instant the
+            // wizard authenticates can arrive well before that wizard's RTCPeerConnection has
+            // actually finished negotiating with a producer, and silently do nothing.
+            applyVarUpdate(mConnectedVar, "true");
+        }
+        if (producerPresent) {
+            // Whichever side connects second is the one that learns "the other side is here" —
+            // the producer always initiates the offer, so it's the one told to go negotiate.
+            sendToProducer(new JSONObject().put("type", "wizardReady"));
+        }
+    }
+
+    /**
+     * Registers the participant's browser (an htmlgui-ws vsm-webcam element) as the video
+     * producer. Deliberately a separate, lighter handshake than handleAuth's — this role never
+     * sees SceneFlow state or controls, only exchanges WebRTC signaling with the wizard.
+     */
+    private void handleProducerHello(io.javalin.websocket.WsMessageContext ctx, JSONObject msg) {
+        if (mProducerKey.isEmpty()) {
+            ctx.send(new JSONObject().put("type", "producerHelloResult").put("ok", false)
+                    .put("reason", "video_disabled").toString());
+            ctx.session.close();
+            return;
+        }
+        final String key = msg.optString("key", "");
+        if (!mProducerKey.equals(key)) {
+            ctx.send(new JSONObject().put("type", "producerHelloResult").put("ok", false)
+                    .put("reason", "invalid_key").toString());
+            ctx.session.close();
+            return;
+        }
+
+        final boolean wizardPresent;
+        synchronized (this) {
+            if (mProducerSocket != null && mProducerSocket.session.isOpen() && !mProducerSocket.session.equals(ctx.session)) {
+                mLogger.message("StudyMaster: new video producer connection replaces the existing one");
+                mProducerSocket.session.close();
+            }
+            mProducerSocket = ctx;
+            wizardPresent = mWizardSocket != null && mWizardSocket.session.isOpen();
+        }
+
+        ctx.send(new JSONObject().put("type", "producerHelloResult").put("ok", true)
+                .put("iceServers", mIceServers).toString());
+        if (wizardPresent) {
+            sendToWizard(new JSONObject().put("type", "producerJoined"));
+            ctx.send(new JSONObject().put("type", "wizardReady").toString());
+        }
     }
 
     private void onClose(io.javalin.websocket.WsCloseContext ctx) {
+        boolean wizardGone = false;
+        boolean producerGone = false;
         synchronized (this) {
             if (mWizardSocket != null && mWizardSocket.session.equals(ctx.session)) {
                 mLogger.message("StudyMaster: wizard disconnected");
                 mWizardSocket = null;
+                wizardGone = true;
                 // Deliberately not cancelling mPendingRequest here: a reconnecting wizard should
                 // see it again via the next snapshot's pendingRequest field.
+            } else if (mProducerSocket != null && mProducerSocket.session.equals(ctx.session)) {
+                mLogger.message("StudyMaster: video producer disconnected");
+                mProducerSocket = null;
+                producerGone = true;
             }
+        }
+        if (wizardGone) {
+            applyVarUpdate(mConnectedVar, "false");
+            sendToProducer(new JSONObject().put("type", "wizardLeft"));
+        }
+        if (producerGone) {
+            sendToWizard(new JSONObject().put("type", "producerLeft"));
         }
     }
 
@@ -452,6 +659,49 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
         // toString() — RunTimeProject.setVariable has typed overloads (String/boolean/int/float).
         mProject.setVariable(var, String.valueOf(value));
         broadcastVariableChanged(var, value);
+    }
+
+    /**
+     * setVariable's raw-String overload rejects Bool-typed variables outright (SymbolEntry.write
+     * type-checks against the declared type) — mirrors HtmlGuiWsExecutor's identical helper,
+     * needed here for connected_var (declared Bool in the SceneFlow, same convention as
+     * htmlgui-ws's gui_connected).
+     */
+    private void setVariableCoerced(String varName, String rawValue) {
+        if ("true".equalsIgnoreCase(rawValue) || "false".equalsIgnoreCase(rawValue)) {
+            mProject.setVariable(varName, Boolean.parseBoolean(rawValue));
+        } else {
+            mProject.setVariable(varName, rawValue);
+        }
+    }
+
+    /**
+     * Sets a SceneFlow variable that may not exist yet — a wizard (or a lingering browser
+     * reconnect) can hit this WS before the interpreter has finished registering variables,
+     * exactly the race HtmlGuiWsExecutor's identical helper documents. Retries on a daemon
+     * thread until the variable appears or the project unloads; no fixed attempt budget, since
+     * project launch time isn't bounded by anything this plugin controls.
+     */
+    private void applyVarUpdate(String varName, String rawValue) {
+        if (varName == null || varName.isBlank()) {
+            return;
+        }
+        if (mProject.hasVariable(varName)) {
+            setVariableCoerced(varName, rawValue);
+        } else {
+            final String fVar = varName, fVal = rawValue;
+            Thread t = new Thread(() -> {
+                while (!mUnloaded) {
+                    try { Thread.sleep(VAR_RETRY_DELAY_MS); } catch (InterruptedException e) { break; }
+                    if (mProject.hasVariable(fVar)) {
+                        setVariableCoerced(fVar, fVal);
+                        return;
+                    }
+                }
+            }, "studymaster-varset-retry");
+            t.setDaemon(true);
+            t.start();
+        }
     }
 
     // ---- Runtime event -> wizard broadcasts -----------------------------------------------------
@@ -810,6 +1060,16 @@ public class StudyMasterExecutor extends ActivityExecutor implements EventListen
         final WsContext socket;
         synchronized (this) {
             socket = mWizardSocket;
+        }
+        if (socket != null && socket.session.isOpen()) {
+            socket.send(msg.toString());
+        }
+    }
+
+    private void sendToProducer(JSONObject msg) {
+        final WsContext socket;
+        synchronized (this) {
+            socket = mProducerSocket;
         }
         if (socket != null && socket.session.isOpen()) {
             socket.send(msg.toString());

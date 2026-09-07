@@ -521,6 +521,25 @@
   </table>
   <pre>{ "type": "vsm-audio", "src": "background.mp3", "autoplay": true, "loop": true, "controls": false }</pre>
 
+  <!-- vsm-webcam -->
+  <h3 id="vsm-webcam"><code>vsm-webcam</code></h3>
+  <p>Live webcam capture, streamed directly to this project's StudyMaster wizard console (real-time
+  peer-to-peer WebRTC) for Wizard-of-Oz observation — not a file, and not sent through this
+  plugin's own WebSocket. Requires a <code>studymaster</code> device configured in the project;
+  renders a placeholder instead if none is found. Camera access requires a secure context
+  (HTTPS or localhost). By default this element is invisible on this page — it's a source
+  toward the wizard, not a self-view — and occupies no layout space; set <code>showPreview</code>
+  to also show the feed here.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>audio</code></td><td class="opt">opt</td><td><code>true</code></td><td>Capture microphone audio alongside video.</td></tr>
+    <tr><td><code>showPreview</code></td><td class="opt">opt</td><td><code>false</code></td><td>Also show the captured feed on this page (muted local preview), not just in the wizard console.</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td><code>"100%"</code></td><td>Preview width — only used when <code>showPreview</code> is true.</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td><code>"220px"</code></td><td>Preview height — only used when <code>showPreview</code> is true.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "vsm-webcam", "audio": true, "showPreview": true, "width": "100%", "height": "240px" }</pre>
+
   <!-- vsm-embed -->
   <h3 id="vsm-embed"><code>vsm-embed</code></h3>
   <p>iframe embed — use for external URLs, YouTube videos, or other web content.</p>

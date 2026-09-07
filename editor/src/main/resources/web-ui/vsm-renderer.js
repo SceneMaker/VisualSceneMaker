@@ -428,6 +428,20 @@ class VsmScreenRenderer extends LitElement {
                     ?autoplay=${!!el.autoplay}
                     ?loop=${!!el.loop}></audio>`;
 
+            case 'vsm-webcam':
+                // Captures this browser's camera (getUserMedia) and streams it directly, P2P,
+                // to whichever studymaster instance this project is configured with — bypassing
+                // this element's own WS bridge entirely (see doc/plugin-connectivity.md's
+                // "Worked example: live wizard video"). No bindVar/sendsVar: nothing here reads
+                // or writes SceneFlow variables. Deliberately no width/height default here —
+                // the element occupies zero layout space unless it actually has something to
+                // show (see VsmWebcamElement's own :host{display:contents}), since it's normally
+                // invisible (capturing, not previewing) and a forced box would show as an empty
+                // gap in the screen, which is exactly what happened before this was fixed.
+                return html`<vsm-webcam-element
+                    .config=${el}
+                    style=${style}></vsm-webcam-element>`;
+
             case 'vsm-embed': {
                 const embedStyle = [
                     `width:${el.width ?? '100%'}`,
@@ -1453,6 +1467,231 @@ class VsmTrackElement extends LitElement {
 }
 
 customElements.define('vsm-track-element', VsmTrackElement);
+
+// ---------------------------------------------------------------------------
+// vsm-webcam-element — captures this browser's camera/mic and streams it, direct P2P WebRTC,
+// to the project's studymaster wizard console. See doc/plugin-connectivity.md's "Worked
+// example: live wizard video" for the full picture (why this is B-browser + Direction A, and
+// why studymaster is the signaling relay, not a STUN/TURN server).
+//
+// Deliberately bypasses this plugin's own wsclient.js bridge: it opens its own WebSocket
+// straight to studymaster (URL/key/ICE-server config injected server-side into
+// window.VSM_GUI_CONFIG.studymaster by HtmlGuiWsExecutor, which looks up the project's
+// studymaster plugin instance — the author never configures a URL by hand). If no studymaster
+// instance exists in the project, that config key is simply absent and this renders a
+// placeholder instead of failing.
+//
+// Schema element fields:
+//   audio  — capture microphone audio alongside video (default true)
+// ---------------------------------------------------------------------------
+class VsmWebcamElement extends LitElement {
+
+    static properties = {
+        config:  { type: Object },
+        _status: { state: true }, // 'idle' | 'preview' | 'no-link' | 'connecting' | 'live' | 'error'
+    };
+
+    static styles = css`
+        /* display:contents: this host never establishes its own box, so it occupies zero
+           layout space whenever it renders nothing (the normal case — capturing, not
+           previewing). Whatever IS rendered (the video box or a placeholder) carries its own
+           sizing instead; a fixed-size host regardless of content is exactly the bug that
+           showed as a large empty gap on a screen with the feed hidden. */
+        :host { display: contents; }
+        .vsm-webcam-video-box {
+            display: block; width: 100%; height: 220px;
+        }
+        video {
+            width: 100%; height: 100%; display: block;
+            background: #14171b; border-radius: 0.5rem; object-fit: cover;
+        }
+        .vsm-webcam-placeholder {
+            display: inline-block; max-width: 100%; box-sizing: border-box;
+            background: rgba(0,0,0,0.06); border-radius: 0.5rem;
+            font-size: 0.8rem; opacity: 0.7; text-align: center; padding: 0.6rem 0.9rem;
+        }
+    `;
+
+    constructor() {
+        super();
+        this.config = {};
+        this._status = 'idle';
+        this._pc = null;
+        this._ws = null;
+        this._stream = null;
+        this._iceServers = [];
+        this._heartbeatTimer = null;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._start();
+    }
+
+    disconnectedCallback() {
+        this._teardown();
+        super.disconnectedCallback();
+    }
+
+    async _start() {
+        // screens-preview.html (the Screen Editor's design-time sandbox) sets this — it has no
+        // real htmlgui-ws server behind it at all (schema comes from a REST call, not a running
+        // plugin instance), so window.VSM_GUI_CONFIG is never populated there regardless of what
+        // the actual project has configured. Same guard already used to suppress the character
+        // iframe in preview; without it this would always show "no wizard link" even when the
+        // real project has one, which is misleading rather than informative.
+        if (window.__VSM_PREVIEW_MODE) {
+            this._status = 'preview';
+            return;
+        }
+        const cfg = window.VSM_GUI_CONFIG && window.VSM_GUI_CONFIG.studymaster;
+        if (!cfg) {
+            this._status = 'no-link';
+            return;
+        }
+        try {
+            this._stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: this.config.audio !== false,
+            });
+        } catch (e) {
+            this._status = 'error';
+            console.warn('vsm-webcam: getUserMedia failed', e);
+            return;
+        }
+        this.requestUpdate();
+        this._connectSignaling(cfg);
+    }
+
+    // Same pathPrefix/port shape wsclient.js already resolves its own WS URL from (see that
+    // file's ws_url derivation) — mirrored here, not shared, because studymaster is a different
+    // plugin instance with its own port and, in hosted/path-prefix mode, its own prefix path.
+    _connectSignaling(cfg) {
+        const protocol = (location.protocol === 'https:') ? 'wss' : 'ws';
+        const wsUrl = cfg.pathPrefix
+            ? (protocol + '://' + location.host + cfg.pathPrefix + 'ws_port/ws')
+            : (protocol + '://' + location.hostname + ':' + cfg.port + '/ws');
+        const ws = new WebSocket(wsUrl);
+        this._ws = ws;
+        ws.onopen = () => ws.send(JSON.stringify({ type: 'producerHello', key: cfg.producerKey || '' }));
+        ws.onmessage = (evt) => {
+            let msg;
+            try { msg = JSON.parse(evt.data); } catch (e) { return; }
+            this._handleMessage(msg);
+        };
+        ws.onclose = () => { clearInterval(this._heartbeatTimer); this._status = 'no-link'; };
+        ws.onerror = () => { clearInterval(this._heartbeatTimer); this._status = 'error'; };
+    }
+
+    _handleMessage(msg) {
+        switch (msg.type) {
+            case 'producerHelloResult':
+                if (!msg.ok) {
+                    this._status = 'error';
+                    console.warn('vsm-webcam: producerHello rejected:', msg.reason);
+                    return;
+                }
+                this._iceServers = msg.iceServers || [];
+                this._status = 'connecting';
+                // Keeps a long-running capture session alive past Jetty's WS idle timeout —
+                // this connection otherwise goes quiet right after the initial ICE-candidate
+                // exchange, well before a real WoZ session is done. Same fix as htmlgui-ws's own
+                // wsclient.js heartbeat.
+                clearInterval(this._heartbeatTimer);
+                this._heartbeatTimer = setInterval(() => {
+                    if (this._ws && this._ws.readyState === WebSocket.OPEN) {
+                        this._ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 4 * 60 * 1000);
+                break;
+            case 'wizardReady':
+                // The producer always initiates — this fires whichever side connects second.
+                this._createOffer();
+                break;
+            case 'webrtc.answer':
+                if (this._pc) {
+                    this._pc.setRemoteDescription({ type: 'answer', sdp: msg.sdp })
+                        .catch((e) => console.warn('vsm-webcam: setRemoteDescription failed', e));
+                }
+                break;
+            case 'webrtc.ice-candidate':
+                if (this._pc && msg.candidate) {
+                    this._pc.addIceCandidate(msg.candidate)
+                        .catch((e) => console.warn('vsm-webcam: addIceCandidate failed', e));
+                }
+                break;
+        }
+    }
+
+    _ensurePeerConnection() {
+        if (this._pc) return this._pc;
+        const pc = new RTCPeerConnection({ iceServers: this._iceServers });
+        this._stream.getTracks().forEach((t) => pc.addTrack(t, this._stream));
+        pc.onicecandidate = (e) => {
+            if (e.candidate && this._ws && this._ws.readyState === WebSocket.OPEN) {
+                this._ws.send(JSON.stringify({ type: 'webrtc.ice-candidate', candidate: e.candidate }));
+            }
+        };
+        pc.onconnectionstatechange = () => {
+            if (pc.connectionState === 'connected') this._status = 'live';
+            else if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') this._status = 'error';
+        };
+        this._pc = pc;
+        return pc;
+    }
+
+    async _createOffer() {
+        const pc = this._ensurePeerConnection();
+        try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            this._ws.send(JSON.stringify({ type: 'webrtc.offer', sdp: pc.localDescription.sdp }));
+        } catch (e) {
+            this._status = 'error';
+            console.warn('vsm-webcam: createOffer failed', e);
+        }
+    }
+
+    _teardown() {
+        clearInterval(this._heartbeatTimer);
+        this._heartbeatTimer = null;
+        if (this._pc) { this._pc.close(); this._pc = null; }
+        if (this._ws) { this._ws.close(); this._ws = null; }
+        if (this._stream) { this._stream.getTracks().forEach((t) => t.stop()); this._stream = null; }
+    }
+
+    render() {
+        // These placeholders are informational, not a preview — they stay regardless of
+        // config.showPreview, since they mean something needs the author's attention (screen
+        // editor sandbox, missing studymaster link, camera error), unlike the ordinary "it's
+        // just working invisibly" case below. Sized to their own content (see
+        // .vsm-webcam-placeholder), not a fixed box, so even these never eat much space.
+        if (this._status === 'preview') {
+            return html`<div class="vsm-webcam-placeholder">Webcam preview isn't available in the Screen Editor — camera capture only runs in a live project.</div>`;
+        }
+        if (this._status === 'no-link') {
+            return html`<div class="vsm-webcam-placeholder">No wizard link configured for this project.</div>`;
+        }
+        if (this._status === 'error') {
+            return html`<div class="vsm-webcam-placeholder">Camera unavailable.</div>`;
+        }
+        // No local self-view by default — this element sources video toward the wizard, it
+        // isn't normally a participant-facing camera preview (the wizard's console shows the
+        // live picture). config.showPreview opts a screen back into showing it here too.
+        if (!this.config.showPreview) {
+            return html``;
+        }
+        const boxStyle = [
+            this.config.width  ? `width:${this.config.width}`   : '',
+            this.config.height ? `height:${this.config.height}` : '',
+        ].filter(Boolean).join(';');
+        return html`<div class="vsm-webcam-video-box" style=${boxStyle}>
+            <video .srcObject=${this._stream ?? null} autoplay playsinline muted></video>
+        </div>`;
+    }
+}
+
+customElements.define('vsm-webcam-element', VsmWebcamElement);
 
 // ---------------------------------------------------------------------------
 // vsm-chat-input-element — Chat message input (text field + Send button)

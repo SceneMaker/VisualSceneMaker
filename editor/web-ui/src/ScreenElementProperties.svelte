@@ -287,6 +287,32 @@
                         Loop</label>
                     </div>
 
+                  <!-- ── Webcam ── -->
+                  {:else if element.type === "vsm-webcam"}
+                    <div class="ve-media-hint">Streams this browser's camera live to the project's StudyMaster wizard console (peer-to-peer) — requires a <code>studymaster</code> device in the project. {#if element.showPreview}A preview of the feed is shown on this page too.{:else}No preview is shown on this page (default) — the wizard's console is where it's seen.{/if}</div>
+                    <div class="ve-row" style="gap:1rem;flex-wrap:wrap">
+                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem;white-space:nowrap">
+                        <input type="checkbox" checked={element.audio !== false}
+                               on:change={e => onSetProp("audio",e.target.checked)}>
+                        Audio</label>
+                      <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem;white-space:nowrap">
+                        <input type="checkbox" checked={!!element.showPreview}
+                               on:change={e => onSetProp("showPreview",e.target.checked || undefined)}>
+                        Show preview</label>
+                    </div>
+                    {#if element.showPreview}
+                      <div class="ve-row" style="gap:.5rem">
+                        <label class="ve-prop-label">Width</label>
+                        <input class="ve-input ve-input-short" type="text" placeholder="100%"
+                               value={element.width ?? ""}
+                               on:input={e => onSetProp("width",e.target.value || undefined)}>
+                        <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
+                        <input class="ve-input ve-input-short" type="text" placeholder="220px"
+                               value={element.height ?? ""}
+                               on:input={e => onSetProp("height",e.target.value || undefined)}>
+                      </div>
+                    {/if}
+
                   <!-- ── Embed (YouTube / iframe) ── -->
                   {:else if element.type === "vsm-embed"}
                     <div class="ve-media-hint">For YouTube use the embed URL: <code>https://www.youtube.com/embed/VIDEO_ID</code></div>

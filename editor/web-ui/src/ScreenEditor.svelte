@@ -306,6 +306,7 @@
     if (type === "vsm-image")       return "Img";
     if (type === "vsm-video")       return "▶";
     if (type === "vsm-audio")       return "♪";
+    if (type === "vsm-webcam")      return "📷";
     if (type === "vsm-embed")       return "⊞";
     if (type === "vsm-bubble")      return "💬";
     if (type === "vsm-chart")       return "Ch";
@@ -331,6 +332,10 @@
     if (el.type === "vsm-image")  return el.src  ? `Image · ${el.src}`  : "Image";
     if (el.type === "vsm-video")  return el.src  ? `Video · ${el.src}`  : "Video";
     if (el.type === "vsm-audio")  return el.src  ? `Audio · ${el.src}`  : "Audio";
+    if (el.type === "vsm-webcam") {
+      const bits = [el.audio === false ? "video only" : null, el.showPreview ? "preview shown" : null].filter(Boolean);
+      return bits.length ? `Webcam · ${bits.join(", ")}` : "Webcam";
+    }
     if (el.type === "vsm-embed")  return el.src  ? `Embed · ${el.src}`  : "Embed";
     if (el.type === "vsm-bubble") {
       const spk = el.speaker ? `${el.speaker}: ` : "";
@@ -400,6 +405,7 @@
       { icon: "Img", label: "Image",    create: () => ({ type:"vsm-image", src:"", alt:"" }) },
       { icon: "▶",   label: "Video",    create: () => ({ type:"vsm-video", src:"", controls:true }) },
       { icon: "♪",   label: "Audio",    create: () => ({ type:"vsm-audio", src:"", controls:true }) },
+      { icon: "📷",  label: "Webcam",   create: () => ({ type:"vsm-webcam", audio:true }) },
       { icon: "⊞",   label: "Embed",    create: () => ({ type:"vsm-embed", src:"", width:"100%", height:"315px" }) },
     ]},
     { label: "Data & FX", items: [

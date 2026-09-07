@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "0.2",
-    "specHash": "02a5101915e033a6",
+    "specVersion": "0.5",
+    "specHash": "a917917c6bd06cdb",
     "plugin": {
         "id": "studymaster",
         "name": "StudyMaster",
@@ -46,6 +46,23 @@
                 "type": "filepath",
                 "default": "wizard-controls.json",
                 "description": "Project-relative path to the manifest declaring which SceneFlow variables the wizard can see and set."
+            },
+            {
+                "name": "producer_key",
+                "type": "string",
+                "description": "Shared secret a participant-facing htmlgui-ws vsm-webcam element must submit to register as the live-video producer. Empty (default) disables live wizard video entirely; unrelated to wizard_key."
+            },
+            {
+                "name": "ice_servers",
+                "type": "string",
+                "default": "[]",
+                "description": "JSON array of WebRTC ICE server entries (e.g. [{\"urls\":\"stun:stun.l.google.com:19302\"},{\"urls\":\"turn:relay.example.org:3478\",\"username\":\"...\",\"credential\":\"...\"}]) handed to both the wizard's and the participant's RTCPeerConnection. Empty on a LAN, where direct host candidates connect without STUN/TURN."
+            },
+            {
+                "name": "connected_var",
+                "type": "string",
+                "default": "studymaster_connected",
+                "description": "Bool SceneFlow variable set to true while a wizard is connected, false otherwise (default) \u2014 same pattern as htmlgui-ws's sceneflowStateVar/gui_connected. Must be declared as a Bool variable in the SceneFlow; unrelated to the video producer's connection state."
             }
         ]
     },
@@ -83,11 +100,33 @@
                     "description": "Full path to the recorded MP3 file \u2014 NOT a variable name to look up (unlike request()'s 'var'). Pass the already-resolved value, typically the asr plugin's asr_last_recording_file, e.g. PlayAction(\"[sm show_asrinput var='\" + asr_last_recording_file + \"']\")."
                 }
             ]
+        },
+        {
+            "name": "start_recording",
+            "type": "action",
+            "summary": "Tell the wizard console to start recording the live video feed",
+            "description": "Sends the connected wizard console a signal to start recording whatever it's currently receiving from the video producer (MediaRecorder, client-side only \u2014 see plugin README). A no-op if no wizard is connected or no live feed is playing; the wizard console itself logs that case rather than this plugin, since the recording state lives entirely in that browser.",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "stop_recording",
+            "type": "action",
+            "summary": "Tell the wizard console to stop recording and save the file",
+            "description": "Sends the connected wizard console a signal to stop an in-progress recording and save it \u2014 the same effect as clicking \"Stop & Save\" in the console. A no-op if nothing is currently recording.",
+            "params": [
+                
+            ]
         }
     ],
     "variables": {
         "writes": [
-            
+            {
+                "var": "connected_var",
+                "type": "Bool",
+                "description": "Set to true while a wizard is connected, false otherwise (default). Default variable name is studymaster_connected \u2014 same pattern as htmlgui-ws's gui_connected. Must be declared as a Bool variable in the SceneFlow."
+            }
         ],
         "reads": [
             
