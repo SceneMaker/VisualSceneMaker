@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.3",
-    "specHash": "b70afc2c8517e5e1",
+    "specVersion": "1.4",
+    "specHash": "9e3594242c81fba7",
     "plugin": {
         "id": "asr",
         "name": "Speech Recognition",
@@ -29,16 +29,39 @@
                 "name": "ws_url",
                 "type": "string",
                 "default": "ws://localhost:8765/stream",
-                "description": "WebSocket URL of fast-asr server"
+                "description": "WebSocket URL of fast-asr server. Only used when mode=dial (the default); ignored in mode=listen."
             },
             {
                 "name": "recording_dir",
                 "type": "string",
                 "default": "./audio-recording",
-                "description": "Directory recordings are saved into on the fast-asr server, relative to the VSM project directory (an absolute path is also accepted). Sent to the server via POST /set_recording_dir once the connection is ready, and again on every reconnect."
+                "description": "Directory recordings are saved into on the fast-asr server, relative to the VSM project directory (an absolute path is also accepted). Sent to the server via POST /set_recording_dir once the connection is ready, and again on every reconnect. Only used when mode=dial."
             }
         ],
         "optional": [
+            {
+                "name": "mode",
+                "type": "string",
+                "default": "dial",
+                "description": "'dial' (default): VSM dials out to fast-asr's ws_url, for a server-reachable fast-asr instance (e.g. an internal host). 'listen': VSM instead listens on ws_port and fast-asr dials in \u2014 for a fast-asr instance the VSM server cannot reach directly (a researcher's own laptop), mirroring the studymaster wizard pattern. See doc/plugin-connectivity.md."
+            },
+            {
+                "name": "ws_port",
+                "type": "int",
+                "default": 9092,
+                "readonly": true,
+                "description": "mode=listen only: WebSocket port fast-asr dials into. Auto-allocated by PortPoolManager in hosted deployments; used directly in local/LAN runs."
+            },
+            {
+                "name": "asr_key",
+                "type": "string",
+                "description": "mode=listen only: shared secret fast-asr must submit as the first WebSocket message before any other message is accepted. No default: the author must set one when using mode=listen."
+            },
+            {
+                "name": "asr_slug",
+                "type": "string",
+                "description": "mode=listen only: author-chosen slug for the friendly hosted URL https://<host>/asr/<slug>. Empty = no friendly alias registered; fast-asr connects with the raw pooled URL/port."
+            },
             {
                 "name": "reconnect_delay_ms",
                 "type": "string",

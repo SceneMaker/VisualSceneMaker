@@ -8,6 +8,9 @@ repositories { mavenCentral() }
 dependencies {
     implementation project(":core")
     implementation group: 'org.json', name: 'json', version: '20240303'
+    // mode=listen embeds a Jetty/Javalin server for fast-asr to dial into, same as
+    // studymaster and charamel-embed.
+    implementation "io.javalin:javalin:6.7.0"
 }
 
 tasks.withType(JavaCompile).configureEach {

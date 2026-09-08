@@ -3221,7 +3221,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // routing this redirects into. Generic by *port-property naming, same convention as
         // PortPoolManager, but NOT multi-port-aware: a plugin config with more than one "*port"
         // property is ambiguous and reported as an error rather than guessed at.
-        mApp.get("/studymaster/{slug}", this::handleStudyMasterWizardLink);
+        mApp.get("/studymaster/{slug}", ctx -> handlePluginSlugLink(ctx, "wizard_slug"));
+        // Same pattern for the asr plugin's reverse-dial listen mode (a fast-asr instance dials
+        // in here instead of VSM dialing out to it) — see doc/plugin-connectivity.md.
+        mApp.get("/asr/{slug}", ctx -> handlePluginSlugLink(ctx, "asr_slug"));
         mApp.get(API_PREFIX + "/projects", this::handleProjects);
         mApp.get(API_PREFIX + "/projects/recent", this::handleRecentProjects);
         mApp.get(API_PREFIX + "/projects/samples", ctx -> handleStaticProjectList(ctx, "res/prj"));
@@ -3408,20 +3411,22 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     /**
-     * Resolves an author-chosen StudyMaster wizard slug (any plugin config's {@code wizard_slug}
-     * property, across every open project) to the plugin's actual connect URL and redirects there.
+     * Resolves an author-chosen friendly slug (any plugin config's {@code slugProperty} property,
+     * across every open project) to the plugin's actual connect URL and redirects there.
      * Path-prefix mode (hosted/multi-tenant): redirects to the pooled {@code /plugin/{proj}/{plugin}/{portKey}/}
      * URL nginx already proxies. Local/LAN mode (no {@code _pathPrefix} set): redirects straight to
      * {@code http://<request host>:<port>/}, since there the plugin's own port is directly reachable.
+     * Shared by studymaster's {@code wizard_slug} and asr's {@code asr_slug} (see
+     * doc/plugin-connectivity.md) — same convention, different property name per plugin.
      */
-    private void handleStudyMasterWizardLink(Context ctx) {
+    private void handlePluginSlugLink(Context ctx, String slugProperty) {
         final String slug = ctx.pathParam("slug");
         for (ProjectRef ref : projectStore.values()) {
             if (ref.runtimeProject == null || ref.runtimeProject.getProjectConfig() == null) {
                 continue;
             }
             for (PluginConfig pc : ref.runtimeProject.getProjectConfig().getPluginConfigList()) {
-                if (!slug.equals(pc.getProperty("wizard_slug"))) {
+                if (!slug.equals(pc.getProperty(slugProperty))) {
                     continue;
                 }
 

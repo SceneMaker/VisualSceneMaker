@@ -4,6 +4,12 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.runtime.tls.TlsRuntimeContext;
+
+import io.javalin.Javalin;
+import io.javalin.websocket.WsCloseContext;
+import io.javalin.websocket.WsContext;
+import io.javalin.websocket.WsMessageContext;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -35,6 +41,12 @@ public class AsrExecutor extends ActivityExecutor {
     private String recordingDir;
     private String resolvedRecordingDir;
 
+    // --- mode=listen config (VSM listens, fast-asr dials in — see doc/plugin-connectivity.md) ---
+    private boolean listenMode;
+    private int wsPort;
+    private String asrKey;
+    private String asrSlug;
+
     // --- Variable name bindings ---
     private String connectedVar;
     private String vadActiveVar;
@@ -58,12 +70,19 @@ public class AsrExecutor extends ActivityExecutor {
     private volatile boolean running = false;
     private volatile boolean variableWritesEnabled = false;
 
-    // --- WebSocket state ---
+    // --- WebSocket state (mode=dial) ---
     private volatile WebSocket wsClient;
     private final AtomicLong reconnectGen = new AtomicLong(0);
     private HttpClient httpClient;
     private ScheduledExecutorService scheduler;
     private ExecutorService messageExecutor;
+
+    // --- WebSocket state (mode=listen) ---
+    private Javalin mHttpServer;
+    // The single connected-and-authenticated fast-asr instance, if any. Replaced (old socket
+    // closed) on a fresh successful auth, never rejected — same "reconnect replaces" design as
+    // studymaster's wizard socket.
+    private volatile WsContext mFastAsrSocket;
 
     public AsrExecutor(final PluginConfig config, final RunTimeProject project) {
         super(config, project);
@@ -83,8 +102,12 @@ public class AsrExecutor extends ActivityExecutor {
         variableWritesEnabled = true;
         running = true;
 
+        listenMode           = "listen".equalsIgnoreCase(configOrDefault("mode", "dial"));
         wsUrl                = configOrDefault("ws_url",                "ws://localhost:8765/stream");
         restBaseUrl          = restBaseUrlFrom(wsUrl);
+        wsPort               = parseIntOrDefault(configOrDefault("ws_port", "9092"), 9092);
+        asrKey               = configOrDefault("asr_key", "");
+        asrSlug              = configOrDefault("asr_slug", "");
         reconnectDelayMs     = parseIntOrDefault(configOrDefault("reconnect_delay_ms",   "2000"), 2000);
         defaultGroups        = configOrDefault("defaultGroups",        "");
         defaultGroupsTimeout = parseIntOrDefault(configOrDefault("defaultGroupsTimeout", "3600"), 3600);
@@ -148,8 +171,19 @@ public class AsrExecutor extends ActivityExecutor {
                 }))
                 .build();
 
-        connect();
-        mLogger.message("[asr] launched, ws_url=" + wsUrl);
+        if (listenMode) {
+            if (asrKey.isEmpty()) {
+                mLogger.failure("[asr] mode=listen but no asr_key configured, refusing to start "
+                        + "(would otherwise accept any fast-asr instance with no authentication).");
+                return;
+            }
+            startListenServer();
+            mLogger.message("[asr] launched in listen mode on port " + wsPort
+                    + (asrSlug.isEmpty() ? "" : " (slug=" + asrSlug + ")"));
+        } else {
+            connect();
+            mLogger.message("[asr] launched, ws_url=" + wsUrl);
+        }
     }
 
     @Override
@@ -162,6 +196,16 @@ public class AsrExecutor extends ActivityExecutor {
         if (ws != null) {
             try { ws.abort(); } catch (Exception ignore) {}
         }
+        if (mFastAsrSocket != null) {
+            if (mFastAsrSocket.session.isOpen()) {
+                mFastAsrSocket.session.close();
+            }
+            mFastAsrSocket = null;
+        }
+        if (mHttpServer != null) {
+            mHttpServer.stop();
+            mHttpServer = null;
+        }
         if (messageExecutor != null) {
             messageExecutor.shutdownNow();
         }
@@ -169,6 +213,112 @@ public class AsrExecutor extends ActivityExecutor {
             scheduler.shutdownNow();
         }
         mLogger.message("[asr] unloaded");
+    }
+
+    // -------------------------------------------------------------------------
+    // mode=listen: embedded server fast-asr dials into (mirrors charamel-embed's
+    // JettyTransport and studymaster's wizard socket — see doc/plugin-connectivity.md)
+    // -------------------------------------------------------------------------
+
+    private void startListenServer() {
+        if (TlsRuntimeContext.isEnabled()) {
+            mLogger.message("--secure: serving asr listen socket over wss on port " + wsPort);
+            mHttpServer = Javalin.create(config -> {
+                config.jetty.modifyWebSocketServletFactory(f -> f.setIdleTimeout(Duration.ofMinutes(10)));
+                config.jetty.modifyServer(server -> server.setConnectors(
+                        new org.eclipse.jetty.server.Connector[]{ sharedTlsConnector(server, wsPort) }));
+            }).start();
+        } else {
+            mHttpServer = Javalin.create(config ->
+                    config.jetty.modifyWebSocketServletFactory(f -> f.setIdleTimeout(Duration.ofMinutes(10)))
+            ).start(wsPort);
+        }
+        mHttpServer.ws("/ws", ws -> {
+            ws.onMessage(this::onListenMessage);
+            ws.onClose(this::onListenClose);
+            ws.onError(ctx -> mLogger.failure("[asr] listen-mode WS error: " + ctx.error()));
+        });
+    }
+
+    private void onListenMessage(WsMessageContext ctx) {
+        final JSONObject msg;
+        try {
+            msg = new JSONObject(ctx.message());
+        } catch (Exception e) {
+            mLogger.warning("[asr] listen mode: malformed frame ignored: " + e);
+            return;
+        }
+        final String type = msg.optString("type", "");
+
+        if ("auth".equals(type)) {
+            handleListenAuth(ctx, msg);
+            return;
+        }
+
+        final boolean authenticated = mFastAsrSocket != null && mFastAsrSocket.session.equals(ctx.session);
+        if (!authenticated) {
+            ctx.send(new JSONObject().put("type", "error").put("code", "not_authenticated")
+                    .put("message", "Send 'auth' first").toString());
+            return;
+        }
+        if ("ping".equals(type)) {
+            // Pure keep-alive (see the setIdleTimeout override above) — any traffic resets
+            // Jetty's idle timer, receiving it is the whole point.
+            return;
+        }
+        // Every other message is the same wire protocol AsrWsListener already parses in dial
+        // mode (ready/config/sad/vad/asr/turn_end/diarization/recording) — reuse handleMessage
+        // unchanged rather than duplicating the protocol.
+        final long gen = reconnectGen.get();
+        final String raw = ctx.message();
+        messageExecutor.execute(() -> handleMessage(gen, raw));
+    }
+
+    private void handleListenAuth(WsMessageContext ctx, JSONObject msg) {
+        final String key = msg.optString("key", "");
+        if (asrKey.isEmpty() || !asrKey.equals(key)) {
+            ctx.send(new JSONObject().put("type", "authResult").put("ok", false)
+                    .put("reason", "invalid_key").toString());
+            ctx.session.close();
+            return;
+        }
+        if (mFastAsrSocket != null && mFastAsrSocket.session.isOpen() && !mFastAsrSocket.session.equals(ctx.session)) {
+            mLogger.message("[asr] new fast-asr connection replaces the existing one");
+            mFastAsrSocket.session.close();
+        }
+        mFastAsrSocket = ctx;
+        ctx.send(new JSONObject().put("type", "authResult").put("ok", true).toString());
+        setBoolVar(connectedVar, true);
+        sendSetRecordingDir();
+        if (!defaultGroups.isBlank()) {
+            sendExpect(defaultGroups, String.valueOf(defaultGroupsTimeout));
+        }
+    }
+
+    private void onListenClose(WsCloseContext ctx) {
+        if (mFastAsrSocket != null && mFastAsrSocket.session.equals(ctx.session)) {
+            mFastAsrSocket = null;
+            mLogger.message("[asr] listen mode: fast-asr disconnected");
+            setBoolVar(connectedVar, false);
+            setBoolVar(asrActiveVar, false);
+        }
+    }
+
+    /** TLS connector on the given port using the shared mkcert host keystore (--secure mode).
+     * Copied from JettyTransport/StudyMasterExecutor's identical helper — see TlsRuntimeContext's
+     * javadoc for why every plugin embedding its own Jetty/Javalin server builds this the same way. */
+    private static org.eclipse.jetty.server.ServerConnector sharedTlsConnector(
+            org.eclipse.jetty.server.Server server, int port) {
+        org.eclipse.jetty.util.ssl.SslContextFactory.Server factory =
+                new org.eclipse.jetty.util.ssl.SslContextFactory.Server();
+        factory.setKeyStorePath(TlsRuntimeContext.getKeyStorePath());
+        factory.setKeyStorePassword(TlsRuntimeContext.getKeyStorePassword());
+        factory.setKeyStoreType("PKCS12");
+        org.eclipse.jetty.server.ServerConnector connector = new org.eclipse.jetty.server.ServerConnector(server,
+                new org.eclipse.jetty.server.SslConnectionFactory(factory, "http/1.1"),
+                new org.eclipse.jetty.server.HttpConnectionFactory());
+        connector.setPort(port);
+        return connector;
     }
 
     // -------------------------------------------------------------------------
@@ -496,8 +646,13 @@ public class AsrExecutor extends ActivityExecutor {
         return scheme + "://" + uri.getAuthority();
     }
 
-    /** Tell the fast-asr server where to save recordings. Sent on every connect/reconnect. */
+    /** Tell the fast-asr server where to save recordings. Sent on every connect/reconnect.
+     * No-op in listen mode: there is no known REST base URL for a fast-asr instance that dialed
+     * in to us (recording control over a reverse connection is out of scope for now). */
     private void sendSetRecordingDir() {
+        if (listenMode) {
+            return;
+        }
         try {
             String encodedDir = URLEncoder.encode(resolvedRecordingDir, StandardCharsets.UTF_8);
             HttpRequest req = HttpRequest.newBuilder(
@@ -522,6 +677,10 @@ public class AsrExecutor extends ActivityExecutor {
     }
 
     private void sendStartRecording() {
+        if (listenMode) {
+            mLogger.warning("[asr] start_recording is not supported in listen mode");
+            return;
+        }
         try {
             HttpRequest req = HttpRequest.newBuilder(URI.create(restBaseUrl + "/start_recording"))
                     .timeout(Duration.ofSeconds(5))
@@ -546,6 +705,10 @@ public class AsrExecutor extends ActivityExecutor {
     }
 
     private void sendStopRecording() {
+        if (listenMode) {
+            mLogger.warning("[asr] stop_recording is not supported in listen mode");
+            return;
+        }
         try {
             HttpRequest req = HttpRequest.newBuilder(URI.create(restBaseUrl + "/stop_recording"))
                     .timeout(Duration.ofSeconds(10))
@@ -576,6 +739,10 @@ public class AsrExecutor extends ActivityExecutor {
     }
 
     private void sendGetLastRecordedAudio() {
+        if (listenMode) {
+            mLogger.warning("[asr] get_last_recorded_audio is not supported in listen mode");
+            return;
+        }
         try {
             HttpRequest req = HttpRequest.newBuilder(URI.create(restBaseUrl + "/get_last_recorded_audio"))
                     .timeout(Duration.ofSeconds(5))
@@ -607,6 +774,19 @@ public class AsrExecutor extends ActivityExecutor {
     }
 
     private void sendText(final String text) {
+        if (listenMode) {
+            WsContext ctx = mFastAsrSocket;
+            if (ctx == null || !ctx.session.isOpen()) {
+                mLogger.warning("[asr] sendText: no fast-asr instance connected, message dropped");
+                return;
+            }
+            try {
+                ctx.send(text);
+            } catch (Exception ex) {
+                mLogger.warning("[asr] sendText error: " + ex.getMessage());
+            }
+            return;
+        }
         WebSocket ws = wsClient;
         if (ws == null) {
             mLogger.warning("[asr] sendText: not connected, message dropped");

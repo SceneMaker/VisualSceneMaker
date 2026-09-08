@@ -35,6 +35,12 @@ browser GUI uses. The only work is telling the client app the public URL (and th
 plugin-config machinery already advertises it). So: **if the other end can be configured with a
 URL, this is mostly a configuration exercise, not new infrastructure.**
 
+The "native client" case above was hypothetical until 2026-09-08, when `asr` became its first
+realization — see the worked example below. `studymaster`'s friendly `/studymaster/<slug>` URL
+predates it and is browser-page-only (the page is served *by* studymaster itself); `asr`'s
+`/asr/<slug>` is the same slug-redirect mechanism (now shared code, not copy-pasted) pointed at an
+external native process instead.
+
 ## Direction B — the plugin dials *out* to the other end
 
 Here the *server* initiates the connection, so the only question that matters is: **is the
@@ -96,11 +102,17 @@ plugins can never use anything lighter:
 | Transport | Plugins | Reachable via page/extension? |
 |---|---|---|
 | Raw TCP/UDP | charamel, odp, reeti, sockets, ssi, ssj, tricatworld, unity | **No** — browsers have no raw socket API. B-tunnel only. |
-| HTTP/WS, dials **out** | asr, decad, heartflow, voicetts | **Yes** — the B-extension candidate set |
+| HTTP/WS, dials **out** | asr\*, decad, heartflow, voicetts | **Yes** — the B-extension candidate set |
 | HTTP/WS, **listens** | charamel-embed, charamel-ws, studymaster-web, yallah | Not needed — these are Direction A, already solved |
 
 So B-extension serves 4 plugins and B-tunnel adds 8 more. If the goal is *exploring* what ASR, TTS
 and LLMs can do, the four are the ones that matter and the extension is sufficient.
+
+\* As of 2026-09-08, `asr` no longer fits this table cleanly: it kept its dial-out mode (B-direct,
+for a server-reachable fast-asr instance) but also gained a **listen** mode — Direction A, not
+B-extension — for exactly the case B-extension doesn't cover well: a whole native service
+(fast-asr, with its own microphone capture, VAD, diarization) rather than a single browser-API
+capability. See the worked example below.
 
 ## Design principle: ship symbols, not signals
 
@@ -320,6 +332,58 @@ infrastructure altogether. One design covers both the LAN case (no STUN/TURN nee
 direct host candidates connect) and the DFKI-hosted case (STUN + an external TURN relay
 configured in `ice_servers`), without VSM's own server ever sitting in the media path or needing
 any firewall change to carry it.
+
+## Worked example: fast-asr on a researcher's own laptop → a hosted VSM project (reverse-dial)
+
+A third worked example, because it's the first plugin to actually use Direction A's "native
+client" case (studymaster's is a browser page it serves itself; this is an independent process).
+
+**The problem B-direct doesn't solve.** `asr` dials out to fast-asr's `ws_url` — fine when
+fast-asr runs on a server-reachable internal host (the internal-network case above), but fast-asr
+increasingly runs on a researcher's own Mac (`packaging/macos/FastASRLauncher.swift` in
+`audio-processing/fast-asr`), which `vsm.scaai.dfki.de` can never dial into: it's on an arbitrary
+network, often behind NAT, with no stable address the server could be configured with. That's
+B-tunnel's problem shape — except fast-asr already *is* a substantial native app with its own
+process lifecycle UI, so building a separate generic bridge agent (Tier 1 "Satellite" above) would
+duplicate machinery fast-asr already has.
+
+**The fix: give `asr` a second, opposite-direction mode instead of building a bridge.** `mode=dial`
+(the default) is untouched. `mode=listen` makes the plugin embed its own Jetty/Javalin server —
+same shape as `charamel-embed`'s `JettyTransport` — and wait for fast-asr to dial *it*, exactly
+mirroring `studymaster`'s wizard socket:
+
+- **Auth**: a static shared secret (`asr_key`), sent as the first WebSocket message and checked
+  by string-equals — the same contract as studymaster's `wizard_key`, deliberately: this is the
+  safe direction (client dials to server), so the "trust matters most" caveat below doesn't apply
+  the way it does for B-tunnel.
+- **Friendly URL**: `https://vsm.scaai.dfki.de/asr/<asr-slug>`, resolved by the *same* redirect
+  handler studymaster's `/studymaster/<slug>` already used — refactored from a studymaster-specific
+  method into one parameterized by which config property holds the slug, so a third plugin wanting
+  this needs no new server route at all.
+- **Single connection**: a fresh authenticated connection replaces the old one, same as
+  studymaster's wizard socket — there is exactly one fast-asr instance per project.
+- **Wire protocol unchanged**: once authenticated, inbound frames go through the *same* message
+  handler the dial-out `AsrWsListener` already used (`ready`/`sad`/`vad`/`asr`/`turn_end`/
+  `diarization`/`recording`) — only the transport differs, not the protocol.
+
+**fast-asr's side is the more interesting half**, because its WebSocket handling
+(`@app.websocket("/stream")`) is 100% accept-role — it has never dialed *out* before. A new
+`RemoteBridge` does this explicitly, in two steps that mirror what a browser does implicitly when
+it follows a link: (1) a plain HTTP GET to `/asr/<slug>`, following the redirect to the resolved
+`.../ws` endpoint (`urllib.request.urlopen` auto-follows and exposes the final URL via
+`geturl()`); (2) a `websockets.connect()` to that resolved address, sending the auth message
+first. Once authenticated, the bridge registers itself into the *same* `_clients` set the local
+`/stream` connections use — `broadcast()` doesn't know or care that one of its recipients is a
+reverse-dialed connection to a server on the other side of a NAT rather than a socket accepted a
+moment ago. `FastASRLauncher.swift` gets one new UI row (a link field, a key field, a
+Connect/Disconnect toggle) that talks only to fast-asr's own new `/remote/connect`,
+`/remote/disconnect`, `/remote/status` endpoints — the launcher itself still never opens a
+WebSocket, exactly as before.
+
+**Why this, and not B-extension.** fast-asr isn't a single browser-API capability (a mic, a TTS
+engine) — it's a whole service with its own VAD/diarization/turn-end pipeline and a packaged
+native app. B-extension's "reach `localhost` from a page" doesn't fit a process that's meant to
+run independently of any browser tab being open.
 
 ## The other architectural pole: run the runtime on the client
 
